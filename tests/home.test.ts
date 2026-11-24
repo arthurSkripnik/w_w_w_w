@@ -28,3 +28,13 @@ describe("Головна: розрахунки з v52", () => {
     expect(s.areas[0]).toMatchObject({ area: "Литка", days: 3, level: 2 });
   });
 });
+
+import { timeFor } from "../src/domain/home";
+describe("Прогноз на дистанції", () => {
+  it("час для VDOT повертає ту саму VDOT", () => {
+    const v = vdot(2134);                                   // 35:34 на 10 км
+    expect(Math.round(timeFor(v, 10000))).toBe(2134);
+    expect(vdot(timeFor(v, 21097.5), 21097.5)).toBeCloseTo(v, 3);
+    expect(timeFor(v, 5000)).toBeLessThan(2134 / 2);
+  });
+});
