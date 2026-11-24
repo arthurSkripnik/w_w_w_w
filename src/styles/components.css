@@ -1,0 +1,88 @@
+/* Basic elements (src/ui). Sentence case everywhere: no capitals for labels, verdicts go in pills. */
+@layer components {
+  .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 40px 20px; }
+  .card { grid-column: span 12; border-top: 1px solid var(--line); padding-top: 12px; min-width: 0; }
+  .card[data-span="3"] { grid-column: span 3; } .card[data-span="4"] { grid-column: span 4; }
+  .card[data-span="6"] { grid-column: span 6; } .card[data-span="8"] { grid-column: span 8; }
+  .card-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+  .card-n { font-size: 12px; color: var(--mute); }
+  .card-title { font-family: var(--grot); font-size: 15px; font-weight: 500; }
+  .card-aside { margin-left: auto; }
+
+  .stat-v { display: flex; align-items: baseline; gap: 6px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
+  .stat[data-size="l"] .stat-v { font-size: clamp(40px, 5vw, 64px); }
+  .stat[data-size="m"] .stat-v { font-size: 32px; }
+  .stat-u { font-size: 15px; letter-spacing: 0; color: var(--mute); font-weight: 400; }
+  .stat-c { margin-top: 8px; color: var(--mute); font-size: 15px; }
+  .acc { color: var(--acc-text); }
+
+  .pill { display: inline-block; font-size: 12px; line-height: 1; padding: 4px 7px; white-space: nowrap; font-weight: 500; }
+  .pill[data-tone="ink"] { background: var(--ink); color: var(--on-ink); }
+  .pill[data-tone="acc"] { background: var(--acc); color: var(--on-acc); }
+  .pill[data-tone="line"] { box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); }
+  .pill[data-tone="err"] { background: var(--err); color: #fff; }
+
+  .btn { font-family: var(--grot); font-size: 15px; line-height: 1; padding: 12px 18px; min-height: 44px; }
+  .btn[data-v="primary"] { background: var(--ink); color: var(--on-ink); }
+  .btn[data-v="ghost"] { box-shadow: inset 0 0 0 1px var(--ink); }
+  .btn[data-v="link"] { padding: 12px 0; text-decoration: underline; text-underline-offset: 3px; }
+  .btn:hover:not(:disabled)[data-v="primary"] { background: color-mix(in srgb, var(--ink) 80%, var(--bg)); }
+  .btn:hover:not(:disabled)[data-v="ghost"] { background: var(--chip); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  .seg { display: inline-flex; box-shadow: inset 0 0 0 1px var(--line); font-family: var(--grot); font-size: 14px; }
+  .seg-o { position: relative; cursor: pointer; }
+  .seg-o input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .seg-o span { display: block; padding: 9px 14px; min-height: 36px; }
+  .seg-o input:checked + span { background: var(--ink); color: var(--on-ink); }
+  .seg-o input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .tbl-wrap { overflow-x: auto; }
+  .tbl { width: 100%; border-collapse: collapse; font-family: var(--grot); font-size: 14px; }
+  .tbl caption { text-align: left; padding-bottom: 8px; }
+  .tbl th { text-align: left; font-weight: 400; color: var(--mute); font-size: 12px; padding: 0 12px 8px 0; border-bottom: 1px solid var(--line); }
+  .tbl td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--hair); vertical-align: baseline; }
+  .tbl .n { text-align: right; }
+
+  .field { display: grid; gap: 6px; }
+  .field input { font-size: 17px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); min-height: 44px; }
+  .field input:focus { outline: none; border-bottom-color: var(--ink); }
+  .field input[aria-invalid] { border-bottom-color: var(--err); }
+  .field-h { font-family: var(--grot); font-size: 13px; color: var(--mute); }
+  .field-h.err { color: var(--err); }
+
+  .how { border-top: 1px solid var(--hair); }
+  .how summary { font-family: var(--grot); font-size: 14px; padding: 12px 0; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+  .how summary::-webkit-details-marker { display: none; }
+  .how summary::after { content: "+"; }
+  .how[open] summary::after { content: "−"; }
+  .how-b { padding-bottom: 16px; max-width: 68ch; color: var(--ink); }
+  .how-b p { margin: 0 0 10px; }
+
+  .status { display: flex; gap: 10px; align-items: baseline; margin: 0; font-family: var(--grot); font-size: 14px; color: var(--mute); }
+  .status .pill { flex: none; }
+  .empty { padding: 32px 0; color: var(--mute); font-style: italic; }
+
+  /* charts (src/ui/Chart.tsx) */
+  .chart { position: relative; color: var(--ink); }
+  .chart svg { display: block; overflow: visible; font-family: var(--grot); }
+  .chart [aria-label="tip"] path { fill: var(--ink); stroke: none; }
+  .chart [aria-label="tip"] text { fill: var(--on-ink); }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--grot); font-size: 13px; color: var(--mute); margin-bottom: 8px; }
+  .chart-legend span { white-space: nowrap; }
+  .chart-legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; background: var(--ink); }
+  .chart-legend i[data-k="acc"] { background: var(--acc); }
+  .chart-legend i[data-k="cmp"] { background: var(--cmp); }
+  .chart-legend i[data-k="band"] { height: 10px; background: var(--hair); }
+
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 32px 16px; }
+    .card[data-span] { grid-column: span 6; }
+    .card[data-span="3"] { grid-column: span 3; }
+  }
+}
+@layer screens {
+  .kit-bar { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0 40px; }
+  .kit-els { display: grid; gap: 20px; max-width: 640px; }
+}
