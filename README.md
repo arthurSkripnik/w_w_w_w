@@ -19,6 +19,7 @@ src/screens/            екрани (поки Home з перевіркою зв
 src/platform/claude.ts  єдине місце, що торкається window.claude (db, mcp)
 src/data/schema.ts      схеми колекцій (Zod)
 src/domain/             чисті формули з v52: зони, структура сесій, розбір пробіжки, точність, навантаження/форма, аеробна база
+src/ui/                 базові елементи (index.tsx), chart() на Observable Plot (chart.ts), <Chart> (Chart.tsx)
 src/store/              data.ts (сигнали колекцій), derived.ts (похідні), actions.ts (усі записи), strava.ts (синхронізація)
 src/styles/             @layer tokens → base → components → screens; tokens.css = 00-tokens.css з v52 без змін
 ```
@@ -48,3 +49,9 @@ node tools/migrate.ts <plan-app/src/js> <plan-state.json> <coach dir> <out dir>
 node tools/v52-dump.cjs <plan-app/src/js> <state.json> 2026-11-24 v52.json
 V2_DATA=<out dir migrate.ts> V52_JSON=v52.json V52_TODAY=2026-11-24 npm test
 ```
+
+## Елементи й графіки (крок 4)
+- `src/ui/index.tsx`: Grid (12 колонок, на телефоні 6), Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty. Вигляд у `styles/components.css`.
+- `src/ui/chart.ts`: `chart(spec, width)` на Observable Plot, види: line (лінія в часі з точками, смугами зон, лінією «сьогодні», планом пунктиром), bars (тижні), spark, hbars (зони пульсу). Кольори лише з токенів, тож темна тема працює сама.
+- Звичайний регістр у підписах; вердикти в пігулках замість КАПСУ й [OK].
+- Сторінка-зразок: `#kit` (не в меню).
