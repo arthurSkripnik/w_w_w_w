@@ -131,6 +131,19 @@ for (const [k, g] of Object.entries(GYM as Record<string, any>)) {
   };
 }
 
+// The stored v52 report keeps what it read from the stream at import; v2 keeps those facts on the run.
+function streamFacts(s: any) {
+  if (!s.hasStream) return undefined;
+  const f: any = {};
+  if (Array.isArray(s.hrz)) f.hrz = s.hrz;
+  if (typeof s.temp === "number" && !s.wx) f.temp = s.temp;
+  if (s.easy?.first40) f.easy = { t: s.easy.t, km: s.easy.km, pace: s.easy.pace, hr: s.easy.hr, first40: true };
+  if (s.as === "long") f.drift = s.drift ?? null;
+  if (s.spread?.from === "stream") f.spread = s.spread;
+  if (s.from === "stream") { f.reps = s.reps; f.span = s.span; f.t0 = s.t0; if (s.blocks) f.blocks = s.blocks; }
+  return Object.keys(f).length ? f : undefined;
+}
+
 // ---- runs and journal from the day reports ----
 for (const [d, f] of Object.entries(state.fb as Record<string, any>)) {
   const j: any = { date: d };
@@ -145,6 +158,8 @@ for (const [d, f] of Object.entries(state.fb as Record<string, any>)) {
     corosLoad: s.coros ?? undefined,
     laps: s.laps?.map(([t, m, hr, w]: number[]) => ({ sec: t, m, hr: hr ?? null, w: w ?? null })),
     weather: s.wx ?? null, planDate: d, exclude: f.exclude || undefined,
+    best: s.best && Object.keys(s.best).length ? s.best : undefined,
+    stream: streamFacts(s),
   };
   for (const x of f.extra ?? []) docs.runs[x.id] = {
     stravaId: String(x.id), date: d, km: x.km, movingSec: x.t, corosLoad: x.coros, planDate: d, extra: true, exclude: f.exclude || undefined,
