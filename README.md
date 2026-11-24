@@ -45,6 +45,6 @@ node tools/migrate.ts <plan-app/src/js> <plan-state.json> <coach dir> <out dir>
 
 Звірка з живим v52 (ті самі дані → ті самі числа). Дані користувача поза репозиторієм:
 ```
-node <harness з v52> → v52.json
+node tools/v52-dump.cjs <plan-app/src/js> <state.json> 2026-11-24 v52.json
 V2_DATA=<out dir migrate.ts> V52_JSON=v52.json V52_TODAY=2026-11-24 npm test
 ```
