@@ -99,6 +99,7 @@
   .cmp-sum h2 { margin: 0; font: 400 clamp(22px, 2.6vw, 30px)/1.15 var(--serif); text-wrap: balance; max-width: 36ch; }
   .cmp-sum p { margin: 0; color: var(--mute); font-family: var(--grot); font-size: 15px; max-width: 60ch; }
   .cmp-t { margin-top: 20px; }
+  .cmp-lvl { margin-top: 8px; } .cmp-lvl .label { display: block; margin-bottom: 4px; }
   .cmp-t td b { font-weight: 500; }
   .cmp-dl { display: inline-flex; align-items: center; gap: 8px; color: var(--mute); white-space: nowrap; }
   .cmp-dl .gd { color: var(--acc-text); font-weight: 500; }

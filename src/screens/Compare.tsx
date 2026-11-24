@@ -53,11 +53,21 @@ export function Trend({ height = 220 }: { height?: number }) {
   if (!pts.length) return <p class="status">У цього типу ще немає темпу для графіка.</p>;
   const tip = (r: CmpRun) => `${dm(r.d)} · ${typeOf(r.t).name}${lvlMark(g.k, r) ? " " + lvlMark(g.k, r) : ""}: ${fmtPace(trendVal(g.k, r)!)} /км${r.key.hr ? `, пульс ${Math.round(r.key.hr)}` : ""}, ${r.km.toFixed(1)} км`;
   const av = A && !A.d ? val(A, r => trendVal(g.k, r)) : null;
-  return <Chart label={`${trendLabel(g.k)}: ${g.name.toLowerCase()} за датами`}
+  const lv = g.k === "easy" || g.k === "long" ? [] : pts.filter(r => r.lvl !== null), x: [Date, Date] = [D(pts[0].d), D(pts[pts.length - 1].d)];
+  return <>
+  <Chart label={`${trendLabel(g.k)}: ${g.name.toLowerCase()} за датами`}
     legend={[{ k: "ink", text: trendLabel(g.k) }, { k: "acc", text: `Обрана ${dm(B.d)}` }, ...(A ? [{ k: "cmp" as const, text: A.d ? `Порівнюємо з ${dm(A.d)}` : `Середнє ${AVG_DAYS / 7} тижнів` }] : [])]}
     spec={{ kind: "line", height, end: false, data: pts.map(r => ({ x: D(r.d), y: trendVal(g.k, r)!, tip: tip(r) })), y: { fmt: fmtPace, reverse: true },
       dots: pts.map(r => ({ x: D(r.d), y: trendVal(g.k, r)!, key: r.d === B.d, soft: !!A?.d && r.d === A.d, tip: tip(r), label: lvlMark(g.k, r) })),
-      lines: av !== null ? [{ data: [{ x: D(A!.runs[0].d), y: av, tip: `Середнє за ${A!.runs.length} пробіжки: ${fmtPace(av)} /км` }, { x: D(B.d), y: av, tip: `Середнє ${fmtPace(av)} /км` }], dash: true, tone: "mute" as const }] : undefined }} />;
+      lines: av !== null ? [{ data: [{ x: D(A!.runs[0].d), y: av, tip: `Середнє за ${A!.runs.length} пробіжки: ${fmtPace(av)} /км` }, { x: D(B.d), y: av, tip: `Середнє ${fmtPace(av)} /км` }], dash: true, tone: "mute" as const }] : undefined, x }} />
+  {lv.length > 1 && new Set(lv.map(r => r.lvl)).size > 1 && <div class="cmp-lvl">
+    <span class="label">Рівень за планом</span>
+    <Chart label="Рівень тренування за планом" spec={{ kind: "line", height: 110, step: true, end: false, x,
+      data: lv.map(r => ({ x: D(r.d), y: r.lvl!, tip: `${dm(r.d)} · рівень ${r.lvl}${r.planN ? `, ${r.planN} повторів` : ""}` })),
+      dots: lv.map(r => ({ x: D(r.d), y: r.lvl!, key: r.d === B.d, soft: !!A?.d && r.d === A.d })),
+      y: { fmt: v => (Number.isInteger(v) ? `Р${v}` : ""), ticks: 3, domain: [Math.min(...lv.map(r => r.lvl!)) - 0.5, Math.max(...lv.map(r => r.lvl!)) + 0.5] } }} />
+  </div>}
+  </>;
 }
 
 function Verdict({ A, B }: { A: Side | null; B: CmpRun }) {
