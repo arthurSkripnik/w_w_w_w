@@ -1,6 +1,7 @@
 import { useMemo, useState } from "preact/hooks";
 import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty } from "../ui";
 import { Chart } from "../ui/Chart";
+import { getTheme, setTheme, type Theme } from "../ui/theme";
 import type { Pt } from "../ui/chart";
 import { days, form, aerobic, zones, today } from "../store/derived";
 import { runs, dbState } from "../store/data";
@@ -15,11 +16,9 @@ const dm = (iso: string) => iso.slice(8, 10) + "." + iso.slice(5, 7);
 const pace = (v: number) => fmtPace(v);
 const accTone = (s: number): "ink" | "line" | "err" => (s >= 90 ? "ink" : s >= 50 ? "line" : "err");
 
-type Theme = "auto" | "light" | "dark";
-function setTheme(t: Theme) { if (t === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t; }
 
 export function Kit() {
-  const [theme, setT] = useState<Theme>((document.documentElement.dataset.theme as Theme) ?? "auto");
+  const [theme, setT] = useState<Theme>(getTheme());
   const [range, setRange] = useState<"plan" | "all">("plan");
   const [thr, setThr] = useState("3:40");
   const F = form.value, A = aerobic.value, Z = zones.value, t = today.value, all = days.value;
@@ -77,7 +76,7 @@ export function Kit() {
         <p>Усі базові елементи й графіки на твоїх даних. Екрани кроків 5–8 збиратимуться лише з них.</p>
       </section>
       <div class="kit-bar">
-        <Segmented label="Тема" value={theme} onChange={v => { setT(v); setTheme(v); }} options={[{ id: "auto", title: "Як у системі" }, { id: "light", title: "Світла" }, { id: "dark", title: "Темна" }]} />
+        <Segmented label="Тема" value={theme} onChange={v => { setT(v); setTheme(v); }} options={[{ id: "auto", title: "Як у Claude" }, { id: "light", title: "Світла" }, { id: "dark", title: "Темна" }]} />
         <Segmented label="Період" value={range} onChange={setRange} options={[{ id: "plan", title: "План" }, { id: "all", title: "Уся історія" }]} />
       </div>
       <Grid>
