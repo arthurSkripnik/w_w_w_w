@@ -102,6 +102,19 @@ export const PlanDay = z.object({
 });
 
 // ---- runs/<stravaId> -----------------------------------------------------
+const Part = z.object({ t: z.number(), km: z.number(), pace: z.number().nullable(), hr: z.number().nullable() });
+/** Facts measured from the second-by-second stream at import; the stream itself is not kept. */
+const StreamFacts = z.object({
+  hrz: z.array(z.number()).length(5).optional(),        // seconds in HR zones 1–5
+  temp: z.number().optional(),                          // watch sensor, °C
+  easy: Part.extend({ first40: z.literal(true).optional() }).optional(), // long run: its first 40 minutes
+  drift: z.object({ pct: z.number(), a: z.object({ pace: z.number(), hr: z.number() }), b: z.object({ pace: z.number(), hr: z.number() }) }).nullable().optional(),
+  spread: z.object({ fast: z.number(), in: z.number(), slow: z.number(), hrOver: z.number(), t: z.number(), key: z.string(), from: z.string().optional() }).optional(),
+  reps: z.array(Part).optional(),                       // work reps found in the pace stream
+  span: z.array(z.tuple([z.number(), z.number()])).optional(),
+  t0: z.number().optional(),
+  blocks: z.array(z.object({ z2: Part.nullable(), z3: Part.nullable() })).optional(),
+});
 export const Run = z.object({
   stravaId: z.string(),
   date: isoDate,
@@ -116,6 +129,9 @@ export const Run = z.object({
   planDate: isoDate.optional(),                         // the plan day this run reports on
   extra: z.boolean().optional(),                        // a second, short run that day
   exclude: z.boolean().optional(),                      // leave out of analysis
+  best: z.object({ k5: z.number().optional(), k10: z.number().optional(), k21: z.number().optional() }).optional(), // Strava best efforts, s
+  stream: StreamFacts.optional(),
+  source: z.enum(["plan", "archive"]).optional(),       // archive: before the plan, summary only
 });
 
 // ---- journal/<date> ------------------------------------------------------

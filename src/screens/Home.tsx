@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { getDb, getMcp, inArtifact, STRAVA } from "../platform/claude";
 import { DataCheck } from "./DataCheck";
+import { StoreCheck } from "./StoreCheck";
 
 type State = { s: "wait" | "ok" | "err"; text: string };
 const WAIT: State = { s: "wait", text: "Перевіряю…" };
@@ -51,14 +52,15 @@ export function Home() {
   return (
     <>
       <section class="screen-head">
-        <span class="label">Крок 2 · модель даних</span>
+        <span class="label">Крок 3 · store</span>
         <h1>Головна</h1>
-        <p>Тут буде сітка віджетів (крок 5). Поки що екран лише перевіряє, що нова версія бачить дані.</p>
+        <p>Тут буде сітка віджетів (крок 5). Поки що екран показує, що store рахує з даних: ті самі числа, що й у живій версії.</p>
       </section>
       <div class="check">
         <Row label="База артефакта" st={db} />
         <Row label="Strava" st={strava} />
       </div>
+      <StoreCheck />
       <DataCheck />
     </>
   );
