@@ -1,5 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { getDb, getMcp, inArtifact, STRAVA } from "../platform/claude";
+import { DataCheck } from "./DataCheck";
 
 type State = { s: "wait" | "ok" | "err"; text: string };
 const WAIT: State = { s: "wait", text: "Перевіряю…" };
@@ -50,7 +51,7 @@ export function Home() {
   return (
     <>
       <section class="screen-head">
-        <span class="label">Крок 1 · каркас</span>
+        <span class="label">Крок 2 · модель даних</span>
         <h1>Головна</h1>
         <p>Тут буде сітка віджетів (крок 5). Поки що екран лише перевіряє, що нова версія бачить дані.</p>
       </section>
@@ -58,6 +59,7 @@ export function Home() {
         <Row label="База артефакта" st={db} />
         <Row label="Strava" st={strava} />
       </div>
+      <DataCheck />
     </>
   );
 }
