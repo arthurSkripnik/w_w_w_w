@@ -12,7 +12,8 @@ export const plan = signal<Record<string, PlanDay>>({});
 export const runs = signal<Record<string, Run>>({});
 export const journal = signal<Record<string, Journal>>({});
 export const injuries = signal<Record<string, Injury>>({});
-export const layout = signal<Layout | null>(null);
+/** Widget layout per screen: layout/home, layout/lab. */
+export const layouts = signal<Record<string, Layout>>({});
 
 const SIG = { goals, thresholds, workouts, plan, runs, journal, injuries } as const;
 
@@ -42,7 +43,7 @@ export async function startData(): Promise<void> {
       }
       health.value = { ...health.value, [col]: { n: snap.size, bad } };
       if (col === "athlete") athlete.value = (ok.me as Athlete) ?? null;
-      else if (col === "layout") layout.value = (ok.home as Layout) ?? null;
+      else if (col === "layout") layouts.value = ok as Record<string, Layout>;
       else SIG[col].value = ok as never;
       if (!snap.metadata?.fromCache) fresh.add(col);
       if (fresh.size === names.length) { clearTimeout(timer); dbState.value = "ready"; }

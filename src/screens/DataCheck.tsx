@@ -4,7 +4,7 @@ import { COLLECTIONS, type CollectionName } from "../data/schema";
 // How many documents each collection holds, and which fail the schema. Reads the store, not the database.
 const LABEL: Record<CollectionName, string> = {
   athlete: "Атлет", goals: "Цілі", thresholds: "Пороги", workouts: "Шаблони тренувань",
-  plan: "Дні плану", runs: "Пробіжки", journal: "Щоденник", injuries: "Травми", layout: "Розкладка Головної",
+  plan: "Дні плану", runs: "Пробіжки", journal: "Щоденник", injuries: "Травми", layout: "Розкладка екранів",
 };
 
 export function DataCheck() {

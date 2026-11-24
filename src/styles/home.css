@@ -38,3 +38,32 @@
     .today-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 }
+
+/* widget boards (Головна, Лабораторія): card menu, full-size widgets */
+@layer screens {
+  .wg .card-head { position: relative; }
+  .wg-menu { margin-left: 8px; }
+  .wg-link + .wg-menu, .card-aside + .wg-menu { margin-left: 8px; }
+  .card-title + .wg-menu { margin-left: auto; }
+  .wg-menu summary { list-style: none; cursor: pointer; font-family: var(--grot); color: var(--mute); padding: 0 4px; min-width: 28px; text-align: center; letter-spacing: .1em; }
+  .wg-menu summary::-webkit-details-marker { display: none; }
+  .wg-menu summary:hover, .wg-menu[open] summary { color: var(--ink); }
+  .wg-menu-b { position: absolute; right: 0; top: 100%; z-index: 5; display: grid; min-width: 200px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--ink), var(--shadow-pop); }
+  .wg-menu-b button { text-align: left; font-family: var(--grot); font-size: 14px; padding: 12px 14px; min-height: 44px; }
+  .wg-menu-b button:hover:not(:disabled) { background: var(--chip); }
+  .wg-menu-b button:disabled { color: var(--mute); cursor: default; }
+  .wg[data-size="full"] { scroll-margin-top: 24px; }
+  .wg[data-size="full"] > .status, .wg[data-size="full"] .lab-lines .status { margin: 8px 0; display: block; }
+  .lab-stats { display: flex; flex-wrap: wrap; gap: 16px 48px; align-items: flex-start; margin-bottom: 20px; }
+  .lab-tip { max-width: 60ch; }
+  .lab-tip p { margin: 0 0 8px; }
+  .lab-lines { margin-bottom: 16px; }
+  .hz-leg { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--grot); font-size: 13px; color: var(--mute); margin-bottom: 12px; }
+  .hz-leg span { display: flex; align-items: center; gap: 6px; }
+  .hz-leg i { width: 10px; height: 10px; display: inline-block; }
+  .hz-bar { display: flex; height: 14px; min-width: 160px; gap: 1px; }
+  .hz-bar i { display: block; height: 100%; }
+  :is(.hz-leg, .hz-bar) i[data-z="1"] { background: var(--hair); } :is(.hz-leg, .hz-bar) i[data-z="2"] { background: var(--line); }
+  :is(.hz-leg, .hz-bar) i[data-z="3"] { background: var(--mute); } :is(.hz-leg, .hz-bar) i[data-z="4"] { background: var(--ink); }
+  :is(.hz-leg, .hz-bar) i[data-z="5"] { background: var(--acc); }
+}

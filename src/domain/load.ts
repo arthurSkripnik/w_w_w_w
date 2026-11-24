@@ -33,16 +33,17 @@ export function corosK(days: LoadDay[]) {
   days.forEach(e => { const st = e.main; if (st && st.coros! > 0 && st.t) { c += st.coros!; m += (st.t / 60) * (LOAD_W[e.act] || 1); n++; } });
   return c > 0 && m > 0 ? { k: c / m, n } : null;
 }
-export function dayLoads(days: LoadDay[], today: string, plan = false, offPlan: OffPlan[] = []) {
-  const K = corosK(days), load: Record<string, number> = {};
+/** Load of every plan day. W: intensity weights (the projection of the aerobic base weighs every minute the same); useCoros off = minutes only. */
+export function dayLoads(days: LoadDay[], today: string, plan = false, offPlan: OffPlan[] = [], W: Record<string, number> = LOAD_W, useCoros = true) {
+  const K = useCoros ? corosK(days) : null, load: Record<string, number> = {};
   const one = (min: number, w: number, coros: number | null) => (K && coros! > 0 ? coros! / K.k : min * w);
   days.forEach(e => {
-    const w = LOAD_W[e.act] || 1;
+    const w = W[e.act] || 1;
     let v: number;
-    if (plan || e.d > today) v = (dur(e.t, e.l) || 0) * (LOAD_W[e.t] || 1);
+    if (plan || e.d > today) v = (dur(e.t, e.l) || 0) * (W[e.t] || 1);
     else if (e.main) v = one(e.main.t / 60, w, e.main.coros);
     else if (e.none) v = 0;
-    else v = (dur(e.t, e.l) || 0) * (LOAD_W[e.t] || 1);
+    else v = (dur(e.t, e.l) || 0) * (W[e.t] || 1);
     load[e.d] = (load[e.d] || 0) + v;
   });
   if (!plan) days.forEach(e => { if (e.d > today) return; e.extras.forEach(x => { load[e.d] = (load[e.d] || 0) + one(x.t / 60, 1, x.coros); }); });
