@@ -1,0 +1,40 @@
+@layer screens {
+  .hub-head { font: 400 clamp(28px, 3.6vw, 44px)/1.15 var(--serif); margin: 8px 0 40px; max-width: 34ch; }
+  .hub-head i { color: var(--mute); }
+  .hub { grid-auto-flow: row dense; }
+  .wg[data-rows="2"] { grid-row: span 2; }
+  .wg-link { font-family: var(--grot); font-size: 13px; color: var(--mute); text-decoration: none; }
+  .wg-link:hover { color: var(--ink); text-decoration: underline; }
+  .wg .stat + * { margin-top: 12px; }
+  .hub-sync { margin-top: 56px; border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
+  .status.err { color: var(--err, var(--acc-text)); }
+
+  /* Сьогодні */
+  .today { display: grid; gap: 20px; align-content: start; }
+  .today-s { display: grid; gap: 8px; }
+  .today-name { font: 400 28px/1.15 var(--serif); display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .today-main { margin: 0; }
+  .today-kv { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 4px 0; }
+  .today-kv dd { margin: 4px 0 0; font-size: 24px; font-weight: 500; }
+  .today-sleep { display: flex; gap: 12px; align-items: end; }
+  .today-sleep .field { flex: 0 1 220px; }
+  .today .btn[data-v="link"] { justify-self: start; }
+
+  /* Травми */
+  .inj-w { display: grid; gap: 10px; }
+  .inj-now { margin: 0; }
+  .inj-strip { display: grid; grid-template-columns: repeat(30, 1fr); gap: 2px; height: 20px; }
+  .inj-strip i, .inj-areas i { background: var(--chip); }
+  .inj-strip i[data-l="1"], .inj-areas i[data-l="1"] { background: color-mix(in oklab, var(--acc) 35%, var(--bg)); }
+  .inj-strip i[data-l="2"], .inj-areas i[data-l="2"] { background: color-mix(in oklab, var(--acc) 70%, var(--bg)); }
+  .inj-strip i[data-l="3"], .inj-areas i[data-l="3"] { background: var(--acc); }
+  .inj-x { display: flex; justify-content: space-between; }
+  .inj-areas { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--grot); font-size: 14px; }
+  .inj-areas li { display: flex; align-items: center; gap: 6px; }
+  .inj-areas i { width: 10px; height: 10px; display: inline-block; }
+
+  @media (max-width: 760px) {
+    .wg[data-rows="2"] { grid-row: auto; }
+    .today-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+}

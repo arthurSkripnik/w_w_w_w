@@ -2,6 +2,7 @@ import { SCREENS, route } from "./routes";
 import { Home } from "../screens/Home";
 import { Placeholder } from "../screens/Placeholder";
 import { Kit } from "../screens/Kit";
+import { Calendar } from "../screens/Calendar";
 
 export function Shell() {
   const current = SCREENS.find(s => s.id === route.value)!;
@@ -17,7 +18,7 @@ export function Shell() {
         </nav>
       </header>
       <main class="main">
-        {current.id === "home" ? <Home /> : current.id === "kit" ? <Kit /> : <Placeholder screen={current} />}
+        {current.id === "home" ? <Home /> : current.id === "kit" ? <Kit /> : current.id === "calendar" ? <Calendar /> : <Placeholder screen={current} />}
       </main>
     </div>
   );

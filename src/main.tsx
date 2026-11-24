@@ -3,6 +3,8 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/shell.css";
 import "./styles/components.css";
+import "./styles/home.css";
+import "./styles/calendar.css";
 import { Shell } from "./app/Shell";
 import { startData } from "./store/data";
 import { getTheme, setTheme } from "./ui/theme";
