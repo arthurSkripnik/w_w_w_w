@@ -5,6 +5,7 @@ import { Kit } from "../screens/Kit";
 import { Calendar } from "../screens/Calendar";
 import { Profile } from "../screens/Profile";
 import { Lab } from "../screens/Lab";
+import { Compare } from "../screens/Compare";
 
 export function Shell() {
   const current = SCREENS.find(s => s.id === route.value)!;
@@ -20,7 +21,7 @@ export function Shell() {
         </nav>
       </header>
       <main class="main">
-        {current.id === "home" ? <Home /> : current.id === "kit" ? <Kit /> : current.id === "calendar" ? <Calendar /> : current.id === "profile" ? <Profile /> : current.id === "lab" ? <Lab /> : <Placeholder screen={current} />}
+        {current.id === "home" ? <Home /> : current.id === "kit" ? <Kit /> : current.id === "calendar" ? <Calendar /> : current.id === "profile" ? <Profile /> : current.id === "lab" ? <Lab /> : current.id === "compare" ? <Compare /> : <Placeholder screen={current} />}
       </main>
     </div>
   );

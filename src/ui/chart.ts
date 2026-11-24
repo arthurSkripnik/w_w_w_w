@@ -21,6 +21,7 @@ export type ChartSpec =
       segs?: { x1: Date; x2: Date; y: number; label: string; tip?: string }[] }   // a value over a window (Strava forecast)
   | { kind: "bars"; data: (Pt & { plan?: boolean })[]; y: Axis; height?: number; today?: Date }
   | { kind: "spark"; data: Pt[]; y?: Partial<Axis>; height?: number }
+  | { kind: "dist"; a: { a: number; b: number; v: number }[]; b: { a: number; b: number; v: number }[]; y: Axis; height?: number; tip: (km: number) => string }   // two runs lap by lap along the distance
   | { kind: "hbars"; data: { label: string; v: number; tip?: string }[]; fmt: (v: number) => string; acc?: number };
 
 const dm = (d: Date) => `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -42,6 +43,21 @@ export function chart(spec: ChartSpec, width: number): SVGSVGElement | HTMLEleme
       marks: [
         Plot.lineY(spec.data, { x: "x", y: "y", stroke: C.ink, strokeWidth: 1.5, curve: "monotone-x" }),
         last ? Plot.dot([last], { x: "x", y: "y", r: 3.5, fill: C.acc, stroke: C.bg, strokeWidth: 2 }) : null,
+      ],
+    });
+  }
+  if (spec.kind === "dist") {
+    const path = (S: { a: number; b: number; v: number }[]) => S.flatMap(x => [{ x: x.a, y: x.v }, { x: x.b, y: x.v }]);
+    const B = path(spec.b), A = path(spec.a), mids = spec.b.map(x => ({ x: (x.a + x.b) / 2, y: x.v }));
+    return Plot.plot({
+      ...base(width, spec.height ?? 220),
+      x: { label: null, tickSize: 0, tickFormat: (v: number) => `${v}`, ticks: Math.min(10, Math.ceil(Math.max(...[...A, ...B].map(p => p.x)))) },
+      y: { grid: true, ticks: spec.y.ticks ?? 4, tickFormat: spec.y.fmt, reverse: spec.y.reverse, domain: spec.y.domain, label: null, tickSize: 0, nice: true },
+      marks: [
+        Plot.line(A, { x: "x", y: "y", stroke: C.cmp, strokeWidth: 3 }),
+        Plot.line(B, { x: "x", y: "y", stroke: C.ink, strokeWidth: 2 }),
+        Plot.ruleX(mids, Plot.pointerX({ x: "x", stroke: C.line })),
+        Plot.tip(mids, Plot.pointerX({ x: "x", y: "y", title: (d: { x: number }) => spec.tip(d.x), ...tipOpts })),
       ],
     });
   }

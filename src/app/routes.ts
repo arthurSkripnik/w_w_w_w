@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals";
 
-export type ScreenId = "home" | "calendar" | "library" | "lab" | "profile" | "kit";
+export type ScreenId = "home" | "calendar" | "library" | "lab" | "compare" | "profile" | "kit";
 
 export interface Screen {
   id: ScreenId;
@@ -16,6 +16,7 @@ export const SCREENS: Screen[] = [
   { id: "calendar", title: "Календар" },
   { id: "library", title: "База тренувань", desktopOnly: true },
   { id: "lab", title: "Лабораторія", desktopOnly: true },
+  { id: "compare", title: "Порівняння", desktopOnly: true },
   { id: "profile", title: "Профіль" },
   { id: "kit", title: "Зразки", hidden: true },
 ];

@@ -17,15 +17,16 @@ import { vo2intW } from "./full/vo2int";
 import { hrzW } from "./full/hrz";
 import { historyW } from "./full/history";
 import { distancesW } from "./full/distances";
+import { cmptrendW } from "./full/cmptrend";
 
 export const WIDGETS: Widget[] = [
   todayW, { ...forecastW, Full: ForecastFull }, { ...formW, Full: FormFull }, { ...aerobicW, Full: AerobicFull },
-  { ...weekkmW, Full: WeeksFull }, injuriesW, vo2maxW, sleepW, weekW, vo2intW, hrzW, historyW, distancesW,
+  { ...weekkmW, Full: WeeksFull }, injuriesW, vo2maxW, sleepW, weekW, vo2intW, hrzW, historyW, distancesW, cmptrendW,
 ];
 export type BoardId = "home" | "lab";
 const set = (ids: string[], size: Size) => ids.map(id => ({ id, size }));
 export const DEFAULTS: Record<BoardId, { id: string; size: Size; hidden?: boolean }[]> = {
   home: set(["today", "forecast", "form", "aerobic", "weekkm", "injuries", "vo2max", "sleep", "week"], "compact"),
-  lab: set(["forecast", "distances", "form", "vo2int", "aerobic", "hrz", "weekkm", "history"], "full"),
+  lab: set(["forecast", "distances", "form", "vo2int", "aerobic", "hrz", "weekkm", "history", "cmptrend"], "full"),
 };
 export type { Widget };
