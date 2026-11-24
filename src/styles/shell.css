@@ -1,0 +1,44 @@
+@layer components {
+  .shell { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
+  .top {
+    display: flex; align-items: baseline; gap: 32px;
+    padding: 20px; border-bottom: 1px solid var(--line);
+  }
+  .brand { font-family: var(--grot); font-weight: 700; font-size: 15px; }
+  .brand em { font-style: normal; color: var(--acc-text); }
+  .nav { display: flex; gap: 24px; font-family: var(--grot); font-size: 15px; }
+  .nav a { color: var(--mute); text-decoration: none; padding-bottom: 4px; border-bottom: 2px solid transparent; }
+  .nav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--acc); }
+  .main { padding: 32px 20px 96px; max-width: 1440px; width: 100%; margin: 0 auto; }
+
+  .screen-head { display: grid; gap: 8px; padding-bottom: 24px; border-bottom: 1px solid var(--hair); }
+  .screen-head h1 { font-size: clamp(32px, 5vw, 56px); line-height: 1.05; }
+  .screen-head p { margin: 0; color: var(--mute); max-width: 60ch; }
+
+  .check { margin-top: 8px; }
+  .check-row {
+    display: grid; grid-template-columns: 160px 1fr auto; gap: 16px; align-items: baseline;
+    padding: 14px 0; border-bottom: 1px solid var(--hair);
+  }
+  .check-row .val { font-family: var(--grot); font-size: 15px; }
+  .dot { font-family: var(--grot); font-size: 12px; padding: 2px 8px; background: var(--chip); }
+  .dot[data-s="ok"] { background: var(--ink); color: var(--on-ink); }
+  .dot[data-s="err"] { background: var(--err); color: var(--on-ink); }
+
+  /* Phone: tabs become a bottom bar */
+  @media (max-width: 760px) {
+    .top { padding: 14px 16px; }
+    .nav {
+      position: fixed; inset: auto 0 0 0; z-index: 10;
+      justify-content: space-around; gap: 0;
+      background: var(--bg); border-top: 1px solid var(--line);
+      padding: 10px 4px calc(10px + env(safe-area-inset-bottom));
+      font-size: 13px;
+    }
+    .nav a { padding-bottom: 2px; }
+    .nav a[data-desktop] { display: none; }
+    .main { padding: 24px 16px 96px; }
+    .check-row { grid-template-columns: 1fr auto; }
+    .check-row .label { grid-column: 1 / -1; }
+  }
+}

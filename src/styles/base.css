@@ -1,0 +1,14 @@
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 400 17px/1.45 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-weight: 400; margin: 0; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .num, .label { font-family: var(--grot); font-variant-numeric: tabular-nums; }
+  .label { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--mute); }
+}

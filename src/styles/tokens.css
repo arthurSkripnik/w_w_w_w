@@ -1,0 +1,57 @@
+@layer tokens, base, components, screens;
+@layer tokens {
+/* Tokens. Every colour is defined here: light on :root, dark redefines the same names
+   (system setting, guarded by an explicit light choice, and again for an explicit dark choice).
+   Style after studiesincounting.com (v50): black on white, hairlines, no radius or shadow, one accent: bright orange (v52, Arthur asked), used sparingly for threshold, race, highlights.
+   Book serif (Source Serif 4) for text, grotesque (Helvetica Neue, Inter Tight as fallback) for labels and numbers. */
+:root{
+  --serif:'Source Serif 4','PT Serif',Georgia,serif;
+  --grot:'Helvetica Neue',Helvetica,'Inter Tight',Arial,sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --r:0px; --r-s:0px;                        /* card and control radius: none */
+  --bg:#FFFFFF; --paper:#FFFFFF;             /* page, cards: one white sheet */
+  --ink:#000000; --on-ink:#FFFFFF; --mute:#6B6B68;
+  --line:#B9B9B6; --hair:#E4E4E2;            /* rules: stronger, hairline */
+  --chip:#F4F4F2; --chip-h:#E4E4E2;          /* calendar day, hovered */
+  --sel:#E9E9E6;                             /* selected day / segment */
+  --cmp:#BDBDBD;                             /* compared run in charts */
+  --acc:#FF5000; --acc-text:#D24500; --on-acc:#000000;   /* bright orange; text shade keeps AA 4.5:1 on white */
+  --focus:#000000;
+  --shadow:none;
+  --shadow-pop:0 2px 10px rgba(0,0,0,.10);   /* tooltip */
+  --scrim:color-mix(in srgb, #000 18%, transparent);
+  --err:#E3261A;
+  --inj1:#E4E4E2; --inj2:#9A9A96; --inj3:#000000;   /* injury level 1–3: grey → black */
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0B0B; --paper:#0B0B0B;
+    --ink:#F2F2EF; --on-ink:#0B0B0B; --mute:#9A9A95;
+    --line:#4A4A47; --hair:#262624;
+    --chip:#161615; --chip-h:#22221F;
+    --sel:#2A2A28;
+    --cmp:#555555;
+    --acc:#FF6A1A; --acc-text:#FF7A33; --on-acc:#0B0B0B;
+    --focus:#F2F2EF;
+    --shadow:none;
+    --err:#FF5A4A;
+    --inj1:#2A2A28; --inj2:#6E6E6A; --inj3:#F2F2EF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0B0B; --paper:#0B0B0B;
+  --ink:#F2F2EF; --on-ink:#0B0B0B; --mute:#9A9A95;
+  --line:#4A4A47; --hair:#262624;
+  --chip:#161615; --chip-h:#22221F;
+  --sel:#2A2A28;
+  --cmp:#555555;
+  --acc:#FF6A1A; --acc-text:#FF7A33; --on-acc:#0B0B0B;
+  --focus:#F2F2EF;
+  --shadow:none;
+  --err:#FF5A4A;
+  --inj1:#2A2A28; --inj2:#6E6E6A; --inj3:#F2F2EF;
+  color-scheme:dark;
+}
+}
