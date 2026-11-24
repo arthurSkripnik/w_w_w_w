@@ -42,3 +42,7 @@
     .check-row .label { grid-column: 1 / -1; }
   }
 }
+@layer components {
+  .check + .check { margin-top: 40px; }
+  .check-title { display: block; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+}
