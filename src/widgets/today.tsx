@@ -1,7 +1,8 @@
 // «Сьогодні»: today's session or its Strava summary with accuracy, last night's sleep and the readiness advice.
 import { useState } from "preact/hooks";
 import type { Widget } from "./types";
-import { Pill, Button, Field, StatusLine } from "../ui";
+import { Pill, Button, Field, StatusLine, KV } from "../ui";
+import { WorkoutCard } from "../calendar/WorkoutCard";
 import { today, days, zones } from "../store/derived";
 import { journal } from "../store/data";
 import { todayDay, ready } from "../store/home";
@@ -44,18 +45,16 @@ function Session() {
   const name = d.workout?.name ?? d.type, r = d.report;
   if (d.run && r) {
     const kv: [string, string, string][] = [["Дистанція", r.km.toFixed(2), "км"], ["Час", mmss(r.t), ""], ["Темп", r.pace ? fmtPace(r.pace) : "—", "/км"], ["Пульс", r.hr ? String(r.hr) : "—", r.hr ? "уд/хв" : ""]];
-    return <div class="today-s">
-      <h3 class="today-name">{name} <Pill tone="line">виконано</Pill></h3>
-      <dl class="today-kv">{kv.map(([k, v, u]) => <div key={k}><dt class="label">{k}</dt><dd class="num">{v}<span class="stat-u"> {u}</span></dd></div>)}</dl>
+    return <WorkoutCard size="L" type={d.type} level={d.level} name={name} st="done" today label={name} aside={<Pill tone="line">виконано</Pill>}>
+      <KV size="m" items={kv.map(([k, v, u]) => ({ k, v, u: u || undefined }))} />
       {d.acc && <StatusLine tone={accTone(d.acc.score)} tag={`${d.acc.score}%`}>Точність: {d.acc.label.toLowerCase()}</StatusLine>}
-    </div>;
+    </WorkoutCard>;
   }
   const pace = paceText(d.workout?.zone ?? null, Z), mins = d.type === "race" ? null : dur(d.type, d.level);
-  return <div class="today-s">
-    <h3 class="today-name">{name}{d.gym && <Pill tone="acc">+ сила</Pill>}</h3>
-    <p class="label">{mins ? `≈${mins} хв` : d.type === "race" ? "10 км" : ""}{pace ? ` · ${pace}` : ""}{d.journal?.skipped ? " · пропущено" : ""}</p>
+  return <WorkoutCard size="L" type={d.type} level={d.level} name={name} st={d.journal?.skipped ? "miss" : "plan"} today label={name} aside={d.gym && <Pill tone="acc">+ сила</Pill>}
+    bottom={<>{mins ? `≈${mins} хв` : d.type === "race" ? "10 км" : ""}{pace ? ` · ${pace}` : ""}{d.journal?.skipped ? " · пропущено" : ""}</>}>
     {d.workout && <p class="today-main">{blocksText(d.workout.blocks)}</p>}
-  </div>;
+  </WorkoutCard>;
 }
 
 function Today() {

@@ -43,22 +43,8 @@ export function typeRows(days: Day[], Z: Zones, today: string): TypeRow[] {
 export const inPlanTxt = (r: TypeRow) => !r.n ? (r.t === "start" ? "Ставиться з картки дня: «Позначити старт»" : "Немає в плані")
   : `${r.n} ${plural(r.n, "раз", "рази", "разів")}${r.fixed ? "" : ` · Р${r.levels[0]}${r.levels.length > 1 ? "–" + r.levels[r.levels.length - 1] : ""}`}`;
 
-/** The plan by weeks: Monday to Sunday, phase headers, planned minutes and rough km. */
-export interface WeekCell { date: string; day: Day | null }
-export interface WeekRow { week: number; phase: string; mon: string; sun: string; now: boolean; cells: WeekCell[]; min: number; km: number }
+/** Middle of the easy pace, for rough km from minutes. */
 export const easyMid = (Z: Zones) => (Z.z1.fast + Z.z1.slow) / 2;
-export function weekRows(days: Day[], Z: Zones, today: string): WeekRow[] {
-  const by = new Map<number, Day[]>(); days.forEach(d => { const w = d.plan.week; by.set(w, [...(by.get(w) ?? []), d]); });
-  const mid = easyMid(Z);
-  return [...by.keys()].sort((a, b) => a - b).map(w => {
-    const evs = by.get(w)!, mon = mondayOf(evs[0].date), sun = addDays(mon, 6);
-    const min = evs.reduce((a, d) => a + (dur(d.type, d.type === "race" ? 0 : Math.max(1, d.level)) ?? 0), 0);
-    return { week: w, phase: evs[0].plan.phase, mon, sun, now: today >= mon && today <= sun,
-      cells: Array.from({ length: 7 }, (_, i) => { const date = addDays(mon, i); return { date, day: evs.find(d => d.date === date) ?? null }; }),
-      min, km: (min * 60) / mid };
-  });
-}
-export const changed = (d: Day) => d.plan.changes.length > 0;
 
 /** Strava best-effort types usable as a reference race. */
 export const REF: Record<string, [number, string]> = { Fastest5k: [5, "5 км"], Fastest10k: [10, "10 км"], FastestHalfMarathon: [HM_KM, "півмарафону"], FastestMarathon: [42.195, "марафону"] };

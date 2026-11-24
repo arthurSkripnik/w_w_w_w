@@ -114,3 +114,16 @@ Parity: `V52_LAB=<dump with lab>` adds the forecast checks (`tools/v52-dump.cjs`
   S = calendar grid cell and the Головна week, M = calendar list row, L = the template card of База тренувань.
 - `DayCell` now renders a `WorkoutCard`; planned days show the level («≈62 хв · Р5»).
 - База тренувань: L cards with a level switch Р1–Р10 (levels in the plan underlined): shape, minutes and «Як бігти» rebuild for the chosen level.
+
+## Step 8b: one component per thing
+
+Rule: a thing that means the same everywhere is one component; screens pass size and state, never copy markup.
+
+- `WorkoutCard` (S/M/L) is used by the calendar grid and list, the Головна week, Порівняння (M rows with the a/b/mean swatch via `pick`),
+  the day card header and «Сьогодні» (L), and База тренувань (L). `TypeTag` is the one «■ ШФ · Р5» tag.
+- `src/calendar/Week.tsx`: `Week` (seven `DayCell`s) and `WeekLine` (week number, hours, km bar, days) for the calendar, the Головна week
+  and «Рівні по тижнях» (`plan` shows every day as planned).
+- `src/ui`: `Choice` (looks `seg`, `chips`, `nums`; `Segmented` wraps it), `KV` (sizes `l`, `m`, `s`, `rows`, `text`) and `Delta`
+  replace hand-made chips, level buttons, `<dl>` lists and difference bars on every screen.
+- «Зразки» (`#kit`) card 12 shows each component in its sizes and states.
+- Removed the old per-screen CSS (`cmp-row`, `cmp-chip`, `cmp-dl`, `lib-w`, `lib-kv`, `lib-rules`, `lib-card-kv`, `wc-lv`, `dc-kpis`, `today-kv`) and `weekRows`.

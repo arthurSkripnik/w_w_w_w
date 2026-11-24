@@ -2,7 +2,8 @@
 // plan changes, what it actually was, the fact and the Strava report beside it.
 import { useState } from "preact/hooks";
 import type { Day } from "../domain/days";
-import { Pill, Button, Segmented, StatusLine, Field } from "../ui";
+import { Pill, Button, Segmented, StatusLine, Field, KV } from "../ui";
+import { WorkoutCard } from "./WorkoutCard";
 import { Report } from "./Report";
 import { groupOf } from "../domain/compare";
 import { days, dayByDate, today, zones, goal, threshold } from "../store/derived";
@@ -15,7 +16,7 @@ import { typeOf, CAT, TYPE, RPE_TARGET } from "../domain/types";
 import { gen, kpis, splits, verdict, racePlan, type Tag } from "../domain/text";
 import { dur, FIXED_T, K5_TO_10K, K5_TO_THR } from "../domain/spec";
 import { fmtPace, toSec, addDays, daysBetween } from "../domain/util";
-import { DOW, dm, mmss, plural } from "../domain/home";
+import { DOW, dm, mmss, plural, dayState } from "../domain/home";
 
 const dow = (iso: string) => DOW[(new Date(iso + "T00:00:00").getDay() + 6) % 7];
 const ADJ = [{ d: -2, name: "Легше" }, { d: 0, name: "За планом" }, { d: 2, name: "Довше" }];
@@ -201,13 +202,13 @@ export function DayCard({ day }: { day: Day }) {
         <Button variant="link" onClick={() => go("calendar", null, true)}>Закрити</Button>
       </span>
     </header>
-    <h2 class="dc-name">{name}</h2>
-    <p class="dc-cat label"><i class="mk" data-cat={info.cat} />{CAT[info.cat]}{(day.run || typeof day.journal?.rpe === "number") && <Pill tone="line">записано</Pill>}</p>
+    <WorkoutCard size="L" type={day.type} level={day.level} name={name} st={dayState(day)} label={name}
+      aside={<span class="dc-cat label">{CAT[info.cat]}{(day.run || typeof day.journal?.rpe === "number") && <Pill tone="line">записано</Pill>}</span>} />
 
     <div class={`dc-grid${day.report ? " two" : ""}`}>
       <div class="dc-col">
         <section class="dc-sec">
-          <dl class="dc-kpis">{kpis(day.type, lvl, Z, !!athlete.value?.hrZoneTops?.length).map(k => <div key={k.lbl}><dt class="label">{k.lbl}</dt><dd class={k.txt ? "txt" : "num"}>{k.val}</dd>{k.sub && <dd class="label">{k.sub}</dd>}</div>)}</dl>
+          <KV size="l" items={kpis(day.type, lvl, Z, !!athlete.value?.hrZoneTops?.length).map(k => ({ k: k.lbl, v: k.val, sub: k.sub, txt: k.txt }))} />
           {!FIXED_T.includes(day.type) && day.date >= t && <Level day={day} />}
         </section>
         {day.type === "tt5k" && <TestResult day={day} />}

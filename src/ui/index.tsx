@@ -43,19 +43,45 @@ export function Button({ variant = "primary", children, ...rest }: BtnProps) {
   return <button type="button" class="btn" data-v={variant} {...rest}>{children}</button>;
 }
 
-/** Choose one of 2–4 options (a radio group). */
-export function Segmented<T extends string>({ label, options, value, onChange }: { label: string; options: { id: T; title: string }[]; value: T; onChange: (v: T) => void }) {
+/** Choose one option. One component for every switch of the app, in three looks:
+ *  seg = 2–4 words (calendar view, chart metric), chips = a row of named groups with counts (kinds of runs),
+ *  nums = a strip of numbers (levels 1–10); `mark` underlines options that matter (levels in the plan). */
+export interface ChoiceOpt<T> { id: T; title: string; count?: number; mark?: boolean; hint?: string }
+export function Choice<T extends string | number>({ label, options, value, onChange, look = "seg" }: { label: string; options: ChoiceOpt<T>[]; value: T; onChange: (v: T) => void; look?: "seg" | "chips" | "nums" }) {
   const name = useId();
   return (
-    <div class="seg" role="radiogroup" aria-label={label}>
+    <div class="seg" data-look={look} role="radiogroup" aria-label={label}>
       {options.map(o => (
-        <label class="seg-o" key={o.id}>
-          <input type="radio" name={name} value={o.id} checked={o.id === value} onChange={() => onChange(o.id)} />
-          <span>{o.title}</span>
+        <label class="seg-o" key={String(o.id)} title={o.hint} data-mark={o.mark ? "" : undefined}>
+          <input type="radio" name={name} value={String(o.id)} checked={o.id === value} onChange={() => onChange(o.id)} />
+          <span>{o.title}{o.count != null && <span class="seg-c num">{o.count}</span>}</span>
         </label>
       ))}
     </div>
   );
+}
+/** The 2–4 word switch: Choice with the segmented look. */
+export function Segmented<T extends string>(p: { label: string; options: { id: T; title: string }[]; value: T; onChange: (v: T) => void }) {
+  return <Choice {...p} look="seg" />;
+}
+
+/** Name–value pairs, one component for every list of numbers: l = the big numbers of a day, m = a run's summary,
+ *  s = the facts of a card, rows = name and formula left, value right (coefficients), text = a name above a sentence (rules). */
+export interface KVItem { k: string; v: ComponentChildren; u?: string; sub?: ComponentChildren; txt?: boolean }
+export function KV({ items, size = "m" }: { items: KVItem[]; size?: "l" | "m" | "s" | "rows" | "text" }) {
+  return <dl class="kv" data-size={size}>{items.map(i => <div key={i.k}>
+    <dt>{i.k}{size === "rows" && i.sub && <span class="label">{i.sub}</span>}</dt>
+    <dd class={i.txt ? "txt" : "num"}><b>{i.v}</b>{i.u && <span class="kv-u"> {i.u}</span>}{size !== "rows" && i.sub && <span class="kv-sub">{i.sub}</span>}</dd>
+  </div>)}</dl>;
+}
+
+/** A difference B − A: the signed text and a bar from the centre; better is accent, worse is grey, never red/green.
+ *  better: −1 lower is better, 1 higher is better, 0 neutral; scale: the difference that fills half the bar. */
+export function Delta({ d, text, better, scale }: { d: number | null; text: string; better: -1 | 0 | 1; scale: number }) {
+  if (d === null) return <span class="delta mute">—</span>;
+  const good = better !== 0 && d * better > 0, w = scale ? Math.min(50, (Math.abs(d) / scale) * 50) : 0;
+  return <span class="delta"><span class={good ? "gd" : undefined}>{text}</span>
+    <i class="delta-bar" aria-hidden="true">{better !== 0 && w >= 2 && <i class={good ? "up" : "dn"} style={`${d < 0 ? "right" : "left"}:50%;width:${w.toFixed(0)}%`} />}</i></span>;
 }
 
 /** A table: columns with an optional numeric flag (right-aligned, tabular). */
