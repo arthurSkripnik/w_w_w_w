@@ -12,7 +12,8 @@ const dir = process.env.V2_DATA, ref = process.env.V52_JSON, today = process.env
 const ready = !!dir && !!ref && existsSync(dir) && existsSync(ref);
 
 function col(name: string) {
-  const p = join(dir!, name), o: Record<string, any> = {};
+  const o: Record<string, any> = {}; if (!dir) return o;
+  const p = join(dir, name);
   if (existsSync(p)) for (const f of readdirSync(p)) o[f.replace(/\.json$/, "")] = JSON.parse(readFileSync(join(p, f), "utf8"));
   return o;
 }

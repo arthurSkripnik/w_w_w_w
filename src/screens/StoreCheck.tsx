@@ -1,3 +1,4 @@
+import { Button } from "../ui";
 import { days, form, aerobic, zones, threshold, goal, today, nextDay, archive } from "../store/derived";
 import { dbState } from "../store/data";
 import { sync, syncPlan, syncArchive, ARCH_FROM } from "../store/strava";
@@ -42,8 +43,8 @@ export function StoreCheck() {
       <div class="check">
         <h2 class="label check-title">Strava</h2>
         <div class="actions">
-          <button class="btn" disabled={s.busy} onClick={() => syncPlan(false)}>Синхронізувати план</button>
-          <button class="btn ghost" disabled={s.busy} onClick={() => syncArchive()}>{arch ? "Оновити архів" : "Завантажити архів"}</button>
+          <Button disabled={s.busy} onClick={() => syncPlan(false)}>Синхронізувати план</Button>
+          <Button variant="ghost" disabled={s.busy} onClick={() => syncArchive()}>{arch ? "Оновити архів" : "Завантажити архів"}</Button>
         </div>
         {s.text && <p class={`sync-msg${s.ok === false ? " err" : ""}`} role="status">{s.text}</p>}
       </div>

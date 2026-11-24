@@ -8,6 +8,8 @@ import { runs, dbState } from "../store/data";
 import { FATIGUE } from "../domain/load";
 import { fmtPace, mondayOf, addDays } from "../domain/util";
 import { ZONE_NAME } from "../data/schema";
+import { StoreCheck } from "./StoreCheck";
+import { DataCheck } from "./DataCheck";
 import type { Day } from "../domain/days";
 
 // Step 4 sample page: every basic element and chart on real data, for checking the look before screens are built.
@@ -145,6 +147,8 @@ export function Kit() {
           </div>
         </Card>
       </Grid>
+      <StoreCheck />
+      <DataCheck />
     </>
   );
 }

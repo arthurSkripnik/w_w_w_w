@@ -30,6 +30,7 @@
   .btn:hover:not(:disabled)[data-v="ghost"] { background: var(--chip); }
   .btn:disabled { opacity: .4; cursor: default; }
   .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  a.btn { color: var(--ink); display: inline-block; }
 
   .seg { display: inline-flex; box-shadow: inset 0 0 0 1px var(--line); font-family: var(--grot); font-size: 14px; }
   .seg-o { position: relative; cursor: pointer; }

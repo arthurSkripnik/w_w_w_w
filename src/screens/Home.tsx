@@ -1,67 +1,68 @@
-import { useEffect, useState } from "preact/hooks";
-import { getDb, getMcp, inArtifact, STRAVA } from "../platform/claude";
-import { DataCheck } from "./DataCheck";
-import { StoreCheck } from "./StoreCheck";
+// Головна: the headline sentence, the widget grid and the Strava sync. Each widget is a file in src/widgets/.
+import { Component, type ComponentChildren } from "preact";
+import { Empty, Button } from "../ui";
+import { computed } from "@preact/signals";
+import { dbState, layout } from "../store/data";
+import { goal } from "../store/derived";
+import { fc, toRace } from "../store/home";
+import { sync, syncPlan, syncArchive } from "../store/strava";
+import { archive } from "../store/derived";
+import { mmss, plural, dm } from "../domain/home";
+import { WIDGETS, type Widget } from "../widgets";
 
-type State = { s: "wait" | "ok" | "err"; text: string };
-const WAIT: State = { s: "wait", text: "Перевіряю…" };
+/** Widgets in the saved order (layout/home); ones not in it keep their default place after the saved ones. */
+const homeWidgets = computed(() => {
+  const saved = layout.value?.widgets ?? [], at = new Map(saved.map((w, i) => [w.id, { i, hidden: !!w.hidden }]));
+  return WIDGETS.map((w, k) => ({ w, i: at.get(w.id)?.i ?? 100 + k, hidden: at.get(w.id)?.hidden ?? false })).sort((a, b) => a.i - b.i);
+});
 
-function Row({ label, st }: { label: string; st: State }) {
-  const tag = st.s === "ok" ? "OK" : st.s === "err" ? "НІ" : "…";
+/** One widget that throws is hidden; the rest of the screen still renders. */
+class Guard extends Component<{ id: string; children: ComponentChildren }, { err: boolean }> {
+  state = { err: false };
+  componentDidCatch(e: unknown) { console.error(`widget ${this.props.id}`, e); this.setState({ err: true }); }
+  render() { return this.state.err ? <Empty>Віджет не вдалося показати</Empty> : this.props.children; }
+}
+
+function Slot({ w, n }: { w: Widget; n: number }) {
   return (
-    <div class="check-row">
-      <span class="label">{label}</span>
-      <span class="val">{st.text}</span>
-      <span class="dot" data-s={st.s}>{tag}</span>
-    </div>
+    <section class="card wg" data-span={w.span} data-rows={w.rows} aria-labelledby={`w-${w.id}`}>
+      <header class="card-head">
+        <span class="card-n num">{String(n).padStart(2, "0")}</span>
+        <h2 class="card-title" id={`w-${w.id}`}>{w.title}</h2>
+        {w.link && <a class="card-aside wg-link" href={w.link.href}>{w.link.label}</a>}
+      </header>
+      <Guard id={w.id}><w.C /></Guard>
+    </section>
   );
 }
 
+function Headline() {
+  const n = toRace.value, g = goal.value, f = fc.value;
+  if (n == null || !g) return <h1 class="hub-head">План без цілі.</h1>;
+  return <h1 class="hub-head">
+    {n >= 0 ? `${n} ${plural(n, "день", "дні", "днів")} до старту.` : "Старт позаду."}{" "}
+    <i>{g.name}, {dm(g.date)}.{f ? ` Прогноз ${mmss(f.t10)}, ціль ${mmss(g.targetSec)}.` : ""}</i>
+  </h1>;
+}
+
+function Sync() {
+  const s = sync.value, arch = archive.value;
+  return <section class="hub-sync">
+    <div class="btn-row">
+      <Button disabled={s.busy} onClick={() => syncPlan(false)}>Синхронізувати план</Button>
+      <Button variant="ghost" disabled={s.busy} onClick={() => syncArchive()}>{arch ? "Оновити архів" : "Завантажити архів"}</Button>
+    </div>
+    {s.text && <p class={`status${s.ok === false ? " err" : ""}`} role="status">{s.text}</p>}
+  </section>;
+}
+
 export function Home() {
-  const [db, setDb] = useState<State>(WAIT);
-  const [strava, setStrava] = useState<State>(WAIT);
-
-  useEffect(() => {
-    if (!inArtifact) {
-      const off = { s: "err" as const, text: "Сторінка відкрита не як артефакт" };
-      setDb(off); setStrava(off); return;
-    }
-    (async () => {
-      const d = await getDb();
-      if (!d) { setDb({ s: "err", text: "База недоступна" }); return; }
-      try {
-        const snap = await d.doc("meta/v2").get();
-        setDb({ s: "ok", text: snap.exists ? "Підключена, службовий запис є" : "Підключена, поки порожня" });
-      } catch (e: any) { setDb({ s: "err", text: `Помилка: ${e?.code ?? "невідома"}` }); }
-    })();
-    (async () => {
-      const m = await getMcp();
-      if (!m) { setStrava({ s: "err", text: "Конектор недоступний" }); return; }
-      try {
-        const r = await m.callTool(STRAVA, "list_activities", { first: 10 });
-        const list: any[] = (r?.payload as any)?.activities ?? [];
-        const run = list.find(a => /run/i.test(a.sport_type ?? ""));
-        if (!run) { setStrava({ s: "ok", text: "Підключено, пробіжок серед останніх 10 немає" }); return; }
-        const km = ((run.summary?.distance ?? 0) / 1000).toFixed(1);
-        const day = String(run.start_local ?? "").slice(0, 10);
-        setStrava({ s: "ok", text: `Остання пробіжка: ${run.name ?? "без назви"}, ${km} км${day ? `, ${day}` : ""}` });
-      } catch (e: any) { setStrava({ s: "err", text: `Помилка: ${e?.code ?? "невідома"}` }); }
-    })();
-  }, []);
-
-  return (
-    <>
-      <section class="screen-head">
-        <span class="label">Крок 3 · store</span>
-        <h1>Головна</h1>
-        <p>Тут буде сітка віджетів (крок 5). Поки що екран показує, що store рахує з даних: ті самі числа, що й у живій версії.</p>
-      </section>
-      <div class="check">
-        <Row label="База артефакта" st={db} />
-        <Row label="Strava" st={strava} />
-      </div>
-      <StoreCheck />
-      <DataCheck />
-    </>
-  );
+  if (dbState.value === "loading") return <Empty>Читаю базу…</Empty>;
+  if (dbState.value === "offline" || dbState.value === "error") return <Empty>База недоступна. Відкрий сторінку як артефакт у Claude.</Empty>;
+  const ws = homeWidgets.value.filter(x => !x.hidden);
+  return <>
+    <Headline />
+    <div class="grid hub">{ws.map((x, i) => <Slot key={x.w.id} w={x.w} n={i + 1} />)}</div>
+    <Sync />
+  </>;
 }

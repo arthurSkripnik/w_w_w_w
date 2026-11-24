@@ -55,3 +55,11 @@ V2_DATA=<out dir migrate.ts> V52_JSON=v52.json V52_TODAY=2026-11-24 npm test
 - `src/ui/chart.ts`: `chart(spec, width)` на Observable Plot, види: line (лінія в часі з точками, смугами зон, лінією «сьогодні», планом пунктиром), bars (тижні), spark, hbars (зони пульсу). Кольори лише з токенів, тож темна тема працює сама.
 - Звичайний регістр у підписах; вердикти в пігулках замість КАПСУ й [OK].
 - Сторінка-зразок: `#kit` (не в меню).
+
+## Step 5: Головна
+
+- `src/screens/Home.tsx`: headline sentence (days to the race, forecast against the goal), the widget grid, Strava sync.
+- `src/widgets/`: one file per widget (`today`, `forecast`, `form`, `aerobic`, `weekkm`, `injuries`, `vo2max`, `sleep`, `week`), listed in `index.ts`. A widget is `{id, title, span 3|6|12, rows?, link?, C}`; the host draws the card frame and hides a widget that throws.
+- `src/domain/home.ts`: the numbers ported from v52 (forecast, VDOT, sleep week, readiness, plan-week km, injuries now and 30-day strip); `src/store/home.ts` wraps them as signals.
+- Order and visibility come from `layout/home` in the database; widgets missing there keep their default place.
+- The step 3–4 check panels moved to the hidden `#kit` page.
