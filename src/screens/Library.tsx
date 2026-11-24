@@ -8,36 +8,56 @@ import { go } from "../app/routes";
 import { typeRows, inPlanTxt, weekRows, changed, coefs, gymRows, GYM_NOTES, RULES, THEORY, boldParts, dec, type TypeRow } from "../domain/library";
 import { groupOf } from "../domain/compare";
 import { dur } from "../domain/spec";
-import { racePlan, fmtHM } from "../domain/text";
+import { racePlan, fmtHM, shapeOf } from "../domain/text";
 import { typeOf, PH_NAME, CAT, RPE_TARGET } from "../domain/types";
 import { dm, DOW, mmss, plural } from "../domain/home";
 import { fmtPace } from "../domain/util";
 
 const Rich = ({ s }: { s: string }) => <>{boldParts(s).map((p, i) => (p.b ? <b key={i}>{p.x}</b> : p.x))}</>;
 
+const GROUPS: { cat: string; name: string; sub: string }[] = [
+  { cat: "z1", name: "Легкі", sub: "Основа обсягу: більшість хвилин тижня" },
+  { cat: "z2", name: "Помірні", sub: "Поріг і зміна темпу на втомлених ногах" },
+  { cat: "z3", name: "Важкі", sub: "Ключові дні: VO2max, поріг, контрольні" },
+  { cat: "race", name: "Старти", sub: "Гонка і старти на результат" },
+];
+function TypeCard({ r, cmpK }: { r: TypeRow; cmpK: string | null }) {
+  const s = r.steps, lv = r.fixed ? 0 : r.lvl, sh = shapeOf(r.t, lv);
+  return <article class="lib-card" aria-label={r.name}>
+    <header class="lib-card-h"><span class="label"><i class="mk" data-cat={r.cat} />{r.abbr}</span>{r.next && <span class="label num">наступне {dm(r.next)}</span>}</header>
+    <h3 class="lib-card-n">{r.name}</h3>
+    <span class="shape lib-shape" aria-hidden="true">{sh.map(([m, k], i) => <i key={i} data-k={k} style={{ flexGrow: m }} />)}</span>
+    <dl class="lib-card-kv">
+      <div><dt class="label">Темп</dt><dd>{r.pace ? <><b>{r.pace.zone}</b><span class="num">{r.pace.pace}</span></> : <b>За зусиллям</b>}</dd></div>
+      <div><dt class="label">Тривалість</dt><dd class="num"><b>{r.mins}</b></dd></div>
+      <div><dt class="label">У плані</dt><dd class="num"><b>{inPlanTxt(r)}</b></dd></div>
+      <div><dt class="label">Навантаження</dt><dd class="num"><b>×{dec(r.load)}</b><span>RPE {r.rpe[0]}–{r.rpe[1]}</span></dd></div>
+    </dl>
+    <Details summary={`Як бігти${r.fixed ? "" : ` · Р${r.lvl}`}`}>
+      {s.warmup && <p><span class="label">Розминка</span> {s.warmup}</p>}
+      <p>{s.main}</p>
+      {s.cooldown && <p><span class="label">Заминка</span> {s.cooldown}</p>}
+      <p class="label">{s.note}{r.eq ? ` У прогноз: ${r.eq}.` : ""}</p>
+    </Details>
+    {cmpK && <button type="button" class="lib-cmp" onClick={() => { pickGroup(cmpK); go("compare"); }}>Порівняти: {r.done} {plural(r.done, "пробіжка", "пробіжки", "пробіжок")}</button>}
+  </article>;
+}
 function Types() {
   const Z = zones.value!, rows = typeRows(days.value, Z, today.value), G = cmpGroups.value;
-  const cmp = (r: TypeRow) => { const g = groupOf(r.t); return g && G.some(x => x.k === g.k) ? g.k : null; };
-  return <Card n="01" title="Типи тренувань" span={12} aside={<span class="label">Текст на рівні, який план бере найчастіше</span>}>
-    <div class="lib-types" role="table" aria-label="Типи тренувань">
-      <div class="lib-tr lib-th" role="row"><span role="columnheader">Тренування</span><span role="columnheader">Темп</span><span role="columnheader">Як бігти</span><span role="columnheader">Навантаження</span><span role="columnheader">У плані</span></div>
-      {rows.map(r => { const k = cmp(r), s = r.steps; return <div class="lib-tr" role="row" key={r.t}>
-        <span role="cell" class="lib-nm"><b>{r.name}</b><span class="label"><i class="mk" data-cat={r.cat} />{r.abbr} · {CAT[r.cat as keyof typeof CAT]}</span>
-          {k && <button type="button" class="lib-cmp" onClick={() => { pickGroup(k); go("compare"); }}>Порівняти: {r.done} {plural(r.done, "пробіжка", "пробіжки", "пробіжок")}</button>}</span>
-        <span role="cell"><span class="lib-lab label">Темп</span>{r.pace ? <><b>{r.pace.zone}</b><span class="label num">{r.pace.pace}</span></> : <b>За зусиллям</b>}</span>
-        <span role="cell"><span class="lib-lab label">Як бігти{r.fixed ? "" : ` (Р${r.lvl})`}</span>{[s.warmup && `Розминка: ${s.warmup}`, s.main, s.cooldown && `Заминка: ${s.cooldown}`].filter(Boolean).join(" ")}<span class="label">{s.note}</span></span>
-        <span role="cell"><span class="lib-lab label">Навантаження</span><span><b class="num">×{dec(r.load)}</b> за хвилину</span><span class="label">RPE {r.rpe[0]}–{r.rpe[1]}{r.eq ? ` · у прогноз: ${r.eq}` : ""}</span></span>
-        <span role="cell"><span class="lib-lab label">У плані</span>{inPlanTxt(r)}<span class="label num">{r.mins}{r.next ? ` · наступне ${dm(r.next)}` : ""}</span></span>
-      </div>; })}
-    </div>
-  </Card>;
+  const cmp = (r: TypeRow) => { const g = groupOf(r.t); return r.done && g && G.some(x => x.k === g.k) ? g.k : null; };
+  return <>{GROUPS.map((g, gi) => { const rs = rows.filter(r => r.cat === g.cat); if (!rs.length) return null;
+    const n = rs.reduce((a, r) => a + r.n, 0);
+    return <Card key={g.cat} n={String(gi + 1).padStart(2, "0")} title={g.name} span={12} aside={<span class="label num">{rs.length} {plural(rs.length, "тип", "типи", "типів")} · {n} у плані · RPE {RPE_TARGET[g.cat as keyof typeof RPE_TARGET].join("–")}</span>}>
+      <p class="lib-sub">{g.sub}</p>
+      <div class="lib-cards">{rs.map(r => <TypeCard key={r.t} r={r} cmpK={cmp(r)} />)}</div>
+    </Card>; })}</>;
 }
 
 function Weeks() {
   const Z = zones.value!, W = weekRows(days.value, Z, today.value), t = today.value;
   const total = W.reduce((a, w) => a + w.min, 0);
   let ph = "", pi = 0;
-  return <Card n="02" title="Рівні по тижнях" span={12} aside={<span class="label num">{W.length} тижнів · разом {fmtHM(total)} год</span>}>
+  return <Card n="05" title="Рівні по тижнях" span={12} aside={<span class="label num">{W.length} тижнів · разом {fmtHM(total)} год</span>}>
     <div class="tbl-wrap"><table class="tbl lib-w">
       <thead><tr><th scope="col">Тиждень</th>{DOW.map(d => <th key={d} scope="col">{d}</th>)}<th scope="col" class="n">Разом</th></tr></thead>
       <tbody>{W.flatMap(w => {
@@ -62,13 +82,13 @@ function Coefs() {
   const Z = zones.value!, g = goal.value, a = athlete.value;
   if (!g) return null;
   const C = coefs(Z, g.targetSec / g.km, a?.refRace ?? null, !!a?.hrZoneTops?.length);
-  return <Card n="03" title="Коефіцієнти" span={6} aside={<span class="label num">поріг {fmtPace(Z.thrPace)} · пульс {Z.thrHR}</span>}>
+  return <Card n="06" title="Коефіцієнти" span={6} aside={<span class="label num">поріг {fmtPace(Z.thrPace)} · пульс {Z.thrHR}</span>}>
     <dl class="lib-kv">{C.map(c => <div key={c.k}><dt>{c.k}<span class="label">{c.f}</span></dt><dd class="num"><b>{c.v}</b>{c.sm && <span class="label">{c.sm}</span>}</dd></div>)}</dl>
   </Card>;
 }
 
 function Rules() {
-  return <Card n="04" title="Правила плану" span={6}>
+  return <Card n="07" title="Правила плану" span={6}>
     <dl class="lib-rules">
       {RULES.map(([k, v]) => <div key={k}><dt class="label">{k}</dt><dd>{v}</dd></div>)}
       <div><dt class="label">Очікуване RPE</dt><dd class="lib-rpe">{(Object.keys(RPE_TARGET) as (keyof typeof RPE_TARGET)[]).map(k => <span key={k}><i class="mk" data-cat={k} />{({ z1: "Легко", z2: "Помірно", z3: "Важко", race: "Гонка, старт" })[k]}: {RPE_TARGET[k][0]}–{RPE_TARGET[k][1]}</span>)}</dd></div>
@@ -81,7 +101,7 @@ function Gym() {
   const G = gymRows(days.value, today.value);
   if (!G.length) return null;
   const n = G.reduce((a, g) => a + g.dates.length, 0);
-  return <Card n="05" title="Сила" span={12} aside={<span class="label num">{n} {plural(n, "сесія", "сесії", "сесій")} у плані</span>}>
+  return <Card n="08" title="Сила" span={12} aside={<span class="label num">{n} {plural(n, "сесія", "сесії", "сесій")} у плані</span>}>
     <div class="lib-gym">
       {G.map(g => <section key={g.id}>
         <h3 class="card-title">{g.name}</h3>
@@ -96,7 +116,7 @@ function Gym() {
 
 function Theory() {
   const Z = zones.value!, p = Z.race, at = (km: number) => mmss(p * km);
-  return <Card n="06" title="Теорія" span={12}>
+  return <Card n="09" title="Теорія" span={12}>
     {THEORY.map(([t, h], i) => <Details key={t} summary={`${String(i + 1).padStart(2, "0")} ${t}`}>
       {h ? <p><Rich s={h} /></p> : <>
         <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Відрізок</th><th>Темп, /км</th><th>Що робити</th></tr></thead>

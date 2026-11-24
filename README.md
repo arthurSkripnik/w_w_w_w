@@ -102,7 +102,7 @@ Parity: `V52_LAB=<dump with lab>` adds the forecast checks (`tools/v52-dump.cjs`
 ## Step 8: База тренувань
 
 - `#library` (`src/screens/Library.tsx`, arithmetic in `src/domain/library.ts`), ported from v52 12-library.js, 13-strength.js, 14-theory.js:
-  01 types of sessions (pace zone, how to run at the plan's median level, load per minute, RPE, forecast equivalent, times and levels in the plan, next one; «Порівняти» opens Порівняння of that kind),
+  01–04 types of sessions as cards grouped by effort (легкі, помірні, важкі, старти): shape strip, pace zone, how to run at the plan's median level, load per minute, RPE, forecast equivalent, times and levels in the plan, next one; «Порівняти» opens Порівняння of that kind),
   02 the plan by weeks with phases (type, level, minutes, `*` changed day; a day opens in Календар),
   03 coefficients with today's numbers, 04 rules of the plan, 05 strength sessions with weights on the next session, 06 theory and the race plan.
 - Not ported: the zones table (it lives in Профіль; a link points there).
