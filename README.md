@@ -63,3 +63,10 @@ V2_DATA=<out dir migrate.ts> V52_JSON=v52.json V52_TODAY=2026-11-24 npm test
 - `src/domain/home.ts`: the numbers ported from v52 (forecast, VDOT, sleep week, readiness, plan-week km, injuries now and 30-day strip); `src/store/home.ts` wraps them as signals.
 - Order and visibility come from `layout/home` in the database; widgets missing there keep their default place.
 - The step 3–4 check panels moved to the hidden `#kit` page.
+
+## Step 6a: Календар і картка дня
+
+- `src/screens/Calendar.tsx`: weeks by plan phase (grid) or day by day (list); `#calendar/<date>` opens the day card under its week (full screen on phones).
+- `src/calendar/DayCell.tsx`: one day, shared with the Головна week; `DayCard.tsx`: numbers, «Легше / За планом / Довше», how to run, km splits, strength, race plan, 5 km test → threshold, move/swap/start/undo, «Фактично було», the fact (Strava, pace, HR, RPE); `Report.tsx`: the Strava report.
+- `src/domain/types.ts` (session types), `src/domain/text.ts` (v52 texts, KPIs, splits, verdicts, findings, shape).
+- New actions: `moveToRest`, `markStart`, `revertDay`, `setActual`, `setExclude`, `plannedLevel`; `pullDay` in `store/strava.ts`.

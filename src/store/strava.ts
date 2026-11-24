@@ -149,6 +149,17 @@ export async function syncPlan(redo = false) {
   }
 }
 
+/** One day, from its card: «Підтягнути зі Strava» (also after «Фактично було» changes the type, for a fresh analysis). */
+export async function pullDay(date: string) {
+  if (sync.value.busy) return;
+  if (!database()) { say("Strava працює лише на сторінці в claude.ai", false, false); return; }
+  try {
+    say("Шукаю пробіжку в Strava…");
+    const found = await importDay(date, await listRuns(date, date));
+    say(found ? "Пробіжку підтягнуто" : "Пробіжки за цей день у Strava немає", false, found);
+  } catch (e: any) { say(STRAVA_ERR[e?.code] ?? "Не вдалося отримати дані зі Strava", false, false); }
+}
+
 /** Runs from 18.12.2024 to the day before the plan, as summary documents (no laps, no stream). */
 export async function syncArchive() {
   if (sync.value.busy) return;

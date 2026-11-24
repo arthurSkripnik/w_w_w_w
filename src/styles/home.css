@@ -33,25 +33,8 @@
   .inj-areas li { display: flex; align-items: center; gap: 6px; }
   .inj-areas i { width: 10px; height: 10px; display: inline-block; }
 
-  /* Цей тиждень */
-  .wk { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-  .wk-d { display: grid; gap: 6px; align-content: start; padding: 10px 10px 12px; border-left: 1px solid var(--hair); min-height: 104px; }
-  .wk-d:first-child { border-left: 0; padding-left: 0; }
-  .wk-d[data-today] .wk-h { color: var(--acc-text); font-weight: 500; }
-  .wk-d[data-today] { box-shadow: inset 0 2px 0 var(--acc); }
-  .wk-n { font-family: var(--grot); font-size: 14px; line-height: 1.25; }
-  .wk-d[data-st="rest"] .wk-n, .wk-d[data-st="miss"] { color: var(--mute); }
-  .wk-v { font-size: 13px; color: var(--mute); }
-  .wk-d[data-st="done"] .wk-v { color: var(--ink); }
-  .wk-acc { color: var(--ink); font-weight: 500; }
-  .wk-gym { color: var(--acc-text); font-weight: 500; }
-
   @media (max-width: 760px) {
     .wg[data-rows="2"] { grid-row: auto; }
     .today-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .wk { grid-template-columns: 1fr; }
-    .wk-d { grid-template-columns: 76px 1fr auto; border-left: 0; border-top: 1px solid var(--hair); padding: 10px 0; min-height: 0; align-items: baseline; }
-    .wk-d:first-child { border-top: 0; }
-    .wk-d[data-today] { box-shadow: inset 2px 0 0 var(--acc); padding-left: 8px; }
   }
 }

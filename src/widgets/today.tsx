@@ -65,7 +65,7 @@ function Today() {
     <SleepInput />
     {r.h == null ? <p class="status">{r.text}</p>
       : <StatusLine tone={r.low ? "err" : "ink"} tag={r.tag}>{r.head} {r.text}</StatusLine>}
-    <a class="btn" data-v="link" href="#calendar">Відкрити в календарі</a>
+    <a class="btn" data-v="link" href={`#calendar/${todayDay.value?.date ?? days.value.find(x => x.date > today.value)?.date ?? ""}`}>{todayDay.value?.run ? "Відкрити звіт" : "Відкрити день"}</a>
   </div>;
 }
 export const todayW: Widget = { id: "today", title: "Сьогодні", span: 6, rows: 2, C: Today };
