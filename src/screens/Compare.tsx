@@ -45,16 +45,18 @@ function Picker() {
   </Card>;
 }
 
+/** Level next to a point: «Р4» for workouts with levels, the short name for a fixed session (piramid), none for easy and long. */
+const lvlMark = (k: string, r: CmpRun) => (k === "easy" || k === "long" ? undefined : r.lvl !== null ? lvlTxt(r) : typeOf(r.t).abbr);
 export function Trend({ height = 220 }: { height?: number }) {
   const p = cmpPair.value; if (!p) return null;
   const { g, A, B } = p, pts = g.runs.filter(r => trendVal(g.k, r));
   if (!pts.length) return <p class="status">У цього типу ще немає темпу для графіка.</p>;
-  const tip = (r: CmpRun) => `${dm(r.d)} · ${typeOf(r.t).name}: ${fmtPace(trendVal(g.k, r)!)} /км${r.key.hr ? `, пульс ${Math.round(r.key.hr)}` : ""}, ${r.km.toFixed(1)} км`;
+  const tip = (r: CmpRun) => `${dm(r.d)} · ${typeOf(r.t).name}${lvlMark(g.k, r) ? " " + lvlMark(g.k, r) : ""}: ${fmtPace(trendVal(g.k, r)!)} /км${r.key.hr ? `, пульс ${Math.round(r.key.hr)}` : ""}, ${r.km.toFixed(1)} км`;
   const av = A && !A.d ? val(A, r => trendVal(g.k, r)) : null;
   return <Chart label={`${trendLabel(g.k)}: ${g.name.toLowerCase()} за датами`}
     legend={[{ k: "ink", text: trendLabel(g.k) }, { k: "acc", text: `Обрана ${dm(B.d)}` }, ...(A ? [{ k: "cmp" as const, text: A.d ? `Порівнюємо з ${dm(A.d)}` : `Середнє ${AVG_DAYS / 7} тижнів` }] : [])]}
     spec={{ kind: "line", height, end: false, data: pts.map(r => ({ x: D(r.d), y: trendVal(g.k, r)!, tip: tip(r) })), y: { fmt: fmtPace, reverse: true },
-      dots: pts.map(r => ({ x: D(r.d), y: trendVal(g.k, r)!, key: r.d === B.d, soft: !!A?.d && r.d === A.d, tip: tip(r) })),
+      dots: pts.map(r => ({ x: D(r.d), y: trendVal(g.k, r)!, key: r.d === B.d, soft: !!A?.d && r.d === A.d, tip: tip(r), label: lvlMark(g.k, r) })),
       lines: av !== null ? [{ data: [{ x: D(A!.runs[0].d), y: av, tip: `Середнє за ${A!.runs.length} пробіжки: ${fmtPace(av)} /км` }, { x: D(B.d), y: av, tip: `Середнє ${fmtPace(av)} /км` }], dash: true, tone: "mute" as const }] : undefined }} />;
 }
 
