@@ -12,3 +12,15 @@
   .num, .label { font-family: var(--grot); font-variant-numeric: tabular-nums; }
   .label { font-size: 13px; color: var(--mute); }
 }
+
+/* Outside any layer on purpose: the claude.ai host wraps the page in an
+   unlayered reset (:root{color-scheme:light} body{background:#fff;color:#000}),
+   and unlayered CSS beats every @layer. These rules come later in the
+   document, so they win back the page background, text colour and font. */
+html, body { background: var(--bg); color: var(--ink); }
+body { font: 400 17px/1.45 var(--serif); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-ui="light"]) { color-scheme: dark; }
+}
+:root[data-theme="dark"]:not([data-ui="light"]), :root[data-ui="dark"] { color-scheme: dark; }
+:root[data-ui="light"] { color-scheme: light; }
