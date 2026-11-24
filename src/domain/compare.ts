@@ -7,6 +7,8 @@ import { EASY_REF_HR } from "./aerobic";
 import { heatPct, HOT_PCT } from "./weather";
 import { lapPace, type Lap, type Part } from "./report";
 import { daysBetween, fmtPace } from "./util";
+import { spec, FIXED_T } from "./spec";
+import { typeOf } from "./types";
 import { mmss, plural, dm } from "./home";
 
 export interface Group { k: string; name: string; t: string[] }
@@ -22,7 +24,10 @@ const steadyG = (k: string) => k === "easy" || k === "long";
 
 /** One run as the screen sees it; key = the part that defines the session (easy part, work, or the finish). */
 export interface CmpRun {
-  d: string; t: string; km: number; sec: number; temp: number | null; rh: number | null;
+  d: string; t: string; km: number;
+  lvl: number | null;                 // plan level (null for sessions with one fixed structure)
+  planN: number | null;               // planned reps at that level
+  sec: number; temp: number | null; rh: number | null;
   key: { pace: number | null; hr: number | null };
   eff: number | null;                 // easy pace at HR 145 and 15° (aerobic base), easy and long only
   acc: number | null; drift: number | null;
@@ -34,7 +39,8 @@ export function cmpRun(x: Day, eff: Record<string, EasyPt>): CmpRun | null {
   const key = w ? { pace: (prog ? w.to : w.pace) ?? null, hr: (prog ? w.endHr || w.hr : w.hr) ?? null } : { pace: e.pace ?? null, hr: e.hr ?? null };
   const reps = r.reps?.length ? r.reps : null, rp = (reps ?? []).filter(p => p.pace).map(p => p.pace!);
   const wx = x.run.weather as { rh?: number | null } | null | undefined;
-  return { d: x.date, t: x.act, km: r.km, sec: r.t, temp: r.temp ?? null, rh: wx?.rh ?? null, key, eff: eff[x.date]?.norm ?? null,
+  const lvl = FIXED_T.includes(x.act) ? null : Math.max(1, x.level), planN = spec(x.act, Math.max(1, x.level))?.reps?.n ?? null;
+  return { d: x.date, t: x.act, lvl, planN, km: r.km, sec: r.t, temp: r.temp ?? null, rh: wx?.rh ?? null, key, eff: eff[x.date]?.norm ?? null,
     acc: x.acc?.score ?? null, drift: r.drift?.pct ?? null, work: w && w.pace ? w : null, warm: r.warm ?? null,
     reps, spread: rp.length > 1 ? Math.max(...rp) - Math.min(...rp) : null, laps: r.laps };
 }
@@ -132,10 +138,21 @@ export function verdict(k: string, A: Side, B: CmpRun): { head: string; dp: numb
     : fast && !hrUp ? "Швидше без зайвого пульсу: це прогрес." : fast ? "Швидше, але дорожчою ціною: пульс вищий."
     : slow && hrDn ? "Повільніше, але легше: схоже на спокійніший день." : slow ? "І темп, і пульс гірші: подивись на втому тижня й погоду."
     : hrDn ? "Той самий темп при нижчому пульсі: це прогрес." : hrUp ? "Той самий темп коштував вищого пульсу." : "Майже однакові пробіжки.";
+  const lv = steadyG(k) ? null : levelNote(A, B); if (lv) t += ` ${lv}`;
   const H = [...(A.d ? A.runs : []), B].filter(hot);
   if (H.length) t += ` Спека (${H.map(r => `${dm(r.d)} ${Math.round(r.temp!)}°`).join(", ")}) підвищує пульс на 5–10 уд/хв.`;
   return { head: `${what} ${pt}${ht}.`, dp, dh, text: t, what };
 }
+/** When the sides were planned at different levels: which, and the planned reps if those differ too. */
+export function levelNote(A: Side, B: CmpRun): string | null {
+  if (A.d && A.runs[0].t !== B.t) return `Різні сесії: ${typeOf(A.runs[0].t).name.toLowerCase()} і ${typeOf(B.t).name.toLowerCase()}.`;
+  if (B.lvl === null) return null;
+  const other = A.runs.filter(r => r.lvl !== null && r.lvl !== B.lvl); if (!other.length) return null;
+  if (!A.d) return `У середньому є інші рівні (${[...new Set(other.map(r => "Р" + r.lvl))].join(", ")}), обрана: Р${B.lvl}.`;
+  const a = A.runs[0], reps = a.planN && B.planN && a.planN !== B.planN ? `: ${a.planN} і ${B.planN} повторів` : "";
+  return `Різні рівні: Р${a.lvl} і Р${B.lvl}${reps}.`;
+}
+export const lvlTxt = (r: CmpRun) => (r.lvl === null ? "" : `Р${r.lvl}`);
 export const gapTxt = (a: string, b: string) => { const n = daysBetween(a, b); return `${n} ${plural(n, "день", "дні", "днів")} між ними`; };
 
 /** Trend value of a run: easy pace at HR 145 for easy and long, else the key pace. */

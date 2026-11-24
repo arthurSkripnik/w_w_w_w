@@ -7,7 +7,7 @@ import { Chart } from "../ui/Chart";
 import { dbState } from "../store/data";
 import { routeArg, go } from "../app/routes";
 import { cmpGroups, cmpPair, cmpMode, cmpM, pickGroup, pickMode, toggleRun, openFor } from "../store/compare";
-import { rows, val, fmtV, fmtDiff, delta, verdict, gapTxt, steps, repsOf, trendVal, trendLabel, AVG_DAYS, type Side, type CmpRun, type Row } from "../domain/compare";
+import { rows, val, fmtV, fmtDiff, delta, verdict, gapTxt, lvlTxt, steps, repsOf, trendVal, trendLabel, AVG_DAYS, type Side, type CmpRun, type Row } from "../domain/compare";
 import { typeOf } from "../domain/types";
 import { dm, DOW } from "../domain/home";
 import { fmtPace, daysBetween } from "../domain/util";
@@ -35,7 +35,7 @@ function Picker() {
     <div class="cmp-rows" role="group" aria-label="Пробіжки цього типу">
       {[...g.runs].reverse().map(r => <button type="button" key={r.d} class="cmp-row" data-role={role(r) || undefined} aria-pressed={role(r) === "a" || role(r) === "b"} onClick={() => toggleRun(r.d)}>
         <i class="sw" aria-hidden="true" />
-        <span class="cd"><b class="num">{dm(r.d)}</b><span class="label">{dow(r.d)}{multi ? ` · ${typeOf(r.t).abbr}` : ""}</span></span>
+        <span class="cd"><b class="num">{dm(r.d)}</b><span class="label">{dow(r.d)}{multi || (r.lvl !== null && g.k !== "easy" && g.k !== "long") ? " · " : ""}{multi ? typeOf(r.t).abbr : ""}{r.lvl !== null && g.k !== "easy" && g.k !== "long" ? `${multi ? " " : ""}${lvlTxt(r)}` : ""}</span></span>
         <span class="cv num">{r.km.toFixed(1)}<small>км</small></span>
         <span class="cv num">{r.key.pace ? fmtPace(r.key.pace) : "—"}<small>/км</small></span>
         <span class="cv num">{r.key.hr ? Math.round(r.key.hr) : "—"}<small>уд</small></span>
