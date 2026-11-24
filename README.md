@@ -107,3 +107,10 @@ Parity: `V52_LAB=<dump with lab>` adds the forecast checks (`tools/v52-dump.cjs`
   03 coefficients with today's numbers, 04 rules of the plan, 05 strength sessions with weights on the next session, 06 theory and the race plan.
 - Not ported: the zones table (it lives in Профіль; a link points there).
 - Tests: `tests/library.test.ts`.
+
+## Step 8a: one workout card
+
+- `src/calendar/WorkoutCard.tsx`: the session card in three sizes with one anatomy (effort mark + short name + level, name, shape strip at the level, numbers):
+  S = calendar grid cell and the Головна week, M = calendar list row, L = the template card of База тренувань.
+- `DayCell` now renders a `WorkoutCard`; planned days show the level («≈62 хв · Р5»).
+- База тренувань: L cards with a level switch Р1–Р10 (levels in the plan underlined): shape, minutes and «Як бігти» rebuild for the chosen level.

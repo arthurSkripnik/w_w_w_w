@@ -26,6 +26,12 @@
   .cell[data-st="miss"] .cell-b { color: var(--err); }
   .cell .acc-n { color: var(--ink); font-weight: 500; }
   .cell .gym { color: var(--acc-text); font-weight: 500; }
+  /* L: the template card (База тренувань) */
+  .cell[data-size="L"] { gap: 12px; padding: 16px; min-height: 0; }
+  .cell[data-size="L"] .cell-top { align-items: center; }
+  .cell[data-size="L"] .shape { height: 8px; }
+  .wc-tag { display: inline-flex; gap: 4px; }
+  .wc-name { margin: 0; font: 400 24px/1.15 var(--serif); }
 
   /* the Головна week */
   .wk { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
@@ -42,7 +48,7 @@
   .cal-card { margin: 12px 0 28px; }
   .cal-list { display: grid; gap: 4px; }
   .cal-lh { display: flex; gap: 16px; align-items: baseline; margin: 20px 0 6px; font-family: var(--grot); }
-  .cal-lrow .cell { grid-template-columns: 84px minmax(0, 1fr) 120px auto; align-items: center; min-height: 0; width: 100%; }
+  .cal-lrow .cell[data-size="M"] { grid-template-columns: 84px minmax(0, 1fr) 120px auto; align-items: center; min-height: 0; width: 100%; }
   .cal-lrow .shape { width: 120px; }
   .cal-lrow .cell-b { text-align: right; }
   .cal-lrow .daycard { margin: 12px 0 24px; }
@@ -123,7 +129,7 @@
     .cal-grid .cell-n { display: none; }
     .cal-grid .cell-a { display: inline; }
     .cal-grid .cell .ok, .cal-grid .cell .gym { display: none; }
-    .cal-lrow .cell { grid-template-columns: 72px minmax(0, 1fr) auto; }
+    .cal-lrow .cell[data-size="M"] { grid-template-columns: 72px minmax(0, 1fr) auto; }
     .cal-lrow .shape { display: none; }
     .steps li { grid-template-columns: 1fr; gap: 4px; }
     .zbars li { grid-template-columns: 90px minmax(40px, 1fr) 40px; }

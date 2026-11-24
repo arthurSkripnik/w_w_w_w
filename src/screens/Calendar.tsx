@@ -51,7 +51,7 @@ export function Calendar() {
         if (mode === "list") return [bar,
           <div class="cal-lh" key={"h" + n}><b class="num">Тиждень {String(n).padStart(2, "0")}</b><span class="label">{w.length} {plural(w.length, "тренування", "тренування", "тренувань")} · {fmtHM(m)}{km ? ` · ≈${km} км` : ""}</span></div>,
           ...w.map(d => <div class="cal-lrow" key={d.date}>
-            <DayCell day={d} iso={d.date} today={t} open={d.date === sel} head={`${DOW[(new Date(d.date + "T00:00:00").getDay() + 6) % 7]} ${dm(d.date)}`} />
+            <DayCell size="M" day={d} iso={d.date} today={t} open={d.date === sel} head={`${DOW[(new Date(d.date + "T00:00:00").getDay() + 6) % 7]} ${dm(d.date)}`} />
             {d.date === sel && card}
           </div>)];
         return [bar,

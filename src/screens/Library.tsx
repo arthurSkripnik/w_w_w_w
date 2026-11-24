@@ -8,7 +8,9 @@ import { go } from "../app/routes";
 import { typeRows, inPlanTxt, weekRows, changed, coefs, gymRows, GYM_NOTES, RULES, THEORY, boldParts, dec, type TypeRow } from "../domain/library";
 import { groupOf } from "../domain/compare";
 import { dur } from "../domain/spec";
-import { racePlan, fmtHM, shapeOf } from "../domain/text";
+import { racePlan, fmtHM, gen } from "../domain/text";
+import { useState } from "preact/hooks";
+import { WorkoutCard } from "../calendar/WorkoutCard";
 import { typeOf, PH_NAME, CAT, RPE_TARGET } from "../domain/types";
 import { dm, DOW, mmss, plural } from "../domain/home";
 import { fmtPace } from "../domain/util";
@@ -21,26 +23,28 @@ const GROUPS: { cat: string; name: string; sub: string }[] = [
   { cat: "z3", name: "Важкі", sub: "Ключові дні: VO2max, поріг, контрольні" },
   { cat: "race", name: "Старти", sub: "Гонка і старти на результат" },
 ];
+const LEVELS = Array.from({ length: 10 }, (_, i) => i + 1);
 function TypeCard({ r, cmpK }: { r: TypeRow; cmpK: string | null }) {
-  const s = r.steps, lv = r.fixed ? 0 : r.lvl, sh = shapeOf(r.t, lv);
-  return <article class="lib-card" aria-label={r.name}>
-    <header class="lib-card-h"><span class="label"><i class="mk" data-cat={r.cat} />{r.abbr}</span>{r.next && <span class="label num">наступне {dm(r.next)}</span>}</header>
-    <h3 class="lib-card-n">{r.name}</h3>
-    <span class="shape lib-shape" aria-hidden="true">{sh.map(([m, k], i) => <i key={i} data-k={k} style={{ flexGrow: m }} />)}</span>
+  const [lv, setLv] = useState(r.lvl), Z = zones.value!, cur = r.fixed ? 0 : lv, s = r.fixed ? r.steps : gen(r.t, lv, Z), m = dur(r.t, cur);
+  return <WorkoutCard size="L" type={r.t} level={cur} name={r.name} label={r.name} aside={r.next && <span class="label num wc-next">наступне {dm(r.next)}</span>}>
+    {!r.fixed && <div class="wc-lv" role="radiogroup" aria-label="Рівень">
+      {LEVELS.map(l => <button type="button" key={l} role="radio" aria-checked={l === lv} data-plan={r.levels.includes(l) ? "" : undefined}
+        title={r.levels.includes(l) ? `Р${l} є в плані` : `Р${l} немає в плані`} onClick={() => setLv(l)}>{l}</button>)}
+    </div>}
     <dl class="lib-card-kv">
       <div><dt class="label">Темп</dt><dd>{r.pace ? <><b>{r.pace.zone}</b><span class="num">{r.pace.pace}</span></> : <b>За зусиллям</b>}</dd></div>
-      <div><dt class="label">Тривалість</dt><dd class="num"><b>{r.mins}</b></dd></div>
+      <div><dt class="label">Тривалість{r.fixed ? "" : ` на Р${lv}`}</dt><dd class="num"><b>{m} хв</b><span>у плані {r.mins}</span></dd></div>
       <div><dt class="label">У плані</dt><dd class="num"><b>{inPlanTxt(r)}</b></dd></div>
       <div><dt class="label">Навантаження</dt><dd class="num"><b>×{dec(r.load)}</b><span>RPE {r.rpe[0]}–{r.rpe[1]}</span></dd></div>
     </dl>
-    <Details summary={`Як бігти${r.fixed ? "" : ` · Р${r.lvl}`}`}>
+    <Details summary={`Як бігти${r.fixed ? "" : ` · Р${lv}`}`}>
       {s.warmup && <p><span class="label">Розминка</span> {s.warmup}</p>}
       <p>{s.main}</p>
       {s.cooldown && <p><span class="label">Заминка</span> {s.cooldown}</p>}
       <p class="label">{s.note}{r.eq ? ` У прогноз: ${r.eq}.` : ""}</p>
     </Details>
     {cmpK && <button type="button" class="lib-cmp" onClick={() => { pickGroup(cmpK); go("compare"); }}>Порівняти: {r.done} {plural(r.done, "пробіжка", "пробіжки", "пробіжок")}</button>}
-  </article>;
+  </WorkoutCard>;
 }
 function Types() {
   const Z = zones.value!, rows = typeRows(days.value, Z, today.value), G = cmpGroups.value;
