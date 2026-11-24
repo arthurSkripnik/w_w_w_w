@@ -5,8 +5,7 @@ import { computed } from "@preact/signals";
 import { dbState, layout } from "../store/data";
 import { goal } from "../store/derived";
 import { fc, toRace } from "../store/home";
-import { sync, syncPlan, syncArchive } from "../store/strava";
-import { archive } from "../store/derived";
+import { sync, syncPlan } from "../store/strava";
 import { mmss, plural, dm } from "../domain/home";
 import { WIDGETS, type Widget } from "../widgets";
 
@@ -46,11 +45,11 @@ function Headline() {
 }
 
 function Sync() {
-  const s = sync.value, arch = archive.value;
+  const s = sync.value;
   return <section class="hub-sync">
     <div class="btn-row">
       <Button disabled={s.busy} onClick={() => syncPlan(false)}>Синхронізувати план</Button>
-      <Button variant="ghost" disabled={s.busy} onClick={() => syncArchive()}>{arch ? "Оновити архів" : "Завантажити архів"}</Button>
+      <a class="btn" data-v="link" href="#profile/data">Перерахунок і історія в Профілі</a>
     </div>
     {s.text && <p class={`status${s.ok === false ? " err" : ""}`} role="status">{s.text}</p>}
   </section>;

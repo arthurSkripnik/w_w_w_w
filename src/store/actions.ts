@@ -1,6 +1,6 @@
 // The only way screens change data. Every write is checked against the schema first.
-import { database, plan, workouts, journal, injuries, athlete, thresholds, runs } from "./data";
-import { COLLECTIONS, type CollectionName, type Journal, type Injury, type Layout, type Athlete, type Threshold, type PlanDay } from "../data/schema";
+import { database, plan, workouts, journal, injuries, athlete, thresholds, runs, goals } from "./data";
+import { COLLECTIONS, type CollectionName, type Journal, type Injury, type Layout, type Athlete, type Threshold, type PlanDay, type Goal } from "../data/schema";
 import { blocksOf, spec, workoutId, FIXED_T } from "../domain/spec";
 import { addDays, mondayOf } from "../domain/util";
 import { TYPE } from "../domain/types";
@@ -143,3 +143,10 @@ export async function setLayout(l: Layout) { await put("layout", "home", l); }
 export async function updateAthlete(patch: Partial<Athlete>) { await put("athlete", "me", drop({ ...(athlete.value ?? {}), ...patch })); }
 /** A new threshold from the watch or a test: every zone and pace follows it from that date. */
 export async function addThreshold(t: Threshold) { await put("thresholds", t.date, t); return thresholds.value; }
+
+/** «Поріг і ціль»: a new threshold from this date (earlier days keep the old zones), and the goal time if it changed. */
+export async function setThresholdGoal(date: string, paceSec: number, hr: number, goalId: string | null, targetSec: number) {
+  await addThreshold({ date, paceSec, hr, source: "manual" });
+  const g = goalId ? goals.value[goalId] : null;
+  if (g && g.targetSec !== targetSec) await put("goals", goalId!, { ...g, targetSec } satisfies Goal);
+}

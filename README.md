@@ -70,3 +70,12 @@ V2_DATA=<out dir migrate.ts> V52_JSON=v52.json V52_TODAY=2026-11-24 npm test
 - `src/calendar/DayCell.tsx`: one day, shared with the Головна week; `DayCard.tsx`: numbers, «Легше / За планом / Довше», how to run, km splits, strength, race plan, 5 km test → threshold, move/swap/start/undo, «Фактично було», the fact (Strava, pace, HR, RPE); `Report.tsx`: the Strava report.
 - `src/domain/types.ts` (session types), `src/domain/text.ts` (v52 texts, KPIs, splits, verdicts, findings, shape).
 - New actions: `moveToRest`, `markStart`, `revertDay`, `setActual`, `setExclude`, `plannedLevel`; `pullDay` in `store/strava.ts`.
+
+## Step 6b: Профіль
+
+`src/screens/Profile.tsx`, numbers in `src/domain/profile.ts`, body areas in `src/domain/areas.ts`, styles in `src/styles/profile.css`.
+Sections: 01 Тіло і сон (edit → `athlete/me`), 02 Що з цього виходить (VO2max, max HR, thresholds), 03 Поріг і ціль
+(a new `thresholds/<today>` entry, source `manual`; earlier days keep their zones; the goal time is updated in `goals/<id>`),
+04 Зони темпу, 05 Пульсові зони, 06 Історія порогу, 07 Травми (body map, heatmap 30 days / all, log, add a record),
+08 Дані («Перерахувати звіти», «Завантажити історію», moved here from Головна). Sections open by link: `#profile/body|est|threshold|zones|hr|history|injuries|data`.
+Not ported: manual pace zones; the «VO2max за фактом Strava» row (comes with the Лабораторія forecast).

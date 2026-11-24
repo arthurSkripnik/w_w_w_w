@@ -6,6 +6,7 @@ import type { Zones } from "./zones";
 import { hrCeil } from "./zones";
 import { THR_TO_10K, dur } from "./spec";
 import { addDays, daysBetween, mondayOf } from "./util";
+import { areaName } from "./areas";
 
 export const mmss = (s: number) => {
   s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
@@ -80,9 +81,9 @@ export function injuryNow(I: Record<string, Injury>, today: string) {
   const all = Object.values(I);
   if (!all.length) return { text: "Записів немає", now: false, level: 0 };
   const last = all.reduce((m, r) => (r.to > m.to ? r : m));
-  if (last.to >= today) return { now: true, level: last.level, text: `Зараз: ${last.area}, ${SIDE[last.side]}, ${INJ_LVL[last.level]}` };
+  if (last.to >= today) return { now: true, level: last.level, text: `Зараз: ${areaName(last.area).toLowerCase()}, ${SIDE[last.side]}, ${INJ_LVL[last.level]}` };
   const ago = daysBetween(last.to, today);
-  return { now: false, level: 0, text: `Без скарг ${ago} ${plural(ago, "день", "дні", "днів")}. Останнє: ${last.area}, ${SIDE[last.side]} (${dm(last.to)})` };
+  return { now: false, level: 0, text: `Без скарг ${ago} ${plural(ago, "день", "дні", "днів")}. Останнє: ${areaName(last.area).toLowerCase()}, ${SIDE[last.side]} (${dm(last.to)})` };
 }
 export function injuryStrip(I: Record<string, Injury>, today: string, n = 30) {
   const from = addDays(today, -(n - 1)), rows = Object.values(I).filter(r => r.to >= from && r.from <= today);
@@ -93,7 +94,7 @@ export function injuryStrip(I: Record<string, Injury>, today: string, n = 30) {
   const areas = [...new Set(rows.map(r => r.area + "|" + r.side))].map(k => {
     const [a, s] = k.split("|"), rs = rows.filter(r => r.area === a && r.side === s);
     const n2 = new Set(days.filter(x => rs.some(r => r.from <= x.d && r.to >= x.d)).map(x => x.d)).size;
-    return { area: a, side: s === "обидві" ? "обидві" : s, level: rs.reduce((m, r) => Math.max(m, r.level), 0), days: n2 };
+    return { area: areaName(a), side: s === "обидві" ? "обидві" : s, level: rs.reduce((m, r) => Math.max(m, r.level), 0), days: n2 };
   });
   return { from, days, areas };
 }

@@ -17,4 +17,4 @@ function Sleep() {
     <Spark label="Сон за 14 ночей" pts={last} />
   </>;
 }
-export const sleepW: Widget = { id: "sleep", title: "Сон, 7 днів", span: 3, link: { label: "Профіль", href: "#profile" }, C: Sleep };
+export const sleepW: Widget = { id: "sleep", title: "Сон, 7 днів", span: 3, link: { label: "Профіль", href: "#profile/body" }, C: Sleep };

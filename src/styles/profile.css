@@ -1,0 +1,52 @@
+/* Профіль: value rows, edit forms, estimates, body map and injury heatmap. */
+@layer screens {
+  .pf-head { font: 400 clamp(28px, 3.6vw, 44px)/1.15 var(--serif); margin: 8px 0 40px; }
+  .card { scroll-margin-top: 24px; }
+  .pf-vals { display: flex; flex-wrap: wrap; gap: 12px 40px; margin-bottom: 16px; }
+  .pf-vals > div { display: grid; gap: 2px; }
+  .pf-vals b { font-size: 32px; font-weight: 500; letter-spacing: -.02em; line-height: 1.1; }
+  .pf-form { display: grid; gap: 16px; margin: 8px 0 20px; max-width: 760px; }
+  .pf-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px 20px; }
+  .pf-form select, .pf-form textarea { font: inherit; font-size: 17px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); min-height: 44px; border-radius: 0; }
+  .pf-form textarea { resize: vertical; }
+  .pf-form select:focus, .pf-form textarea:focus { outline: none; border-bottom-color: var(--ink); }
+  .pf-line { margin: 8px 0; }
+  .pf-note { margin: 12px 0 0; max-width: 68ch; color: var(--mute); font-size: 15px; }
+  .pf-est { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: baseline; }
+  .pf-est .pill { justify-self: start; }
+  .pf-est .label { grid-column: 1 / -1; }
+  .pf-add { margin-top: 16px; }
+  .card .tbl td.n { white-space: nowrap; }
+  .pf-data { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px 40px; margin-top: 12px; }
+
+  /* injuries: level 0–3 on one accent ramp, the same as the Головна widget */
+  .bm-z[data-l="0"], .hm-c[data-l="0"] { fill: var(--chip); background: var(--chip); }
+  .bm-z[data-l="1"], .hm-c[data-l="1"], .inj-leg i[data-l="1"] { fill: color-mix(in oklab, var(--acc) 35%, var(--bg)); background: color-mix(in oklab, var(--acc) 35%, var(--bg)); }
+  .bm-z[data-l="2"], .hm-c[data-l="2"], .inj-leg i[data-l="2"] { fill: color-mix(in oklab, var(--acc) 70%, var(--bg)); background: color-mix(in oklab, var(--acc) 70%, var(--bg)); }
+  .bm-z[data-l="3"], .hm-c[data-l="3"], .inj-leg i[data-l="3"] { fill: var(--acc); background: var(--acc); }
+  .inj-cols { display: grid; grid-template-columns: minmax(200px, 280px) 1fr; gap: 32px; margin-top: 16px; align-items: start; }
+  .bm { width: 100%; height: auto; display: block; }
+  .bm-n { fill: none; stroke: var(--line); stroke-width: 1; }
+  .bm-z { stroke: var(--bg); stroke-width: 2; }
+  .bm-hit { cursor: pointer; outline: none; }
+  .bm-hit:hover .bm-z, .bm-hit:focus-visible .bm-z { stroke: var(--ink); }
+  .bm-ax { font-family: var(--grot); font-size: 11px; fill: var(--mute); }
+  .inj-right { display: grid; gap: 16px; min-width: 0; }
+  .hm { display: grid; gap: 2px; font-family: var(--grot); font-size: 12px; overflow-x: auto; }
+  .hm-x { color: var(--mute); white-space: nowrap; font-size: 11px; overflow: visible; height: 16px; }
+  .hm-y { white-space: nowrap; padding-right: 10px; font-size: 13px; }
+  .hm-y i { color: var(--mute); font-style: normal; }
+  .hm-c { min-height: 20px; cursor: pointer; outline: none; }
+  .hm-c:hover, .hm-c:focus-visible { box-shadow: inset 0 0 0 2px var(--ink); }
+  .inj-leg { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--grot); font-size: 13px; color: var(--mute); }
+  .inj-leg span { display: flex; align-items: center; gap: 6px; }
+  .inj-leg i { width: 10px; height: 10px; display: inline-block; }
+  .inj-tip { border-top: 1px solid var(--hair); padding-top: 12px; font-size: 15px; min-height: 64px; }
+  .inj-tip p { margin: 6px 0 0; }
+
+  @media (max-width: 760px) {
+    .inj-cols { grid-template-columns: 1fr; }
+    .bm { max-width: 260px; margin: 0 auto; }
+    .pf-vals b { font-size: 26px; }
+  }
+}
