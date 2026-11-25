@@ -15,14 +15,21 @@ const can = (w: Widget, s: Size) => (s === "full" ? !!w.Full : !!w.C);
 const sizeFor = (w: Widget, b: BoardId): Size => { const pref: Size = b === "lab" ? "full" : "compact"; return can(w, pref) ? pref : pref === "full" ? "compact" : "full"; };
 
 /** The widgets a screen shows now, in order. */
+const listOf = (b: BoardId) => {
+  const saved = layouts.value[b]?.widgets; if (!saved) return DEFAULTS[b];
+  return [...saved, ...DEFAULTS[b].filter(x => !saved.some(y => y.id === x.id))];   // a widget added in a later version shows up once
+};
 export const boardOf = (b: BoardId) => computed(() => {
-  const saved = layouts.value[b]?.widgets ?? DEFAULTS[b];
-  return saved.filter(x => !x.hidden).map(x => ({ w: byId.get(x.id)!, size: x.size as Size })).filter(x => x.w && can(x.w, x.size));
+  return listOf(b).filter(x => !x.hidden).map(x => ({ w: byId.get(x.id)!, size: x.size as Size })).filter(x => x.w && can(x.w, x.size));
 });
 const boards = { home: boardOf("home"), lab: boardOf("lab") };
 
-async function save(b: BoardId, items: { id: string; size: Size }[]) { await setLayout(b, { widgets: items }); }
-const current = (b: BoardId) => boards[b].value.map(x => ({ id: x.w.id, size: x.size }));
+type Item = { id: string; size: Size; hidden?: boolean };
+async function save(b: BoardId, items: Item[]) { await setLayout(b, { widgets: items }); }
+/** The whole list of a screen, hidden ones too: a removed widget stays as hidden, so a default does not come back. */
+const current = (b: BoardId): Item[] => listOf(b).map(x => ({ id: x.id, size: x.size as Size, ...(x.hidden ? { hidden: true } : {}) }));
+const addTo = (b: BoardId, w: Widget) => { const L = current(b), i = L.findIndex(x => x.id === w.id);
+  return i >= 0 ? L.map((x, k) => (k === i ? { id: x.id, size: x.size } : x)) : [...L, { id: w.id, size: sizeFor(w, b) }]; };
 
 /** One widget that throws is hidden; the rest of the screen still renders. */
 class Guard extends Component<{ id: string; children: ComponentChildren }, { err: boolean }> {
@@ -37,9 +44,9 @@ function Menu({ w, b }: { w: Widget; b: BoardId }) {
   return <details class="wg-menu">
     <summary aria-label={`Дії з віджетом «${w.title}»`}>···</summary>
     <div class="wg-menu-b" role="menu">
-      <button type="button" role="menuitem" disabled={there} onClick={e => { close(e); save(other, [...current(other), { id: w.id, size: sizeFor(w, other) }]); }}>
+      <button type="button" role="menuitem" disabled={there} onClick={e => { close(e); save(other, addTo(other, w)); }}>
         {there ? `Уже: ${NAME[other][0]}` : NAME[other][1]}</button>
-      <button type="button" role="menuitem" onClick={e => { close(e); save(b, current(b).filter(x => x.id !== w.id)); }}>Прибрати звідси</button>
+      <button type="button" role="menuitem" onClick={e => { close(e); save(b, current(b).map(x => (x.id === w.id ? { ...x, hidden: true } : x))); }}>Прибрати звідси</button>
     </div>
   </details>;
 }

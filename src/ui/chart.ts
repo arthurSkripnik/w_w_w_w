@@ -18,9 +18,11 @@ export type ChartSpec =
   | { kind: "line"; data: Pt[]; plan?: Pt[]; dots?: (Pt & { key?: boolean; soft?: boolean; square?: boolean; label?: string })[]; y: Axis; bands?: Band[]; ref?: { y: number; label: string }; today?: Date; x?: [Date, Date]; height?: number; end?: boolean; compare?: Pt[];
       area?: { x: Date; lo: number; hi: number }[];                  // a scenario band (model)
       lines?: { data: Pt[]; dash?: boolean; tone?: "ink" | "mute" }[]; // more series: model middle, long runs
-      segs?: { x1: Date; x2: Date; y: number; label: string; tip?: string }[] }   // a value over a window (Strava forecast)
+      segs?: { x1: Date; x2: Date; y: number; label: string; tip?: string }[];
+      step?: boolean }                                              // a level that holds until the next point   // a value over a window (Strava forecast)
   | { kind: "bars"; data: (Pt & { plan?: boolean })[]; y: Axis; height?: number; today?: Date }
   | { kind: "spark"; data: Pt[]; y?: Partial<Axis>; height?: number }
+  | { kind: "dist"; a: { a: number; b: number; v: number }[]; b: { a: number; b: number; v: number }[]; y: Axis; height?: number; tip: (km: number) => string }   // two runs lap by lap along the distance
   | { kind: "hbars"; data: { label: string; v: number; tip?: string }[]; fmt: (v: number) => string; acc?: number };
 
 const dm = (d: Date) => `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -42,6 +44,21 @@ export function chart(spec: ChartSpec, width: number): SVGSVGElement | HTMLEleme
       marks: [
         Plot.lineY(spec.data, { x: "x", y: "y", stroke: C.ink, strokeWidth: 1.5, curve: "monotone-x" }),
         last ? Plot.dot([last], { x: "x", y: "y", r: 3.5, fill: C.acc, stroke: C.bg, strokeWidth: 2 }) : null,
+      ],
+    });
+  }
+  if (spec.kind === "dist") {
+    const path = (S: { a: number; b: number; v: number }[]) => S.flatMap(x => [{ x: x.a, y: x.v }, { x: x.b, y: x.v }]);
+    const B = path(spec.b), A = path(spec.a), mids = spec.b.map(x => ({ x: (x.a + x.b) / 2, y: x.v }));
+    return Plot.plot({
+      ...base(width, spec.height ?? 220),
+      x: { label: null, tickSize: 0, tickFormat: (v: number) => `${v}`, ticks: Math.min(10, Math.ceil(Math.max(...[...A, ...B].map(p => p.x)))) },
+      y: { grid: true, ticks: spec.y.ticks ?? 4, tickFormat: spec.y.fmt, reverse: spec.y.reverse, domain: spec.y.domain, label: null, tickSize: 0, nice: true },
+      marks: [
+        Plot.line(A, { x: "x", y: "y", stroke: C.cmp, strokeWidth: 3 }),
+        Plot.line(B, { x: "x", y: "y", stroke: C.ink, strokeWidth: 2 }),
+        Plot.ruleX(mids, Plot.pointerX({ x: "x", stroke: C.line })),
+        Plot.tip(mids, Plot.pointerX({ x: "x", y: "y", title: (d: { x: number }) => spec.tip(d.x), ...tipOpts })),
       ],
     });
   }
@@ -94,7 +111,7 @@ export function chart(spec: ChartSpec, width: number): SVGSVGElement | HTMLEleme
     Plot.ruleY([g], { x1: "x1", x2: "x2", y: "y", stroke: C.acc, strokeWidth: 3 }),
     Plot.text([g], { x: "x1", y: "y", text: "label", fill: C.mute, dy: 12, textAnchor: "start" })));
   if (spec.compare?.length) marks.push(Plot.lineY(spec.compare, { x: "x", y: "y", stroke: C.cmp, strokeWidth: 2, curve: "monotone-x" }));
-  marks.push(Plot.lineY(spec.data, { x: "x", y: "y", stroke: C.ink, strokeWidth: 2, curve: "monotone-x" }));
+  marks.push(Plot.lineY(spec.data, { x: "x", y: "y", stroke: C.ink, strokeWidth: 2, curve: spec.step ? "step-after" : "monotone-x" }));
   if (spec.plan?.length) marks.push(Plot.lineY(last ? [last, ...spec.plan] : spec.plan, { x: "x", y: "y", stroke: C.ink, strokeWidth: 1.5, strokeDasharray: "3 3", curve: "monotone-x" }));
   if (spec.dots?.some(d => d.square)) marks.push(Plot.dot(spec.dots.filter(d => d.square), { x: "x", y: "y", r: 4.5, symbol: "square", fill: C.ink, stroke: C.bg, strokeWidth: 1.5 }));
   if (spec.dots?.some(d => d.label)) marks.push(Plot.text(spec.dots.filter(d => d.label), { x: "x", y: "y", text: "label", fill: C.mute, dy: -10 }));

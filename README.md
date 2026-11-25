@@ -89,3 +89,12 @@ widget on the other screen or takes it off this one. Full cards: `src/widgets/fu
 hrz, weeks, history); numbers in `src/domain/lab.ts`, signals in `src/store/lab.ts`. `#lab/<widget id>` scrolls to a card.
 Parity: `V52_LAB=<dump with lab>` adds the forecast checks (`tools/v52-dump.cjs` now writes `lab`). Known differences:
 06.11 (v52 counts an easy run without work as a threshold equivalent) and 13.11 (swapped day).
+
+## Step 7b: Порівняння
+
+- `#compare` screen (`src/screens/Compare.tsx`): kinds of runs (as v52: легкі = base + recovery, фартлек = fartlek + pyramid, …), a picker of two runs, a verdict in words, the trend of the key metric, a table of differences (better = accent, never red/green), both runs lap by lap along the distance (pace or HR), rep by rep.
+- New: compare a run with the mean of its kind over the 6 weeks before it (`avgSide` in `src/domain/compare.ts`, at least 2 runs).
+- `#compare/<date>` (day card button «Порівняти з такими ж пробіжками») opens that day against the previous run of the kind.
+- Widget «Тренд однотипних» (`src/widgets/full/cmptrend.tsx`), on Лабораторія by default.
+- Board: «Прибрати звідси» now keeps the widget in the layout as hidden, so widgets added to a screen's defaults in later versions appear once and a removed one stays removed.
+- Tests: `tests/compare.test.ts`.

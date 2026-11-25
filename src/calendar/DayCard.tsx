@@ -4,6 +4,7 @@ import { useState } from "preact/hooks";
 import type { Day } from "../domain/days";
 import { Pill, Button, Segmented, StatusLine, Field } from "../ui";
 import { Report } from "./Report";
+import { groupOf } from "../domain/compare";
 import { days, dayByDate, today, zones, goal, threshold } from "../store/derived";
 import { plan, journal } from "../store/data";
 import { athlete } from "../store/data";
@@ -228,6 +229,7 @@ export function DayCard({ day }: { day: Day }) {
       </div>
       {day.report && <div class="dc-col dc-rep" aria-label="Звіт зі Strava">
         {day.run?.exclude ? <p class="status">День не враховується в аналізі форми. Його хвилини й навантаження лишаються в тижневому обсязі.</p> : <Report day={day} rh={rh} />}
+        {!day.run?.exclude && groupOf(day.act) && <p class="dc-sec"><a class="btn" data-v="ghost" href={`#compare/${day.date}`}>Порівняти з такими ж пробіжками</a></p>}
       </div>}
     </div>
   </article>;
