@@ -1,6 +1,6 @@
 // Basic elements every screen is built from. Look and spacing live in styles/components.css.
 import type { ComponentChildren, ButtonHTMLAttributes, InputHTMLAttributes } from "preact";
-import { useId } from "preact/hooks";
+import { useId, useEffect, useRef } from "preact/hooks";
 
 /** 12-column grid (6 on phones). Children are Cards or Cells with a span. */
 export function Grid({ children }: { children: ComponentChildren }) {
@@ -136,4 +136,20 @@ export function StatusLine({ tone = "ink", tag, children }: { tone?: "ink" | "ac
 /** Nothing to show yet, and what will fill it. */
 export function Empty({ children }: { children: ComponentChildren }) {
   return <div class="empty">{children}</div>;
+}
+
+/** A window over the page (day card, journal after a run): backdrop, Esc and a backdrop click close it, focus moves in
+ *  and comes back, the page under it does not scroll. Full screen on a phone. `wide` for the day card. */
+export function Modal({ label, onClose, wide, children }: { label: string; onClose: () => void; wide?: boolean; children: ComponentChildren }) {
+  const ref = useRef<HTMLDivElement>(null), close = useRef(onClose); close.current = onClose;
+  useEffect(() => {
+    const prev = document.activeElement as HTMLElement | null, ov = document.body.style.overflow;
+    ref.current?.focus(); document.body.style.overflow = "hidden";
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") close.current(); };
+    addEventListener("keydown", esc);
+    return () => { removeEventListener("keydown", esc); document.body.style.overflow = ov; prev?.focus?.(); };
+  }, []);
+  return <div class="modal-back" onClick={e => { if (e.target === e.currentTarget) close.current(); }}>
+    <div class={`modal${wide ? " modal-wide" : ""}`} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} ref={ref}>{children}</div>
+  </div>;
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "preact/hooks";
-import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter } from "../ui";
+import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal } from "../ui";
 import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
 import { DayCell } from "../calendar/DayCell";
 import { JournalForm } from "../calendar/JournalForm";
@@ -27,7 +27,7 @@ const accTone = (s: number): "ink" | "line" | "err" => (s >= 90 ? "ink" : s >= 5
 
 function Parts() {
   const all = days.value, t = today.value, by = dayByDate.value;
-  const [lv, setLv] = useState(4), [chip, setChip] = useState("fartlek"), [seg, setSeg] = useState<"run" | "avg">("run");
+  const [lv, setLv] = useState(4), [chip, setChip] = useState("fartlek"), [seg, setSeg] = useState<"run" | "avg">("run"), [win, setWin] = useState(false);
   if (!all.length) return null;
   const done = [...all].reverse().find(d => d.date < t && dayState(d) === "done"), miss = [...all].reverse().find(d => dayState(d) === "miss"), plan = all.find(d => d.date > t && !FIXED_T.includes(d.type));
   const sample = [done, miss, plan].filter(Boolean) as Day[];
@@ -62,6 +62,9 @@ function Parts() {
         </div></section>
       {done && <section><h3 class="label">Форма журналу (попап після пробіжки, картка дня, «Сьогодні»)</h3>
         <div class="kit-col"><JournalForm day={done} compact /></div></section>}
+      <section><h3 class="label">Вікно (картка дня в Календарі, журнал після пробіжки)</h3>
+        <div class="kit-col"><Button variant="ghost" onClick={() => setWin(true)}>Відкрити вікно</Button>
+          {win && <Modal label="Зразок вікна" onClose={() => setWin(false)}><p>Esc, клік по тлу або кнопка закривають вікно.</p><Button onClick={() => setWin(false)}>Закрити</Button></Modal>}</div></section>
       <section><h3 class="label">Шкала (Персонаж, Бос, Характеристики)</h3>
         <div class="kit-col"><Meter label="HP" value={81} text="81/100" sub="Форма 90%: свіжий" /><Meter label="ШВД" value={73} mark={75} text="73" sub="Прогноз 10 км 35:34" />
           <Meter label="ВИТ" value={56} text="56" weak sub="Слабке місце" /><Meter label="Готовність" value={84} tone="acc" text="84%" /></div></section>
