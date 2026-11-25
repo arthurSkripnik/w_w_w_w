@@ -98,3 +98,32 @@ Parity: `V52_LAB=<dump with lab>` adds the forecast checks (`tools/v52-dump.cjs`
 - Widget «Тренд однотипних» (`src/widgets/full/cmptrend.tsx`), on Лабораторія by default.
 - Board: «Прибрати звідси» now keeps the widget in the layout as hidden, so widgets added to a screen's defaults in later versions appear once and a removed one stays removed.
 - Tests: `tests/compare.test.ts`.
+
+## Step 8: База тренувань
+
+- `#library` (`src/screens/Library.tsx`, arithmetic in `src/domain/library.ts`), ported from v52 12-library.js, 13-strength.js, 14-theory.js:
+  01–04 types of sessions as cards grouped by effort (легкі, помірні, важкі, старти): shape strip, pace zone, how to run at the plan's median level, load per minute, RPE, forecast equivalent, times and levels in the plan, next one; «Порівняти» opens Порівняння of that kind),
+  02 the plan by weeks with phases (type, level, minutes, `*` changed day; a day opens in Календар),
+  03 coefficients with today's numbers, 04 rules of the plan, 05 strength sessions with weights on the next session, 06 theory and the race plan.
+- Not ported: the zones table (it lives in Профіль; a link points there).
+- Tests: `tests/library.test.ts`.
+
+## Step 8a: one workout card
+
+- `src/calendar/WorkoutCard.tsx`: the session card in three sizes with one anatomy (effort mark + short name + level, name, shape strip at the level, numbers):
+  S = calendar grid cell and the Головна week, M = calendar list row, L = the template card of База тренувань.
+- `DayCell` now renders a `WorkoutCard`; planned days show the level («≈62 хв · Р5»).
+- База тренувань: L cards with a level switch Р1–Р10 (levels in the plan underlined): shape, minutes and «Як бігти» rebuild for the chosen level.
+
+## Step 8b: one component per thing
+
+Rule: a thing that means the same everywhere is one component; screens pass size and state, never copy markup.
+
+- `WorkoutCard` (S/M/L) is used by the calendar grid and list, the Головна week, Порівняння (M rows with the a/b/mean swatch via `pick`),
+  the day card header and «Сьогодні» (L), and База тренувань (L). `TypeTag` is the one «■ ШФ · Р5» tag.
+- `src/calendar/Week.tsx`: `Week` (seven `DayCell`s) and `WeekLine` (week number, hours, km bar, days) for the calendar, the Головна week
+  and «Рівні по тижнях» (`plan` shows every day as planned).
+- `src/ui`: `Choice` (looks `seg`, `chips`, `nums`; `Segmented` wraps it), `KV` (sizes `l`, `m`, `s`, `rows`, `text`) and `Delta`
+  replace hand-made chips, level buttons, `<dl>` lists and difference bars on every screen.
+- «Зразки» (`#kit`) card 12 shows each component in its sizes and states.
+- Removed the old per-screen CSS (`cmp-row`, `cmp-chip`, `cmp-dl`, `lib-w`, `lib-kv`, `lib-rules`, `lib-card-kv`, `wc-lv`, `dc-kpis`, `today-kv`) and `weekRows`.

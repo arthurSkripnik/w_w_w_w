@@ -1,9 +1,14 @@
 import { useMemo, useState } from "preact/hooks";
-import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty } from "../ui";
+import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta } from "../ui";
+import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
+import { DayCell } from "../calendar/DayCell";
+import { WeekLine, weekMin } from "../calendar/Week";
+import { dayState, DOW } from "../domain/home";
+import { FIXED_T } from "../domain/spec";
 import { Chart } from "../ui/Chart";
 import { getTheme, setTheme, type Theme } from "../ui/theme";
 import type { Pt } from "../ui/chart";
-import { days, form, aerobic, zones, today } from "../store/derived";
+import { days, form, aerobic, zones, today, dayByDate } from "../store/derived";
 import { runs, dbState } from "../store/data";
 import { FATIGUE } from "../domain/load";
 import { fmtPace, mondayOf, addDays } from "../domain/util";
@@ -18,6 +23,47 @@ const dm = (iso: string) => iso.slice(8, 10) + "." + iso.slice(5, 7);
 const pace = (v: number) => fmtPace(v);
 const accTone = (s: number): "ink" | "line" | "err" => (s >= 90 ? "ink" : s >= 50 ? "line" : "err");
 
+
+function Parts() {
+  const all = days.value, t = today.value, by = dayByDate.value;
+  const [lv, setLv] = useState(4), [chip, setChip] = useState("fartlek"), [seg, setSeg] = useState<"run" | "avg">("run");
+  if (!all.length) return null;
+  const done = [...all].reverse().find(d => d.date < t && dayState(d) === "done"), miss = [...all].reverse().find(d => dayState(d) === "miss"), plan = all.find(d => d.date > t && !FIXED_T.includes(d.type));
+  const sample = [done, miss, plan].filter(Boolean) as Day[];
+  const mon = mondayOf(t), wk = all.filter(d => d.date >= mon && d.date <= addDays(mon, 6));
+  return <Card n="12" title="Компоненти" span={12} aside={<span class="label">один компонент на сутність, усі розміри й стани</span>}>
+    <div class="kit-parts">
+      <section><h3 class="label">Картка тренування · S (календар, тиждень на Головній)</h3>
+        <div class="kit-row">{sample.map(d => <div key={d.date} class="kit-s"><DayCell day={d} iso={d.date} today={t} /></div>)}</div></section>
+      <section><h3 class="label">Картка тренування · M (список календаря, Порівняння)</h3>
+        <div class="kit-col">{sample.map((d, i) => <DayCell key={d.date} size="M" day={d} iso={d.date} today={t} head={dm(d.date)} pick={i === 0 ? "b" : i === 1 ? "a" : undefined} onPick={() => {}} />)}</div></section>
+      <section><h3 class="label">Картка тренування · L (База тренувань, картка дня, «Сьогодні»)</h3>
+        <div class="kit-row">{plan && <WorkoutCard size="L" type={plan.type} level={plan.level} name={plan.workout?.name ?? plan.type} aside={<Pill tone="line">план</Pill>}>
+          <KV size="s" items={[{ k: "Тривалість", v: "45 хв", sub: "у плані 40–55" }, { k: "Навантаження", v: "×1,4", sub: "RPE 7–8" }]} /></WorkoutCard>}</div></section>
+      <section><h3 class="label">Тиждень (Календар, Головна, База)</h3>
+        <div class="cal-dow label" aria-hidden="true"><span />{DOW.map(d => <span key={d}>{d}</span>)}</div>
+        {wk.length > 0 && <WeekLine n={wk[0].plan.week} w={wk} by={by} today={t} maxMin={weekMin(wk)} easyMinPerKm={null} />}</section>
+      <section><h3 class="label">Позначка типу</h3>
+        <div class="btn-row">{["base", "long", "fartlek", "fastfinish", "shortint", "longint", "race"].map(x => <TypeTag key={x} type={x} level={x === "race" ? null : 3} />)}</div></section>
+      <section><h3 class="label">Вибір · seg, chips, nums</h3>
+        <div class="kit-col">
+          <Choice label="Режим" value={seg} onChange={setSeg} options={[{ id: "run", title: "З пробіжкою" }, { id: "avg", title: "Із середнім" }]} />
+          <Choice look="chips" label="Тип" value={chip} onChange={setChip} options={[{ id: "easy", title: "Легкі", count: 24 }, { id: "fartlek", title: "Фартлек", count: 6 }, { id: "long", title: "Довгі", count: 8 }]} />
+          <Choice look="nums" label="Рівень" value={lv} onChange={setLv} options={Array.from({ length: 10 }, (_, i) => ({ id: i + 1, title: String(i + 1), mark: i >= 2 && i <= 5 }))} />
+        </div></section>
+      <section><h3 class="label">Назва і значення · l, m, s, rows, text</h3>
+        <div class="kit-col">
+          <KV size="l" items={[{ k: "Тривалість", v: "52 хв", sub: "З розминкою і заминкою" }, { k: "Темп", v: "4:05–4:15", sub: "пороговий" }]} />
+          <KV size="m" items={[{ k: "Дистанція", v: "10.20", u: "км" }, { k: "Час", v: "46:10" }, { k: "Темп", v: "4:31", u: "/км" }, { k: "Пульс", v: "148", u: "уд/хв" }]} />
+          <KV size="s" items={[{ k: "Темп", v: "Легкий", sub: "5:05–5:35" }, { k: "У плані", v: "12 разів" }]} />
+          <KV size="rows" items={[{ k: "Поріг", sub: "з годинника", v: "3:40", u: "/км" }, { k: "10 км", sub: "поріг × 1,03", v: "37:50" }]} />
+          <KV size="text" items={[{ k: "Правило", v: "Не більше двох важких днів на тиждень.", txt: true }]} />
+        </div></section>
+      <section><h3 class="label">Різниця</h3>
+        <div class="btn-row"><Delta d={-6} text="−0:06" better={-1} scale={10} /><Delta d={4} text="+4" better={-1} scale={10} /><Delta d={0.3} text="+0.3" better={0} scale={1} /><Delta d={null} text="" better={1} scale={1} /></div></section>
+    </div>
+  </Card>;
+}
 
 export function Kit() {
   const [theme, setT] = useState<Theme>(getTheme());
@@ -146,6 +192,7 @@ export function Kit() {
             <Empty>Порожній стан: що з'явиться тут і коли</Empty>
           </div>
         </Card>
+        <Parts />
       </Grid>
       <StoreCheck />
       <DataCheck />

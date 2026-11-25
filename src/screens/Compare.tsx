@@ -2,7 +2,9 @@
 // a verdict in words, the trend of the kind, a table of differences, both runs along the distance and rep by rep.
 // #compare/<date> opens the kind of that day with the previous run of the same kind.
 import { useEffect } from "preact/hooks";
-import { Card, Empty, Grid, Segmented } from "../ui";
+import { Card, Empty, Grid, Segmented, Choice, Delta } from "../ui";
+import { DayCell } from "../calendar/DayCell";
+import { dayByDate, today } from "../store/derived";
 import { Chart } from "../ui/Chart";
 import { dbState } from "../store/data";
 import { routeArg, go } from "../app/routes";
@@ -15,32 +17,23 @@ import { fmtPace, daysBetween } from "../domain/util";
 const D = (iso: string) => new Date(iso + "T00:00:00");
 const dow = (iso: string) => DOW[(D(iso).getDay() + 6) % 7];
 
-function Delta({ a, b, r }: { a: number | null; b: number | null; r: Pick<Row, "better" | "scale" | "fmt"> }) {
+function Dl({ a, b, r }: { a: number | null; b: number | null; r: Pick<Row, "better" | "scale" | "fmt"> }) {
   const x = delta(a, b, r);
-  if (!x) return <span class="cmp-dl mute">—</span>;
-  return <span class="cmp-dl"><span class={x.good ? "gd" : undefined}>{fmtDiff(x.d, r.fmt)}</span>
-    <i class="cmp-bar" aria-hidden="true">{r.better !== 0 && x.w >= 2 && <i class={x.good ? "up" : "dn"} style={`${x.d < 0 ? "right" : "left"}:50%;width:${x.w.toFixed(0)}%`} />}</i></span>;
+  return <Delta d={x ? x.d : null} text={x ? fmtDiff(x.d, r.fmt) : ""} better={r.better} scale={r.scale} />;
 }
 
 function Picker() {
-  const p = cmpPair.value!, G = cmpGroups.value, g = p.g, multi = g.t.length > 1, avg = cmpMode.value === "avg";
-  const role = (r: CmpRun) => (r.d === p.B.d ? "b" : !avg && p.A?.d === r.d ? "a" : avg && p.A?.runs.includes(r) ? "in" : "");
+  const p = cmpPair.value!, G = cmpGroups.value, g = p.g, avg = cmpMode.value === "avg", by = dayByDate.value, t = today.value;
+  const role = (r: CmpRun): "a" | "b" | "in" | "" => (r.d === p.B.d ? "b" : !avg && p.A?.d === r.d ? "a" : avg && p.A?.runs.includes(r) ? "in" : "");
   return <Card title="Що порівнюємо" span={4}>
-    <div class="cmp-chips" role="group" aria-label="Тип пробіжок">
-      {G.map(x => <button type="button" key={x.k} class="cmp-chip" aria-pressed={x.k === g.k} onClick={() => pickGroup(x.k)}>{x.name}<span class="mute num">{x.runs.length}</span></button>)}
-    </div>
+    <Choice look="chips" label="Тип пробіжок" value={g.k} onChange={pickGroup} options={G.map(x => ({ id: x.k, title: x.name, count: x.runs.length }))} />
     <Segmented label="З чим порівнювати" value={cmpMode.value} onChange={pickMode}
       options={[{ id: "run", title: "З пробіжкою" }, { id: "avg", title: "Із середнім за 6 тижнів" }]} />
     <p class="status cmp-hint">{avg ? "Обери пробіжку: її порівняємо із середнім цього типу за 6 тижнів перед нею." : "Обери дві пробіжки: новішу і ту, з якою її порівнюємо (сіра позначка)."}</p>
     <div class="cmp-rows" role="group" aria-label="Пробіжки цього типу">
-      {[...g.runs].reverse().map(r => <button type="button" key={r.d} class="cmp-row" data-role={role(r) || undefined} aria-pressed={role(r) === "a" || role(r) === "b"} onClick={() => toggleRun(r.d)}>
-        <i class="sw" aria-hidden="true" />
-        <span class="cd"><b class="num">{dm(r.d)}</b><span class="label">{dow(r.d)}{multi || (r.lvl !== null && g.k !== "easy" && g.k !== "long") ? " · " : ""}{multi ? typeOf(r.t).abbr : ""}{r.lvl !== null && g.k !== "easy" && g.k !== "long" ? `${multi ? " " : ""}${lvlTxt(r)}` : ""}</span></span>
-        <span class="cv num">{r.km.toFixed(1)}<small>км</small></span>
-        <span class="cv num">{r.key.pace ? fmtPace(r.key.pace) : "—"}<small>/км</small></span>
-        <span class="cv num">{r.key.hr ? Math.round(r.key.hr) : "—"}<small>уд</small></span>
-        <span class="cv num">{r.acc != null ? r.acc + "%" : "—"}<small>точн.</small></span>
-      </button>)}
+      {[...g.runs].reverse().map(r => { const d = by[r.d], rl = role(r), lv = r.lvl !== null && g.k !== "easy" && g.k !== "long";
+        return d && <DayCell key={r.d} size="M" day={d} iso={r.d} today={t} pick={rl || undefined} onPick={() => toggleRun(r.d)} head={`${dow(r.d)} ${dm(r.d)}`}
+          facts={<>{r.km.toFixed(1)} км · {r.key.pace ? fmtPace(r.key.pace) : "—"} /км · {r.key.hr ? Math.round(r.key.hr) : "—"} уд{lv && <span class="lvl"> · {lvlTxt(r)}</span>}{r.acc != null && <b class="acc-n"> {r.acc}%</b>}</>} />; })}
     </div>
   </Card>;
 }
@@ -89,7 +82,7 @@ function Diff({ A, B }: { A: Side; B: CmpRun }) {
   const R = rows(g.k).map(r => ({ r, a: val(A, r.get), b: val({ label: "", d: B.d, runs: [B] }, r.get) })).filter(x => x.a !== null || x.b !== null);
   return <div class="tbl-wrap"><table class="tbl cmp-t">
     <thead><tr><th scope="col" /><th scope="col" class="n"><i class="sw a" />{A.label}</th><th scope="col" class="n"><i class="sw b" />{dm(B.d)}</th><th scope="col" class="n">Різниця</th></tr></thead>
-    <tbody>{R.map(({ r, a, b }) => <tr key={r.label}><td>{r.label}</td><td class="n num">{a !== null ? fmtV(a, r.fmt) : "—"}</td><td class="n num"><b>{b !== null ? fmtV(b, r.fmt) : "—"}</b></td><td class="n num"><Delta a={a} b={b} r={r} /></td></tr>)}</tbody>
+    <tbody>{R.map(({ r, a, b }) => <tr key={r.label}><td>{r.label}</td><td class="n num">{a !== null ? fmtV(a, r.fmt) : "—"}</td><td class="n num"><b>{b !== null ? fmtV(b, r.fmt) : "—"}</b></td><td class="n num"><Dl a={a} b={b} r={r} /></td></tr>)}</tbody>
   </table></div>;
 }
 
@@ -115,7 +108,7 @@ function Reps({ A, B }: { A: Side; B: CmpRun }) {
     <div class="tbl-wrap"><table class="tbl cmp-t">
       <thead><tr><th scope="col">№</th><th scope="col" class="n"><i class="sw a" />{A.label}</th><th scope="col" class="n"><i class="sw b" />{dm(B.d)}</th><th scope="col" class="n">Темп</th></tr></thead>
       <tbody>{Array.from({ length: n }, (_, i) => <tr key={i}><td class="num">{i + 1}</td><td class="n num">{cell(ra[i])}</td><td class="n num"><b>{cell(rb[i])}</b></td>
-        <td class="n num"><Delta a={ra[i]?.pace ?? null} b={rb[i]?.pace ?? null} r={{ better: -1, scale: 10, fmt: "pace" }} /></td></tr>)}</tbody>
+        <td class="n num"><Dl a={ra[i]?.pace ?? null} b={rb[i]?.pace ?? null} r={{ better: -1, scale: 10, fmt: "pace" }} /></td></tr>)}</tbody>
     </table></div>
     <p class="pf-note">Під темпом пульс. {A.d ? "" : "Для середнього: середній темп кожного повтору за номером."}</p>
   </Card>;
