@@ -138,10 +138,10 @@ function ThrHistory() {
     <Table rowKey={r => r.date} rows={rows} cols={[
       { key: "d", title: "Дата", cell: r => `${dm(r.date)}.${r.date.slice(0, 4)}` },
       { key: "p", title: "Поріг, /км", num: true, cell: r => <b>{fmtPace(r.paceSec)}</b> },
-      { key: "c", title: "Зміна", num: true, cell: r => (r.delta === null ? "—" : r.delta === 0 ? "0 с" : `${r.delta < 0 ? "−" : "+"}${Math.abs(r.delta)} с`) },
+      { key: "c", title: "Зміна", num: true, wide: true, cell: r => (r.delta === null ? "—" : r.delta === 0 ? "0 с" : `${r.delta < 0 ? "−" : "+"}${Math.abs(r.delta)} с`) },
       { key: "h", title: "Пульс", num: true, cell: r => r.hr ?? "—" },
       { key: "t", title: "Прогноз 10 км", num: true, cell: r => mmss(r.t10) },
-      { key: "s", title: "Звідки", cell: r => SRC[r.source] },
+      { key: "s", title: "Звідки", wide: true, cell: r => SRC[r.source] },
     ]} />
   </Card>;
 }
@@ -250,7 +250,7 @@ function Injuries() {
       <Table rowKey={r => r.from + r.area + r.side} rows={[...I].reverse()} cols={[
         { key: "d", title: "Дати", cell: r => `${injSpanTxt(r)}.${r.to.slice(0, 4)}` },
         { key: "a", title: "Зона", cell: r => `${areaName(r.area)}, ${SIDE_NAME[r.side]}` },
-        { key: "l", title: "Сила", cell: r => <><b>{r.level}</b> {INJ_LVL[r.level]}</> },
+        { key: "l", title: "Сила", cell: r => <><b>{r.level}</b><span class="wide"> {INJ_LVL[r.level]}</span></> },
         { key: "n", title: "Що було", cell: r => r.note },
       ]} />
     </Details>

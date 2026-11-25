@@ -23,7 +23,7 @@ export function WeeksFull() {
       { key: "fm", title: "Факт, год", num: true, cell: r => (r.runs ? fmtHM(r.factMin) : "—") },
       { key: "fk", title: "Факт, км", num: true, cell: r => (r.runs ? <b>{r.factKm.toFixed(1)}</b> : "—") },
       { key: "d", title: "Тренувань", num: true, cell: r => `${r.done}/${r.past}${r.miss ? ` −${r.miss}` : ""}${r.extra ? ` +${r.extra}` : ""}` },
-      { key: "c", title: "COROS", num: true, cell: r => (r.coros ? Math.round(r.coros) : "—") },
+      { key: "c", title: "COROS", num: true, wide: true, cell: r => (r.coros ? Math.round(r.coros) : "—") },
       { key: "a", title: "Точність", num: true, cell: r => (r.acc !== null ? `${r.acc} %` : "—") },
     ]} />
     <p class="pf-note">Факт: усі пробіжки тижня, зокрема другі за день і в дні відпочинку. «−N» пропущені дні плану, «+N» позапланові пробіжки. План у км: хвилини за середнім легким темпом. Точність: середня за тиждень, ключові тренування вдвічі.</p>

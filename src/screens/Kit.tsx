@@ -179,7 +179,7 @@ export function Kit() {
             { key: "d", title: "Дата", cell: d => dm(d.date) },
             { key: "w", title: "Тренування", cell: d => d.workout?.name ?? d.act },
             { key: "km", title: "Км", num: true, cell: d => d.run!.km.toFixed(1) },
-            { key: "p", title: "Темп", num: true, cell: d => (d.report?.pace ? pace(d.report.pace) : "—") },
+            { key: "p", title: "Темп", num: true, wide: true, cell: d => (d.report?.pace ? pace(d.report.pace) : "—") },
             { key: "a", title: "Точність", num: true, cell: d => <Pill tone={accTone(d.acc!.score)}>{`${d.acc!.score}% · ${d.acc!.label}`}</Pill> },
           ]} />
         </Card>

@@ -158,3 +158,9 @@ Rule: a thing that means the same everywhere is one component; screens pass size
 - `src/app/JournalPopup.tsx` + `src/store/journal.ts`: opens by itself for the latest run of the last 3 days without a record;
   «Пізніше» puts it off for that day (browser storage).
 - The run-journal skill writes the same fields.
+
+## Step 12: phone polish
+
+- `Col.wide` in `Table`: a secondary column hidden under 480 px (threshold history: «Зміна», «Звідки»; weeks: «COROS»), so tables fit a phone without scrolling.
+- Phone rules for calendar cells apply to every week row (`.cal-wk`), not only the grid; cells clip long text.
+- Checked: every screen at 390 px in light and dark, no page-wide horizontal scroll.

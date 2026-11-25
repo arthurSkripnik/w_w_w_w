@@ -98,14 +98,15 @@ export function Delta({ d, text, better, scale }: { d: number | null; text: stri
 }
 
 /** A table: columns with an optional numeric flag (right-aligned, tabular). */
-export interface Col<R> { key: string; title: string; num?: boolean; cell: (r: R) => ComponentChildren }
+/** `wide`: a secondary column, hidden on a phone so the table fits without scrolling. */
+export interface Col<R> { key: string; title: string; num?: boolean; wide?: boolean; cell: (r: R) => ComponentChildren }
 export function Table<R>({ cols, rows, caption, rowKey }: { cols: Col<R>[]; rows: R[]; caption?: string; rowKey: (r: R) => string }) {
   return (
     <div class="tbl-wrap">
       <table class="tbl">
         {caption && <caption class="label">{caption}</caption>}
-        <thead><tr>{cols.map(c => <th key={c.key} class={c.num ? "n" : undefined} scope="col">{c.title}</th>)}</tr></thead>
-        <tbody>{rows.map(r => <tr key={rowKey(r)}>{cols.map(c => <td key={c.key} class={c.num ? "n num" : undefined}>{c.cell(r)}</td>)}</tr>)}</tbody>
+        <thead><tr>{cols.map(c => <th key={c.key} class={[c.num && "n", c.wide && "wide"].filter(Boolean).join(" ") || undefined} scope="col">{c.title}</th>)}</tr></thead>
+        <tbody>{rows.map(r => <tr key={rowKey(r)}>{cols.map(c => <td key={c.key} class={[c.num && "n num", c.wide && "wide"].filter(Boolean).join(" ") || undefined}>{c.cell(r)}</td>)}</tr>)}</tbody>
       </table>
     </div>
   );

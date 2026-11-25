@@ -123,10 +123,10 @@
     .cal-dow > span:first-child { display: none; }
     .cal-wl { grid-column: 1 / -1; display: flex; gap: 12px; align-items: baseline; padding: 4px 0; }
     .cal-wl .cal-bar { display: none; }
-    .cal-grid .cell { min-height: 64px; padding: 6px 4px; }
-    .cal-grid .cell[data-size="S"] .cell-n { display: none; }
-    .cal-grid .cell[data-size="S"] .cell-a { display: inline; }
-    .cal-grid .cell .ok, .cal-grid .cell .gym { display: none; }
+    .cal-wk .cell { min-height: 64px; padding: 6px 4px; overflow: hidden; }
+    .cal-wk .cell[data-size="S"] .cell-n { display: none; }
+    .cal-wk .cell[data-size="S"] .cell-a { display: inline; }
+    .cal-wk .cell .ok, .cal-wk .cell .gym { display: none; }
     .cal-lrow .cell[data-size="M"] { grid-template-columns: 72px minmax(0, 1fr) auto; }
     .cal-lrow .shape { display: none; }
     .steps li { grid-template-columns: 1fr; gap: 4px; }
