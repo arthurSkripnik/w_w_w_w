@@ -62,6 +62,14 @@ export function plannedLevel(date: string) {
   return w ? w.level : null;
 }
 
+/** «Замінити з Бази»: another session from the Base on this day, at the given level; the change keeps what was planned. */
+export async function replaceDay(date: string, type: string, level: number) {
+  const day = plan.value[date]; if (!day) throw new ActionError("missing", "Немає такого дня в плані");
+  const id = await ensureWorkout(type, level);
+  if (id === day.workout) return;
+  await put("plan", date, { ...day, workout: id, changes: [...day.changes, { kind: "replace", from: day.workout, to: id }] });
+}
+
 /** Plan week and phase of a date that has no session: taken from a plan day of the same Monday–Sunday week. */
 function weekOf(date: string) {
   const mon = mondayOf(date), all = Object.values(plan.value).sort((a, b) => a.date.localeCompare(b.date));
@@ -98,7 +106,7 @@ export async function revertDay(date: string) {
   const day = plan.value[date], last = day?.changes[day.changes.length - 1];
   if (!day || !last) return;
   const pop = (p: PlanDay) => p.changes.slice(0, -1);
-  if (last.kind === "level" || last.kind === "eased") { await put("plan", date, { ...day, workout: last.from, changes: pop(day) }); return; }
+  if (last.kind === "level" || last.kind === "eased" || last.kind === "replace") { await put("plan", date, { ...day, workout: last.from, changes: pop(day) }); return; }
   if (last.kind === "start") {
     for (const k of [-1, 1]) { const d = addDays(date, k), p = plan.value[d], l = p?.changes[p.changes.length - 1];
       if (p && l && l.kind === "eased" && l.note === date) await put("plan", d, { ...p, workout: l.from, changes: pop(p) }); }

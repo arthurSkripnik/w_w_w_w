@@ -2,14 +2,15 @@
 // plan changes, what it actually was, the fact and the Strava report beside it.
 import { useState } from "preact/hooks";
 import type { Day } from "../domain/days";
-import { Pill, Button, Segmented, StatusLine, Field, KV } from "../ui";
+import { Pill, Button, Segmented, StatusLine, Field, KV, Choice, Details } from "../ui";
+import { options, warnings, REPLACE_CATS, type Cat } from "../domain/replace";
 import { WorkoutCard } from "./WorkoutCard";
 import { Report } from "./Report";
 import { groupOf } from "../domain/compare";
 import { days, dayByDate, today, zones, goal, threshold } from "../store/derived";
-import { plan, journal } from "../store/data";
+import { plan, journal, workouts } from "../store/data";
 import { athlete } from "../store/data";
-import { setLevel, plannedLevel, swapDays, moveToRest, markStart, revertDay, setActual, setExclude, logDay, addThreshold } from "../store/actions";
+import { setLevel, plannedLevel, swapDays, moveToRest, markStart, revertDay, replaceDay, setActual, setExclude, logDay, addThreshold } from "../store/actions";
 import { pullDay, sync } from "../store/strava";
 import { go } from "../app/routes";
 import { typeOf, CAT, TYPE, RPE_TARGET } from "../domain/types";
@@ -80,6 +81,30 @@ function RacePlan() {
 }
 
 /** Move to another day, mark a start, undo a change. Only for days still ahead, never the race. */
+/** «Замінити з Бази»: the sessions of one effort group as cards, at the level closest to the planned minutes. */
+function Replace({ day }: { day: Day }) {
+  const info = typeOf(day.type), [cat, setCat] = useState<Cat>(info.cat === "z2" || info.cat === "z3" ? info.cat : "z1");
+  const [pick, setPick] = useState<string | null>(null), { msg, busy, run } = useAct(), by = dayByDate.value, t = today.value;
+  const O = options(day, cat), sel = O.find(o => o.type === pick) ?? null, W = sel ? warnings(day, sel.type, by, goal.value?.date ?? null) : [];
+  return <Details summary="Замінити з Бази">
+    <Choice look="chips" label="Група зусилля" value={cat} onChange={c => { setCat(c); setPick(null); }} options={REPLACE_CATS} />
+    <div class="dc-repl" role="group" aria-label="Тренування з Бази">
+      {O.map(o => <WorkoutCard key={o.type} size="M" type={o.type} level={o.level} name={typeOf(o.type).name} past={day.date < t} pressed={o.type === pick}
+        label={`${typeOf(o.type).name}, ${o.mins} хв${o.level ? `, рівень ${o.level}` : ""}`} onClick={() => setPick(o.type === pick ? null : o.type)}
+        bottom={<>≈{o.mins} хв{o.level > 0 && <span class="lvl"> · Р{o.level}</span>}</>} />)}
+    </div>
+    {sel && <>
+      {W.map(w => <StatusLine key={w} tone="acc" tag="увага">{w}</StatusLine>)}
+      <div class="dc-row">
+        <Button disabled={busy} onClick={() => run(async () => { await replaceDay(day.date, sel.type, sel.level); setPick(null); })}>Поставити «{typeOf(sel.type).name}» на {dm(day.date)}</Button>
+        <a href="#library" class="btn" data-v="link">Що це за тренування</a>
+      </div>
+    </>}
+    <p class="label">Рівень підібрано так, щоб час дня лишився близько {dur(day.type, Math.max(1, day.level))} хв. Після заміни його можна змінити кнопками «Легше» і «Довше». «Повернути як було» скасує заміну.</p>
+    <Msg m={msg} />
+  </Details>;
+}
+
 function PlanEdit({ day }: { day: Day }) {
   const t = today.value, race = goal.value?.date ?? "9999", by = dayByDate.value, { msg, busy, run } = useAct();
   if (day.date < t || day.type === "race") return null;
@@ -92,6 +117,7 @@ function PlanEdit({ day }: { day: Day }) {
   const rest: string[] = []; for (let k = -7; k <= 7; k++) { const d = addDays(day.date, k); if (d >= t && d < race && !by[d]) rest.push(d); }
   const notes = day.plan.changes.map(c => c.kind === "level" ? `Обрано інший рівень: ${dur(day.type, day.level)} хв.`
     : c.kind === "swap" ? (c.from === "rest" ? `Перенесено з ${dm(c.note!.slice(-10))}.` : `Обмін з ${dm((c.note ?? "").slice(-10))}.`)
+    : c.kind === "replace" ? `Замінено з Бази, було: ${(workouts.value[c.from]?.name ?? "інше тренування").toLowerCase()}.`
     : c.kind === "start" ? `Старт${c.from !== "rest" ? " замість тренування" : ""}.` : `Полегшено: ${c.note! > day.date ? "наступного дня" : "напередодні"} старт.`);
   return <section class="dc-sec">
     <h3 class="card-title">Змінити план</h3>
@@ -109,6 +135,7 @@ function PlanEdit({ day }: { day: Day }) {
         </select></label>}
       {last && <Button variant="ghost" disabled={busy} onClick={() => run(() => revertDay(day.date))}>{isStart ? "Прибрати старт" : "Повернути як було"}</Button>}
     </div>
+    {!isStart && !eased && <Replace day={day} />}
     <p class="label">Перенесення міняє тренування місцями з обраним днем або ставить його на день відпочинку. Старт: день до і день після стають відновлювальними.</p>
     <Msg m={msg} />
   </section>;

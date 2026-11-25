@@ -63,6 +63,7 @@
   .daycard > .cell[data-size="L"] { padding: 12px 0 20px; background: none; box-shadow: none; }
   .daycard > .cell[data-size="L"] .wc-name { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; }
   .dc-grid { display: grid; gap: 40px; }
+  .dc-repl { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin: 12px 0; }
   .dc-grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .dc-col { display: grid; gap: 28px; align-content: start; min-width: 0; }
   .dc-sec { display: grid; gap: 12px; margin: 0; border-top: 1px solid var(--line); padding-top: 12px; }
@@ -123,8 +124,8 @@
     .cal-wl { grid-column: 1 / -1; display: flex; gap: 12px; align-items: baseline; padding: 4px 0; }
     .cal-wl .cal-bar { display: none; }
     .cal-grid .cell { min-height: 64px; padding: 6px 4px; }
-    .cal-grid .cell-n { display: none; }
-    .cal-grid .cell-a { display: inline; }
+    .cal-grid .cell[data-size="S"] .cell-n { display: none; }
+    .cal-grid .cell[data-size="S"] .cell-a { display: inline; }
     .cal-grid .cell .ok, .cal-grid .cell .gym { display: none; }
     .cal-lrow .cell[data-size="M"] { grid-template-columns: 72px minmax(0, 1fr) auto; }
     .cal-lrow .shape { display: none; }
