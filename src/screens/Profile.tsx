@@ -16,6 +16,9 @@ import { fmtPace } from "../domain/util";
 import { THR_TO_10K } from "../domain/spec";
 import { hrCeil } from "../domain/zones";
 import { zoneGap } from "../domain/text";
+import { Board, boards } from "../widgets/Board";
+/** Card numbers follow the character widgets at the top of the Profile. */
+const N = (x: number) => String(x + boards.profile.value.length).padStart(2, "0");
 import {
   estimates, BODY, parseBody, parseThreshold, thrHistory, hrRows, AREAS, areaName, SIDE_NAME,
   injSpan, injRows, injMax, injDays, injSpanTxt, injHeat, type BodyKey, type InjPeriod, type MapPart, type Span,
@@ -34,7 +37,7 @@ function Body() {
     await updateAthlete(r.out); setEdit(false);
   };
   const vals: [string, number | undefined, string][] = [["Вік", a.age, "років"], ["Зріст", a.heightCm, "см"], ["Вага", a.weightKg, "кг"], ["Сон", sleepNorm.value, "год норма"]];
-  return <Card id="p-body" n="01" title="Тіло і сон" aside={<Button variant="link" aria-expanded={edit} onClick={() => (edit ? setEdit(false) : open())}>{edit ? "Скасувати" : "Змінити"}</Button>}>
+  return <Card id="p-body" n={N(1)} title="Тіло і сон" aside={<Button variant="link" aria-expanded={edit} onClick={() => (edit ? setEdit(false) : open())}>{edit ? "Скасувати" : "Змінити"}</Button>}>
     <div class="pf-vals">{vals.map(([n, x, u]) => <div key={n}><span class="label">{n}</span><b class="num">{x ?? "—"}</b><span class="label">{u}</span></div>)}</div>
     {edit && <form class="pf-form" onSubmit={e => { e.preventDefault(); save(); }}>
       <div class="pf-fields">{BODY.map(f => <Field key={f.k} label={f.label} inputMode={f.mode} value={v[f.k]} error={err[f.k]}
@@ -49,9 +52,9 @@ function Body() {
 // ---- 02 Що з цього виходить ----------------------------------------------------
 function Estimates() {
   const th = threshold.value, g = goal.value, Z = zones.value, a = athlete.value;
-  if (!th || !g || !Z) return <Card id="p-est" n="02" title="Що з цього виходить"><Empty>Потрібні поріг і ціль.</Empty></Card>;
+  if (!th || !g || !Z) return <Card id="p-est" n={N(2)} title="Що з цього виходить"><Empty>Потрібні поріг і ціль.</Empty></Card>;
   const rows = estimates(a, th, g, Z, runs.value);
-  return <Card id="p-est" n="02" title="Що з цього виходить" aside={<span class="label">Оцінки, не лабораторія</span>}>
+  return <Card id="p-est" n={N(2)} title="Що з цього виходить" aside={<span class="label">Оцінки, не лабораторія</span>}>
     <Table rowKey={r => r.name} rows={rows} cols={[
       { key: "n", title: "Показник", cell: r => r.name },
       { key: "v", title: "Значення і звідки", cell: r => <div class="pf-est"><b class="num">{r.value}</b>{r.tag && <Pill tone={r.tag === "збігається" ? "ink" : "line"}>{r.tag}</Pill>}<div class="label">{r.src}</div></div> },
@@ -65,7 +68,7 @@ function Estimates() {
 function ThresholdGoal() {
   const th = threshold.value, g = goal.value, Z = zones.value, [edit, setEdit] = useState(false), [ok, setOk] = useState("");
   const [v, setV] = useState({ pace: "", hr: "", goal: "" }), [err, setErr] = useState<Record<string, string>>({});
-  if (!th || !g) return <Card id="p-thr" n="03" title="Поріг і ціль"><Empty>У базі немає порогу або цілі.</Empty></Card>;
+  if (!th || !g) return <Card id="p-thr" n={N(3)} title="Поріг і ціль"><Empty>У базі немає порогу або цілі.</Empty></Card>;
   const goal10 = (g.targetSec / g.km) * 10, need = g.targetSec / g.km / THR_TO_10K;
   const open = () => { setV({ pace: fmtPace(th.paceSec), hr: String(th.hr ?? Z?.thrHR ?? ""), goal: mmss(g.targetSec) }); setErr({}); setOk(""); setEdit(true); };
   const apply = async () => {
@@ -73,7 +76,7 @@ function ThresholdGoal() {
     await setThresholdGoal(today.value, r.paceSec, r.hr, goalId.value, r.targetSec);
     setEdit(false); setOk(`Зони й тренування з ${dm(today.value)} рахуються від порогу ${fmtPace(r.paceSec)}. Минулі дні лишаються з попереднім.`);
   };
-  return <Card id="p-thr" n="03" title="Поріг і ціль" aside={<Button variant="link" aria-expanded={edit} onClick={() => (edit ? setEdit(false) : open())}>{edit ? "Скасувати" : "Змінити"}</Button>}>
+  return <Card id="p-thr" n={N(3)} title="Поріг і ціль" aside={<Button variant="link" aria-expanded={edit} onClick={() => (edit ? setEdit(false) : open())}>{edit ? "Скасувати" : "Змінити"}</Button>}>
     <div class="pf-vals">
       <div><span class="label">Поріг</span><b class="num">{fmtPace(th.paceSec)}</b><span class="label">/км</span></div>
       <div><span class="label">Пульс порогу</span><b class="num">{th.hr ?? Z?.thrHR ?? "—"}</b><span class="label">уд/хв</span></div>
@@ -99,14 +102,14 @@ const ZONE_USE: [("rec" | "z1" | "z2" | "z3"), string][] = [
   ["z2", "Довгі відрізки й швидкий фініш, ≈ годину на межі"], ["z3", "Короткі інтервали, темп 10 км і швидше"],
 ];
 function PaceZones() {
-  const Z = zones.value; if (!Z) return <Card id="p-zones" n="04" title="Зони темпу" span={6}><Empty>Немає порогу.</Empty></Card>;
+  const Z = zones.value; if (!Z) return <Card id="p-zones" n={N(4)} title="Зони темпу" span={6}><Empty>Немає порогу.</Empty></Card>;
   const gap = zoneGap(Z);
   const rows = [
     ...ZONE_USE.map(([k, use]) => ({ k, name: ZONE_NAME[k], use, v: `${fmtPace(Z[k].fast)}–${fmtPace(Z[k].slow)}` })),
     ...(gap ? [{ k: "gap", name: "марафонський", use: "Між легким і пороговим (Aerobic Power у COROS)", v: `${fmtPace(gap.fast)}–${fmtPace(gap.slow)}` }] : []),
     { k: "race", name: ZONE_NAME.race, use: "Темп цілі", v: fmtPace(Z.race) },
   ];
-  return <Card id="p-zones" n="04" title="Зони темпу" span={6} aside={<span class="label">Від порогу {fmtPace(Z.thrPace)}</span>}>
+  return <Card id="p-zones" n={N(4)} title="Зони темпу" span={6} aside={<span class="label">Від порогу {fmtPace(Z.thrPace)}</span>}>
     <Table rowKey={r => r.k} rows={rows} cols={[
       { key: "n", title: "Зона", cell: r => <b>{r.name}</b> },
       { key: "u", title: "Для чого", cell: r => r.use },
@@ -116,9 +119,9 @@ function PaceZones() {
   </Card>;
 }
 function HrZones() {
-  const Z = zones.value; if (!Z) return <Card id="p-hr" n="05" title="Пульсові зони" span={6}><Empty>Немає порогу.</Empty></Card>;
+  const Z = zones.value; if (!Z) return <Card id="p-hr" n={N(5)} title="Пульсові зони" span={6}><Empty>Немає порогу.</Empty></Card>;
   const src = Z.hrTops && Z.hrTops.length >= 4 ? "Зі Strava" : `Від пульсу порогу ${Z.thrHR}`;
-  return <Card id="p-hr" n="05" title="Пульсові зони" span={6} aside={<span class="label">{src}</span>}>
+  return <Card id="p-hr" n={N(5)} title="Пульсові зони" span={6} aside={<span class="label">{src}</span>}>
     <Table rowKey={r => r.z} rows={hrRows(Z)} cols={[
       { key: "z", title: "Зона", cell: r => <b>{r.z}</b> },
       { key: "u", title: "Для чого", cell: r => r.use },
@@ -131,7 +134,7 @@ function HrZones() {
 // ---- 06 Історія порогу -------------------------------------------------------------
 function ThrHistory() {
   const rows = thrHistory(thresholds.value), SRC = { coros: "COROS", test: "тест", manual: "вручну" } as const;
-  return <Card id="p-hist" n="06" title="Історія порогу" aside={<span class="label">{rows.length} {plural(rows.length, "запис", "записи", "записів")}</span>}>
+  return <Card id="p-hist" n={N(6)} title="Історія порогу" aside={<span class="label">{rows.length} {plural(rows.length, "запис", "записи", "записів")}</span>}>
     <Table rowKey={r => r.date} rows={rows} cols={[
       { key: "d", title: "Дата", cell: r => `${dm(r.date)}.${r.date.slice(0, 4)}` },
       { key: "p", title: "Поріг, /км", num: true, cell: r => <b>{fmtPace(r.paceSec)}</b> },
@@ -228,7 +231,7 @@ function Injuries() {
   const I = injList.value, [p, setP] = useState<InjPeriod>(readP), [tip, setTip] = useState<Tip | null>(null), [add, setAdd] = useState(false);
   const span = injSpan(I, today.value, p), now = injNow.value;
   const choose = (x: InjPeriod) => { setP(x); setTip(null); try { localStorage.setItem(PERIOD_KEY, x); } catch { /* private mode */ } };
-  return <Card id="p-inj" n="07" title="Травми" aside={<Segmented label="Період" value={p} onChange={choose} options={[{ id: "30", title: "30 днів" }, { id: "all", title: "Усе" }]} />}>
+  return <Card id="p-inj" n={N(7)} title="Травми" aside={<Segmented label="Період" value={p} onChange={choose} options={[{ id: "30", title: "30 днів" }, { id: "all", title: "Усе" }]} />}>
     <StatusLine tone={now.now ? "acc" : "line"} tag={now.now ? INJ_LVL[now.level] : "зараз без скарг"}>{now.text}</StatusLine>
     <div class="inj-cols">
       <BodyMap I={I} span={span} onTip={setTip} />
@@ -262,7 +265,7 @@ function Injuries() {
 // ---- 08 Дані --------------------------------------------------------------------
 function Data() {
   const s = sync.value, arch = archive.value;
-  return <Card id="p-data" n="08" title="Дані">
+  return <Card id="p-data" n={N(8)} title="Дані">
     {s.text && <StatusLine tone={s.ok === false ? "err" : "line"} tag={s.busy ? "працює" : s.ok === false ? "помилка" : "ok"}>{s.text}</StatusLine>}
     <div class="pf-data">
       <div>
@@ -287,6 +290,7 @@ export function Profile() {
   if (dbState.value === "offline" || dbState.value === "error") return <Empty>База недоступна. Відкрий сторінку як артефакт у Claude.</Empty>;
   return <>
     <h1 class="pf-head">Профіль</h1>
+    <Board b="profile" />
     <Grid>
       <Body /><Estimates /><ThresholdGoal /><PaceZones /><HrZones /><ThrHistory /><Injuries /><Data />
     </Grid>
