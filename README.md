@@ -170,3 +170,11 @@ Rule: a thing that means the same everywhere is one component; screens pass size
 - `Modal` in `src/ui`: backdrop, Esc / backdrop click close, focus in and back, page scroll locked; full screen on a phone; `wide` for the day card. Shown in Kit.
 - Calendar opens `#calendar/<date>` in a wide `Modal` over the plan instead of under its week; ← → and «Закрити» work as before.
 - The journal popup uses the same `Modal`.
+
+## Step 14: day window, accessibility (WCAG 2.1 AA)
+
+- `Modal` renders into `body` via a portal and sets `inert` on `#app`: Tab and screen readers stay in the window. Focus returns to the cell of the day that was open last (`returnTo`, cells carry `data-date`).
+- Day card: ← → keys step through days (not while a field or a choice has focus); the header with ← → «Закрити» stays on top while scrolling (sticky; the backdrop uses margin, not padding, so it sticks at the very top).
+- Headings: the card name is `h2` in a window (`WorkoutCard hLevel`); empty table headers got hidden text (`.vh`).
+- Touch screens (`pointer: coarse`): every choice is at least 44 px tall; summaries 44 px; text fields show a 2 px focus line.
+- Checked with axe-core 4.10 on the open day (light/dark, 1280/390): 0 violations.

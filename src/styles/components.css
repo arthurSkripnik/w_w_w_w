@@ -101,13 +101,13 @@
 
   .field { display: grid; gap: 6px; }
   .field input { font-size: 17px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); min-height: 44px; }
-  .field input:focus { outline: none; border-bottom-color: var(--ink); }
+  .field input:focus { outline: none; border-bottom-color: var(--ink); box-shadow: 0 1px 0 var(--ink); }
   .field input[aria-invalid] { border-bottom-color: var(--err); }
   .field-h { font-family: var(--grot); font-size: 13px; color: var(--mute); }
   .field-h.err { color: var(--err); }
 
   .how { border-top: 1px solid var(--hair); }
-  .how summary { font-family: var(--grot); font-size: 14px; padding: 12px 0; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+  .how summary { font-family: var(--grot); font-size: 14px; padding: 12px 0; min-height: 44px; align-items: center; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
   .how summary::-webkit-details-marker { display: none; }
   .how summary::after { content: "+"; }
   .how[open] summary::after { content: "−"; }
@@ -156,13 +156,22 @@
   .jf-pain { display: grid; gap: 10px; padding: 12px; box-shadow: inset 2px 0 0 var(--acc); }
   .jf-pain p { margin: 0; }
   .jf-note textarea { width: 100%; font: inherit; font-family: var(--grot); padding: 8px 0; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--ink); resize: vertical; }
-  .modal-back { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--ink) 35%, transparent); display: grid; place-items: start center; overflow: auto; overscroll-behavior: contain; padding: 40px 16px; }
+  .modal-back { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--ink) 35%, transparent); display: grid; place-items: start center; overflow: auto; overscroll-behavior: contain; padding: 0 16px; }
+  .modal-back > .modal { margin: 40px 0; }   /* margin, not padding: a sticky header inside sticks to the very top */
   .modal { width: min(720px, 100%); background: var(--bg); padding: 20px 24px 28px; display: grid; gap: 16px; outline: none; box-shadow: 0 12px 40px rgb(0 0 0 / .25); }
-  .modal-wide { width: min(960px, 100%); display: block; }
+  .modal-wide { width: min(960px, 100%); display: block; padding-top: 0; }
+  .modal .dc-head { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 12px 0; box-shadow: 0 1px 0 var(--hair); }
+  .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* touch screens: every choice and toggle at least 44 px tall (WCAG 2.5.5) */
+  @media (pointer: coarse) {
+    .seg-o > span, .seg[data-look="chips"] .seg-o > span, .seg[data-look="nums"] .seg-o > span, .jf .seg[data-look="chips"] .seg-o > span { min-height: 44px; }
+  }
   .jp-h { display: flex; justify-content: space-between; align-items: center; }
   .jp-q { margin: 8px 0 0; font: 400 24px/1.2 var(--serif); }
   @media (max-width: 760px) {
     .modal-back { padding: 0; }
+    .modal-back > .modal { margin: 0; }
     .modal { min-height: 100%; padding: 16px 16px 96px; box-shadow: none; }
+    .modal-wide { padding-top: 0; }
   }
 }

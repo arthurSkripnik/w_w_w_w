@@ -127,7 +127,7 @@ export function Report({ day, rh }: { day: Day; rh: number | null }) {
     <section class="rcard">
       <header class="card-head"><h3 class="card-title">Кола</h3><span class="card-aside label">{L.length} {plural(L.length, "коло", "кола", "кіл")}</span></header>
       <div class="tbl-wrap"><table class="tbl laps">
-        <thead><tr><th>№</th><th class="n">Км</th><th class="n">Час</th><th class="n">Темп</th><th class="n">Пульс</th><th /></tr></thead>
+        <thead><tr><th>№</th><th class="n">Км</th><th class="n">Час</th><th class="n">Темп</th><th class="n">Пульс</th><th><span class="vh">Відрізок</span></th></tr></thead>
         <tbody>{rep.laps.map((l, i) => { if (l[1] < 100) return null; no++; const p = lapPace(l), best = !!bestKm && Math.abs(p - bestKm) < 0.01 && l[1] >= 950;
           return <tr key={i} class={work.has(i) ? "lwk" : undefined}><td>{no}</td><td class="n num">{(l[1] / 1000).toFixed(2)}</td><td class="n num">{mmss(l[0])}</td><td class="n num"><b>{fmtPace(p)}</b></td><td class="n num">{l[2] || "—"}</td>
             <td>{work.has(i) ? <T t={zoneMark(p, workKey, Z)} /> : best ? <Pill tone="acc">найкращий км</Pill> : null}</td></tr>; })}</tbody>

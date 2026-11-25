@@ -1,6 +1,6 @@
 // The day card, ported from v52 03-daycard.js: what to run and how, «Легше / Довше», splits, strength, race plan,
 // plan changes, what it actually was, the fact and the Strava report beside it.
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import type { Day } from "../domain/days";
 import { Pill, Button, Segmented, StatusLine, Field, KV, Choice, Details } from "../ui";
 import { options, warnings, REPLACE_CATS, type Cat } from "../domain/replace";
@@ -54,7 +54,7 @@ function Splits({ day }: { day: Day }) {
   const fast = Math.min(...sp.map(x => x.p)), slow = Math.max(...sp.map(x => x.p)), bar = (p: number) => Math.round(40 + (60 * (slow - p)) / Math.max(1, slow - fast));
   return <section class="dc-sec">
     <h3 class="card-title">Спліти по км</h3>
-    <div class="tbl-wrap"><table class="tbl splits"><thead><tr><th>Км</th><th class="n">Темп /км</th><th /><th class="n">Час</th></tr></thead>
+    <div class="tbl-wrap"><table class="tbl splits"><thead><tr><th>Км</th><th class="n">Темп /км</th><th><span class="vh">Темп на смузі</span></th><th class="n">Час</th></tr></thead>
       <tbody>{rows.map(r => <tr key={r.from} class={r.w ? "lwk" : undefined}><td class="num">{r.from === r.to ? r.from : `${r.from}–${r.to}`}</td><td class="n num"><b>{fmtPace(r.p)}</b></td><td class="sbar"><i style={{ width: `${bar(r.p)}%` }} /></td><td class="n num">{mmss(r.t)}</td></tr>)}</tbody></table></div>
     <p class="label">≈{sp.length} км за {mmss(t)}. {sp.some(x => x.w) ? "Прискорення рівне: кожен км трохи швидший за попередній, останній близько верху порогового темпу. " : ""}Перші км повільніші: тіло розігрівається.</p>
   </section>;
@@ -200,17 +200,27 @@ export function DayCard({ day }: { day: Day }) {
   const past = day.date <= t, steps = [g.warmup && ["Розминка", g.warmup], [g.warmup || g.cooldown ? "Основна частина" : "Тренування", g.main], g.cooldown && ["Заминка", g.cooldown]].filter(Boolean) as [string, string][];
   const total = Math.max(...all.map(d => d.plan.week)), name = day.workout?.name ?? info.name;
   const rh = (day.run?.weather as { rh?: number | null } | null | undefined)?.rh ?? null;
+  useEffect(() => {   // ← → step through the plan days, unless a field or a choice has the keys
+    const key = (e: KeyboardEvent) => {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.closest("input, select, textarea, [contenteditable], .seg") )) return;
+      const to = e.key === "ArrowLeft" ? prev : next; if (!to) return;
+      e.preventDefault(); go("calendar", to.date, true);
+    };
+    addEventListener("keydown", key); return () => removeEventListener("keydown", key);
+  }, [prev?.date, next?.date]);
   const nav = (d: Day | undefined, w: string) => (d ? `${w}: ${dm(d.date)}, ${d.workout?.name ?? typeOf(d.type).name}` : `${w} тренування немає`);
   return <article class="daycard" aria-label={`${dm(day.date)}: ${name}`}>
     <header class="dc-head">
       <span class="label num">Тиждень {String(day.plan.week).padStart(2, "0")}/{total} · {dow(day.date)}, {dm(day.date)}</span>
       <span class="dc-nav">
-        <Button variant="ghost" aria-label={nav(prev, "Попереднє")} disabled={!prev} onClick={() => prev && go("calendar", prev.date, true)}>←</Button>
-        <Button variant="ghost" aria-label={nav(next, "Наступне")} disabled={!next} onClick={() => next && go("calendar", next.date, true)}>→</Button>
+        <Button variant="ghost" aria-label={nav(prev, "Попереднє")} disabled={!prev} title="Попередній день (←)" onClick={() => prev && go("calendar", prev.date, true)}>←</Button>
+        <Button variant="ghost" aria-label={nav(next, "Наступне")} disabled={!next} title="Наступний день (→)" onClick={() => next && go("calendar", next.date, true)}>→</Button>
         <Button variant="link" onClick={() => go("calendar", null, true)}>Закрити</Button>
       </span>
     </header>
-    <WorkoutCard size="L" type={day.type} level={day.level} name={name} st={dayState(day)} label={name}
+    <WorkoutCard size="L" hLevel={2} type={day.type} level={day.level} name={name} st={dayState(day)} label={name}
       aside={<span class="dc-cat label">{CAT[info.cat]}{(day.run || typeof day.journal?.rpe === "number") && <Pill tone="line">записано</Pill>}</span>} />
 
     <div class={`dc-grid${day.report ? " two" : ""}`}>

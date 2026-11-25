@@ -28,8 +28,10 @@ interface Props {
   label?: string; onClick?: () => void;
   pick?: "a" | "b" | "in";        // Порівняння: the newer run (b), the one compared with (a), in the mean (in)
   children?: ComponentChildren;        // L: the body
+  hLevel?: 2 | 3;                      // L: the name's heading level (2 when the card heads a window)
+  date?: string;                       // the day it stands for (data-date: the calendar finds the cell again)
 }
-export function WorkoutCard({ size, type, level, name, st = "plan", changed, past, today, pressed, head, aside, bottom, label, onClick, pick, children }: Props) {
+export function WorkoutCard({ size, type, level, name, st = "plan", changed, past, today, pressed, head, aside, bottom, label, onClick, pick, children, hLevel = 3, date }: Props) {
   const t = typeOf(type);
   const inner = <>
     {head && <span class="cell-h label">{head}</span>}
@@ -38,12 +40,12 @@ export function WorkoutCard({ size, type, level, name, st = "plan", changed, pas
       {size === "L" ? <TypeTag type={type} level={level} /> : <><i class="mk" data-cat={t.cat} /><span class="cell-n">{name}{changed && <sup class="chg">*</sup>}</span><span class="cell-a">{t.abbr}{changed && "*"}</span></>}
       {aside}
     </span>
-    {size === "L" && <h3 class="wc-name">{name}</h3>}
+    {size === "L" && (hLevel === 2 ? <h2 class="wc-name">{name}</h2> : <h3 class="wc-name">{name}</h3>)}
     <Shape type={type} level={level} />
     {bottom && <span class="cell-b num">{bottom}</span>}
     {children}
   </>;
-  const attrs = { class: "cell", "data-size": size, "data-cat": t.cat, "data-st": st, "data-past": past ? "" : undefined, "data-today": today ? "" : undefined, "data-pick": pick, "aria-label": label };
+  const attrs = { class: "cell", "data-size": size, "data-cat": t.cat, "data-st": st, "data-past": past ? "" : undefined, "data-today": today ? "" : undefined, "data-pick": pick, "data-date": date, "aria-label": label };
   return onClick
     ? <button type="button" {...attrs} aria-current={today ? "date" : undefined} aria-pressed={pressed} onClick={onClick}>{inner}</button>
     : <article {...attrs}>{inner}</article>;
