@@ -164,3 +164,9 @@ Rule: a thing that means the same everywhere is one component; screens pass size
 - `Col.wide` in `Table`: a secondary column hidden under 480 px (threshold history: «Зміна», «Звідки»; weeks: «COROS»), so tables fit a phone without scrolling.
 - Phone rules for calendar cells apply to every week row (`.cal-wk`), not only the grid; cells clip long text.
 - Checked: every screen at 390 px in light and dark, no page-wide horizontal scroll.
+
+## Step 13: day card in a window
+
+- `Modal` in `src/ui`: backdrop, Esc / backdrop click close, focus in and back, page scroll locked; full screen on a phone; `wide` for the day card. Shown in Kit.
+- Calendar opens `#calendar/<date>` in a wide `Modal` over the plan instead of under its week; ← → and «Закрити» work as before.
+- The journal popup uses the same `Modal`.

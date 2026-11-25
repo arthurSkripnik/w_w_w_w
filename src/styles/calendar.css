@@ -46,16 +46,14 @@
   .cal-wl { display: grid; align-content: start; gap: 2px; padding: 8px 8px 8px 0; font-family: var(--grot); font-size: 13px; }
   .cal-wl b { font-size: 18px; font-weight: 500; }
   .cal-bar { display: block; height: 3px; background: var(--ink); margin-top: 6px; }
-  .cal-card { margin: 12px 0 28px; }
   .cal-list { display: grid; gap: 4px; }
   .cal-lh { display: flex; gap: 16px; align-items: baseline; margin: 20px 0 6px; font-family: var(--grot); }
   .cal-lrow .cell[data-size="M"] { grid-template-columns: 84px minmax(0, 1fr) 120px auto; align-items: center; min-height: 0; width: 100%; }
   .cal-lrow .shape { width: 120px; }
   .cal-lrow .cell-b { text-align: right; }
-  .cal-lrow .daycard { margin: 12px 0 24px; }
 
   /* ---- day card ---- */
-  .daycard { border-top: 2px solid var(--ink); padding-top: 12px; scroll-margin-top: 16px; }
+  .daycard { min-width: 0; }
   .dc-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
   .dc-nav { display: flex; gap: 8px; align-items: center; }
   .dc-nav .btn[data-v="ghost"] { min-width: 44px; padding: 10px 12px; }
@@ -132,6 +130,5 @@
     .steps li { grid-template-columns: 1fr; gap: 4px; }
     .zbars li { grid-template-columns: 90px minmax(40px, 1fr) 40px; }
     .zbars .zb-r, .zbars li > span:last-child { display: none; }
-    .daycard { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow: auto; padding: 16px 16px 96px; border-top: 0; }
   }
 }

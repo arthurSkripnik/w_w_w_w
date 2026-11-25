@@ -1,12 +1,12 @@
-// Календар: the plan by weeks (grid) or day by day (list); the day card opens under its week. #calendar/<date> opens a day.
+// Календар: the plan by weeks (grid) or day by day (list); a day opens in a window over the plan. #calendar/<date> opens a day.
 import { useEffect, useState } from "preact/hooks";
-import { Segmented, Empty } from "../ui";
+import { Segmented, Empty, Modal } from "../ui";
 import { DayCell } from "../calendar/DayCell";
 import { WeekLine, weekMin } from "../calendar/Week";
 import { DayCard } from "../calendar/DayCard";
 import { days, dayByDate, today, zones } from "../store/derived";
 import { dbState } from "../store/data";
-import { routeArg } from "../app/routes";
+import { routeArg, go } from "../app/routes";
 import { PH_NAME } from "../domain/types";
 import { fmtHM } from "../domain/text";
 import { DOW, dm, plural } from "../domain/home";
@@ -20,10 +20,10 @@ export function Calendar() {
   const [mode, setMode] = useState<Mode>(load());
   const sel = routeArg.value, t = today.value, D = days.value, by = dayByDate.value, Z = zones.value;
   useEffect(() => { try { localStorage.setItem(KEY, mode); } catch {} }, [mode]);
-  useEffect(() => {   // bring the open day (or today in the list) into view
-    const el = document.querySelector(sel ? ".daycard" : mode === "list" ? ".cell[data-today]" : null as unknown as string);
-    if (el) el.scrollIntoView({ block: sel ? "start" : "center", behavior: "smooth" });
-  }, [sel, mode]);
+  useEffect(() => {   // the list starts at today
+    const el = mode === "list" && document.querySelector(".cal-list .cell[data-today]");
+    if (el) el.scrollIntoView({ block: "center" });
+  }, [mode]);
   if (dbState.value === "loading") return <Empty>Читаю базу…</Empty>;
   if (!D.length) return <Empty>План порожній.</Empty>;
 
@@ -33,7 +33,7 @@ export function Calendar() {
   const z1mid = Z ? (Z.z1.fast + Z.z1.slow) / 2 / 60 : null;
   const mins = weekMin;
   const maxMin = Math.max(...nums.map(n => mins(weeks[n])));
-  const card = sel && by[sel] ? <DayCard key={sel} day={by[sel]} /> : null;
+  const open = sel ? by[sel] : undefined;
   let phase = "";
 
   return <>
@@ -46,17 +46,15 @@ export function Calendar() {
       {nums.map(n => {
         const w = weeks[n], m = mins(w), km = z1mid ? Math.round(m / z1mid) : null;
         const ph = w[0].plan.phase, bar = ph !== phase ? (phase = ph, <div class="cal-phase label" key={"p" + n}>{PH_NAME[ph] ?? ph}</div>) : null;
-        const open = !!sel && w.some(d => d.date === sel);
         if (mode === "list") return [bar,
           <div class="cal-lh" key={"h" + n}><b class="num">Тиждень {String(n).padStart(2, "0")}</b><span class="label">{w.length} {plural(w.length, "тренування", "тренування", "тренувань")} · {fmtHM(m)}{km ? ` · ≈${km} км` : ""}</span></div>,
           ...w.map(d => <div class="cal-lrow" key={d.date}>
             <DayCell size="M" day={d} iso={d.date} today={t} open={d.date === sel} head={`${DOW[(new Date(d.date + "T00:00:00").getDay() + 6) % 7]} ${dm(d.date)}`} />
-            {d.date === sel && card}
           </div>)];
         return [bar,
-          <WeekLine key={"w" + n} n={n} w={w} by={by} today={t} sel={sel} maxMin={maxMin} easyMinPerKm={z1mid} />,
-          open ? <div class="cal-card" key={"c" + n}>{card}</div> : null];
+          <WeekLine key={"w" + n} n={n} w={w} by={by} today={t} sel={sel} maxMin={maxMin} easyMinPerKm={z1mid} />];
       })}
     </div>
+    {open && <Modal wide label={`День ${dm(open.date)}`} onClose={() => go("calendar", null, true)}><DayCard key={open.date} day={open} /></Modal>}
   </>;
 }
