@@ -5,14 +5,14 @@ import { computed } from "@preact/signals";
 import { Empty } from "../ui";
 import { layouts } from "../store/data";
 import { setLayout } from "../store/actions";
-import { WIDGETS, DEFAULTS, type BoardId } from "./index";
+import { WIDGETS, DEFAULTS, BOARDS, type BoardId } from "./index";
 import type { Widget, Size } from "./types";
 
-const NAME: Record<BoardId, [string, string]> = { home: ["Головна", "На Головну"], lab: ["Лабораторія", "У Лабораторію"] };
+const NAME: Record<BoardId, [string, string]> = { home: ["Головна", "На Головну"], lab: ["Лабораторія", "У Лабораторію"], profile: ["Профіль", "У Профіль"] };
 const byId = new Map(WIDGETS.map(w => [w.id, w]));
 const can = (w: Widget, s: Size) => (s === "full" ? !!w.Full : !!w.C);
 /** Size a widget takes on a screen: the screen's preferred size if the widget has it, else the other one. */
-const sizeFor = (w: Widget, b: BoardId): Size => { const pref: Size = b === "lab" ? "full" : "compact"; return can(w, pref) ? pref : pref === "full" ? "compact" : "full"; };
+const sizeFor = (w: Widget, b: BoardId): Size => { const pref: Size = b === "home" ? "compact" : "full"; return can(w, pref) ? pref : pref === "full" ? "compact" : "full"; };
 
 /** The widgets a screen shows now, in order. */
 const listOf = (b: BoardId) => {
@@ -22,7 +22,7 @@ const listOf = (b: BoardId) => {
 export const boardOf = (b: BoardId) => computed(() => {
   return listOf(b).filter(x => !x.hidden).map(x => ({ w: byId.get(x.id)!, size: x.size as Size })).filter(x => x.w && can(x.w, x.size));
 });
-const boards = { home: boardOf("home"), lab: boardOf("lab") };
+export const boards = { home: boardOf("home"), lab: boardOf("lab"), profile: boardOf("profile") };
 
 type Item = { id: string; size: Size; hidden?: boolean };
 async function save(b: BoardId, items: Item[]) { await setLayout(b, { widgets: items }); }
@@ -39,13 +39,12 @@ class Guard extends Component<{ id: string; children: ComponentChildren }, { err
 }
 
 function Menu({ w, b }: { w: Widget; b: BoardId }) {
-  const other: BoardId = b === "home" ? "lab" : "home", there = boards[other].value.some(x => x.w.id === w.id);
   const close = (e: Event) => (e.currentTarget as HTMLElement).closest("details")?.removeAttribute("open");
   return <details class="wg-menu">
     <summary aria-label={`Дії з віджетом «${w.title}»`}>···</summary>
     <div class="wg-menu-b" role="menu">
-      <button type="button" role="menuitem" disabled={there} onClick={e => { close(e); save(other, addTo(other, w)); }}>
-        {there ? `Уже: ${NAME[other][0]}` : NAME[other][1]}</button>
+      {BOARDS.filter(o => o !== b).map(o => { const there = boards[o].value.some(x => x.w.id === w.id);
+        return <button key={o} type="button" role="menuitem" disabled={there} onClick={e => { close(e); save(o, addTo(o, w)); }}>{there ? `Уже: ${NAME[o][0]}` : NAME[o][1]}</button>; })}
       <button type="button" role="menuitem" onClick={e => { close(e); save(b, current(b).map(x => (x.id === w.id ? { ...x, hidden: true } : x))); }}>Прибрати звідси</button>
     </div>
   </details>;
@@ -53,7 +52,7 @@ function Menu({ w, b }: { w: Widget; b: BoardId }) {
 
 function Slot({ w, size, n, b }: { w: Widget; size: Size; n: number; b: BoardId }) {
   const W = size === "full" ? w.Full! : w.C!, span = size === "full" ? w.fullSpan ?? 12 : w.span;
-  const link = size === "compact" && w.link && !(b === "lab" && w.link.href.startsWith("#lab")) ? w.link : null;
+  const link = size === "compact" && w.link && !w.link.href.startsWith("#" + b) ? w.link : null;
   return (
     <section id={`w-${w.id}`} class="card wg" data-size={size} data-span={span} data-rows={size === "compact" ? w.rows : undefined} aria-labelledby={`wt-${w.id}`}>
       <header class="card-head">
@@ -69,6 +68,6 @@ function Slot({ w, size, n, b }: { w: Widget; size: Size; n: number; b: BoardId 
 
 export function Board({ b }: { b: BoardId }) {
   const ws = boards[b].value;
-  if (!ws.length) return <Empty>Тут немає віджетів. Додай їх з меню «···» на іншому екрані.</Empty>;
+  if (!ws.length) return b === "profile" ? null : <Empty>Тут немає віджетів. Додай їх з меню «···» на іншому екрані.</Empty>;
   return <div class={`grid hub board-${b}`}>{ws.map((x, i) => <Slot key={x.w.id} w={x.w} size={x.size} n={i + 1} b={b} />)}</div>;
 }

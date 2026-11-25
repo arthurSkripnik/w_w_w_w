@@ -74,6 +74,16 @@
   .kv[data-size="text"] dd { font-family: var(--serif); font-size: 16px; }
   .kv[data-size="text"] dd b { font-weight: 400; }
 
+  .meter { display: grid; grid-template-columns: minmax(36px, auto) 1fr auto; gap: 4px 12px; align-items: center; font-family: var(--grot); font-size: 13px; }
+  .meter-k { color: var(--mute); white-space: nowrap; }
+  .meter-t { position: relative; height: 6px; background: var(--chip); }
+  .meter-t i { position: absolute; inset: 0 auto 0 0; background: var(--ink); }
+  .meter-t i[data-tone="acc"] { background: var(--acc); }
+  .meter-t em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--acc); }
+  .meter-v { text-align: right; white-space: nowrap; }
+  .meter-s { grid-column: 2 / -1; color: var(--mute); font-size: 12px; }
+  .meter-s a { color: var(--ink); }
+  .meter[data-weak] .meter-k, .meter[data-weak] .meter-v { color: var(--acc-text); font-weight: 500; }
   .delta { display: inline-flex; align-items: center; gap: 8px; color: var(--mute); white-space: nowrap; }
   .delta .gd { color: var(--acc-text); font-weight: 500; }
   .delta-bar { display: inline-block; position: relative; width: 48px; height: 8px; background: linear-gradient(var(--hair), var(--hair)) center / 1px 100% no-repeat; }
