@@ -25,6 +25,6 @@ describe("Головна: розрахунки з v52", () => {
     expect(injuryNow(I, "2026-11-24").text).toMatch(/^Без скарг 12 днів/);
     const s = injuryStrip(I, "2026-11-24");
     expect(s.days.filter(d => d.l === 2).length).toBe(3);
-    expect(s.areas[0]).toMatchObject({ area: "литка", days: 3, level: 2 });
+    expect(s.areas[0]).toMatchObject({ area: "Литка", days: 3, level: 2 });
   });
 });

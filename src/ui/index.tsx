@@ -8,9 +8,9 @@ export function Grid({ children }: { children: ComponentChildren }) {
 }
 type Span = 3 | 4 | 6 | 8 | 12;
 /** A card: top rule, optional number and title, no background. */
-export function Card({ n, title, span = 12, aside, children }: { n?: string; title?: string; span?: Span; aside?: ComponentChildren; children: ComponentChildren }) {
+export function Card({ id, n, title, span = 12, aside, children }: { id?: string; n?: string; title?: string; span?: Span; aside?: ComponentChildren; children: ComponentChildren }) {
   return (
-    <section class="card" data-span={span}>
+    <section id={id} class="card" data-span={span}>
       {(n || title || aside) && (
         <header class="card-head">
           {n && <span class="card-n num">{n}</span>}
