@@ -51,3 +51,27 @@ describe.skipIf(!ready)("v52 parity", () => {
     expect(effRoll(e.filter(p => !p.long)).map(p => [p.d, +p.v.toFixed(3)])).toEqual(R.roll);
   });
 });
+
+import { workoutEq, stravaForecast, thrHrPace, projectCurve, LOAD_W } from "../src/domain/lab";
+import { zonesOn } from "../src/domain/days";
+import { THR_TO_10K } from "../src/domain/spec";
+describe.skipIf(!ready || !process.env.V52_LAB)("v52 parity: Лабораторія", () => {
+  const D: Docs = { athlete: col("athlete").me ?? null, goals: col("goals"), thresholds: col("thresholds"), workouts: col("workouts"),
+    plan: col("plan"), runs: col("runs"), journal: col("journal") };
+  const R = JSON.parse(readFileSync(process.env.V52_LAB!, "utf8")).lab;
+  const days = buildDays(D, today), Z = zonesOn(D, today)!;
+  // Known differences, both v2 on purpose: 06.11 (planned longint, run easy after the injury, no work found) v52 turns
+  // the whole run's pace into a «threshold» equivalent (4:43); v2 leaves a day without work out. 13.11: see accuracy.
+  const KNOWN = ["2026-11-06", "2026-11-13"], cut = (a: any[]) => a.filter(p => !KNOWN.includes(p[0]));
+  it("workout equivalents", () => { expect(cut(workoutEq(days).map(p => [p.d, p.t, +p.eq.toFixed(3)]))).toEqual(cut(R.wo)); });
+  it("threshold-HR pace and Strava forecast", () => {
+    const th = thrHrPace(days, Z, today); expect([th.n, th.pace && +th.pace.toFixed(2)]).toEqual([R.thrN, R.thr]);
+    // v52 2520 = mean of 06.11 (283.24) and threshold HR × 0.97; v2 has 13.11 instead (227.36)
+    const sf = stravaForecast(days, Z, today); expect(sf.eq!).toBeCloseTo(((227.356 + R.thr * THR_TO_10K) / 2) * 10, 0);
+  });
+  it("model to race day", () => {
+    const t10 = Object.values(D.thresholds).sort((a: any, b: any) => a.date.localeCompare(b.date)).pop()!.paceSec * THR_TO_10K * 10;
+    const pj = projectCurve(loadDays(days), today, t10, LOAD_W, true)!, end = (a: { s: number }[]) => +a[a.length - 1].s.toFixed(2);
+    expect({ mid: end(pj.mid), lo: end(pj.lo), hi: end(pj.hi), scale: +pj.scale.toFixed(4) }).toEqual(R.proj);
+  });
+});

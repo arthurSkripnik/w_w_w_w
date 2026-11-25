@@ -16,4 +16,4 @@ function Aerobic() {
     <Spark label="Аеробна база, тренд" pts={roll.slice(-20).map(r => ({ d: r.d, v: r.v }))} up={false} />
   </>;
 }
-export const aerobicW: Widget = { id: "aerobic", title: "Аеробна база", span: 3, link: { label: "Графік", href: "#lab" }, C: Aerobic };
+export const aerobicW: Widget = { id: "aerobic", title: "Аеробна база", span: 3, link: { label: "Графік", href: "#lab/aerobic" }, C: Aerobic };

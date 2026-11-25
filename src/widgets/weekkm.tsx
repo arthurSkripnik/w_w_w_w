@@ -13,4 +13,4 @@ function WeekKm() {
     {data.length > 1 && <Chart label="Кілометри за останні 8 тижнів" spec={{ kind: "spark", data }} />}
   </>;
 }
-export const weekkmW: Widget = { id: "weekkm", title: "Об'єм тижня", span: 3, link: { label: "Графік", href: "#lab" }, C: WeekKm };
+export const weekkmW: Widget = { id: "weekkm", title: "Об'єм тижня", span: 3, link: { label: "Графік", href: "#lab/weekkm" }, C: WeekKm };

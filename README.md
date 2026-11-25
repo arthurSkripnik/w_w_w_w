@@ -79,3 +79,13 @@ Sections: 01 Тіло і сон (edit → `athlete/me`), 02 Що з цього �
 04 Зони темпу, 05 Пульсові зони, 06 Історія порогу, 07 Травми (body map, heatmap 30 days / all, log, add a record),
 08 Дані («Перерахувати звіти», «Завантажити історію», moved here from Головна). Sections open by link: `#profile/body|est|threshold|zones|hr|history|injuries|data`.
 Not ported: manual pace zones; the «VO2max за фактом Strava» row (comes with the Лабораторія forecast).
+
+## Step 7a: Лабораторія (аналітика)
+
+Widgets are shared by every screen with a board (`src/widgets/Board.tsx`): a widget has a compact tile (`C`) and/or a
+full card (`Full`), and `layout/<screen>` (`home`, `lab`) lists which widgets stand there, in order and at which size.
+Without a saved layout a screen shows `DEFAULTS` from `src/widgets/index.ts`. The «···» menu on each card puts the
+widget on the other screen or takes it off this one. Full cards: `src/widgets/full/` (forecast, form, vo2int, aerobic,
+hrz, weeks, history); numbers in `src/domain/lab.ts`, signals in `src/store/lab.ts`. `#lab/<widget id>` scrolls to a card.
+Parity: `V52_LAB=<dump with lab>` adds the forecast checks (`tools/v52-dump.cjs` now writes `lab`). Known differences:
+06.11 (v52 counts an easy run without work as a threshold equivalent) and 13.11 (swapped day).

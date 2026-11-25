@@ -25,9 +25,9 @@ export function forecast(th: Record<string, Threshold>, now: Threshold | null) {
   return now ? { t10: now.paceSec * THR_TO_10K * 10, pts } : null;
 }
 
-/** Daniels' VDOT from a 10 km time in seconds. */
-export function vdot(t10: number) {
-  const T = t10 / 60, v = 10000 / T;
+/** Daniels' VDOT from a 10 km time in seconds (or any distance in metres). */
+export function vdot(t10: number, m = 10000) {
+  const T = t10 / 60, v = m / T;
   return (-4.6 + 0.182258 * v + 0.000104 * v * v) / (0.8 + 0.1894393 * Math.exp(-0.012778 * T) + 0.2989558 * Math.exp(-0.1932605 * T));
 }
 
@@ -101,3 +101,10 @@ export function injuryStrip(I: Record<string, Injury>, today: string, n = 30) {
 
 /** Days to the goal race. */
 export const daysTo = (g: Goal | null, today: string) => (g ? daysBetween(today, g.date) : null);
+
+/** The time (s) that gives this VDOT over a distance: Daniels' formula solved by bisection. */
+export function timeFor(v: number, m: number) {
+  let lo = m / 500, hi = m / 50;                          // 500 m/min … 50 m/min, in minutes
+  for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (vdot(mid * 60, m) > v) lo = mid; else hi = mid; }
+  return ((lo + hi) / 2) * 60;
+}

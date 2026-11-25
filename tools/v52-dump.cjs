@@ -17,7 +17,7 @@ vm.createContext(ctx);
 const files = fs.readdirSync(jsDir).filter(f=>f.endsWith(".js")).sort();
 let src = files.map(f=>fs.readFileSync(path.join(jsDir,f),"utf8")).join("\n;\n");
 // expose let/const globals we need
-src += `\n;globalThis.__out = {DATA, FB, PROFILE, spec, dur, accOf, formSeries, easyEff, effRoll, zonesNow, corosK, dayLoads, LOAD_W, THR, actType};`;
+src += `\n;globalThis.__out = {DATA, FB, PROFILE, spec, dur, accOf, formSeries, easyEff, effRoll, zonesNow, corosK, dayLoads, LOAD_W, THR, actType, workoutEq, stravaForecast, thrHrPace, projection, formNow};`;
 store.setItem("tp_profile_v1", JSON.stringify(S.profile)); store.setItem("tp_thr_hist_v1", JSON.stringify(S.thr));
 store.setItem("tp_feedback_v1", JSON.stringify(S.fb)); store.setItem("tp_ovr_v1", JSON.stringify(S.ovr));
 try{ vm.runInContext(src, ctx, {filename:"v52.js"}); }catch(e){ console.error("RUN ERR", e.stack.split("\n").slice(0,4).join("\n")); }
@@ -28,6 +28,9 @@ const eff = O.easyEff();
 const out = {acc, form: F && {now:F.now, end:F.end, n:F.days.length, K:F.K, days:F.days.filter(x=>!x.plan).map(x=>[x.d, +x.L.toFixed(3), +x.ctl.toFixed(3), +x.atl.toFixed(3)])},
   eff: eff.map(p=>({d:p.d, norm:+p.norm.toFixed(3), raw:+p.raw.toFixed(3), heat:+p.heat.toFixed(4), long:p.long, hard:p.hard})),
   roll: O.effRoll(eff.filter(p=>!p.long)).map(p=>[p.d, +p.v.toFixed(3)]),
-  dur: O.DATA.map(e=>[e.d, e.t, e.l, O.dur(e.t,e.l), O.actType(e)])};
+  dur: O.DATA.map(e=>[e.d, e.t, e.l, O.dur(e.t,e.l), O.actType(e)]),
+  lab: (()=>{ const sf = O.stravaForecast(), th = O.thrHrPace(), pj = O.projection(O.formNow()), end = a=>+a[a.length-1].s.toFixed(2);
+    return {wo: O.workoutEq().map(p=>[p.d, p.t, +p.eq.toFixed(3)]), sf: sf.eq ? +sf.eq.toFixed(2) : null, sfN: sf.n, thr: th.pace ? +th.pace.toFixed(2) : null, thrN: th.n,
+      proj: pj && {mid:end(pj.mid), lo:end(pj.lo), hi:end(pj.hi), scale:+pj.scale.toFixed(4)}}; })()};
 require("fs").writeFileSync(process.argv[5], JSON.stringify(out,null,1));
 console.log("acc", Object.keys(acc).length, "eff", eff.length, "form now", F && F.now && Math.round(F.now.r));

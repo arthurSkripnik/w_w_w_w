@@ -15,7 +15,10 @@ export interface Pt { x: Date; y: number; tip?: string }
 export interface Band { lo: number; hi: number; label?: string; strong?: boolean }
 
 export type ChartSpec =
-  | { kind: "line"; data: Pt[]; plan?: Pt[]; dots?: (Pt & { key?: boolean; soft?: boolean })[]; y: Axis; bands?: Band[]; ref?: { y: number; label: string }; today?: Date; x?: [Date, Date]; height?: number; end?: boolean; compare?: Pt[] }
+  | { kind: "line"; data: Pt[]; plan?: Pt[]; dots?: (Pt & { key?: boolean; soft?: boolean; square?: boolean; label?: string })[]; y: Axis; bands?: Band[]; ref?: { y: number; label: string }; today?: Date; x?: [Date, Date]; height?: number; end?: boolean; compare?: Pt[];
+      area?: { x: Date; lo: number; hi: number }[];                  // a scenario band (model)
+      lines?: { data: Pt[]; dash?: boolean; tone?: "ink" | "mute" }[]; // more series: model middle, long runs
+      segs?: { x1: Date; x2: Date; y: number; label: string; tip?: string }[] }   // a value over a window (Strava forecast)
   | { kind: "bars"; data: (Pt & { plan?: boolean })[]; y: Axis; height?: number; today?: Date }
   | { kind: "spark"; data: Pt[]; y?: Partial<Axis>; height?: number }
   | { kind: "hbars"; data: { label: string; v: number; tip?: string }[]; fmt: (v: number) => string; acc?: number };
@@ -72,7 +75,8 @@ export function chart(spec: ChartSpec, width: number): SVGSVGElement | HTMLEleme
   }
   // line over time
   const h = spec.height ?? 220;
-  const all = [...spec.data, ...(spec.plan ?? []), ...(spec.dots ?? []), ...(spec.compare ?? [])];
+  const segPts = (spec.segs ?? []).map(g => ({ x: g.x2, y: g.y, tip: g.tip }));
+  const all = [...spec.data, ...(spec.plan ?? []), ...(spec.dots ?? []), ...(spec.compare ?? []), ...(spec.lines ?? []).flatMap(l => l.data), ...segPts];
   const last = spec.data[spec.data.length - 1];
   const fmt = spec.y.fmt;
   const marks: Plot.Markish[] = [];
@@ -84,10 +88,17 @@ export function chart(spec: ChartSpec, width: number): SVGSVGElement | HTMLEleme
   });
   if (spec.ref) marks.push(Plot.ruleY([spec.ref.y], { stroke: C.acc, strokeDasharray: "4 3" }), Plot.text([spec.ref], { frameAnchor: "left", y: "y", text: "label", fill: C.mute, dy: -8, dx: 4, textAnchor: "start" }));
   if (spec.today) marks.push(Plot.ruleX([spec.today], { stroke: C.line }), Plot.text([spec.today], { x: (d: Date) => d, frameAnchor: "top", text: () => "сьогодні", fill: C.mute, dx: -4, dy: -14, textAnchor: "end" }));
+  if (spec.area?.length) marks.push(Plot.areaY(spec.area, { x: "x", y1: "lo", y2: "hi", fill: C.band, curve: "monotone-x" }));
+  (spec.lines ?? []).forEach(l => marks.push(Plot.lineY(l.data, { x: "x", y: "y", stroke: l.tone === "mute" ? C.mute : C.ink, strokeWidth: 1.5, strokeDasharray: l.dash ? "3 3" : undefined, curve: "monotone-x" })));
+  (spec.segs ?? []).forEach(g => marks.push(
+    Plot.ruleY([g], { x1: "x1", x2: "x2", y: "y", stroke: C.acc, strokeWidth: 3 }),
+    Plot.text([g], { x: "x1", y: "y", text: "label", fill: C.mute, dy: 12, textAnchor: "start" })));
   if (spec.compare?.length) marks.push(Plot.lineY(spec.compare, { x: "x", y: "y", stroke: C.cmp, strokeWidth: 2, curve: "monotone-x" }));
   marks.push(Plot.lineY(spec.data, { x: "x", y: "y", stroke: C.ink, strokeWidth: 2, curve: "monotone-x" }));
   if (spec.plan?.length) marks.push(Plot.lineY(last ? [last, ...spec.plan] : spec.plan, { x: "x", y: "y", stroke: C.ink, strokeWidth: 1.5, strokeDasharray: "3 3", curve: "monotone-x" }));
-  if (spec.dots?.length) marks.push(Plot.dot(spec.dots, { x: "x", y: "y", r: 4, fill: (d: { key?: boolean; soft?: boolean }) => (d.soft ? C.bg : d.key ? C.acc : C.ink), stroke: (d: { soft?: boolean }) => (d.soft ? C.ink : C.bg), strokeWidth: 1.5 }));
+  if (spec.dots?.some(d => d.square)) marks.push(Plot.dot(spec.dots.filter(d => d.square), { x: "x", y: "y", r: 4.5, symbol: "square", fill: C.ink, stroke: C.bg, strokeWidth: 1.5 }));
+  if (spec.dots?.some(d => d.label)) marks.push(Plot.text(spec.dots.filter(d => d.label), { x: "x", y: "y", text: "label", fill: C.mute, dy: -10 }));
+  if (spec.dots?.some(d => !d.square)) marks.push(Plot.dot(spec.dots.filter(d => !d.square), { x: "x", y: "y", r: 4, fill: (d: { key?: boolean; soft?: boolean }) => (d.soft ? C.bg : d.key ? C.acc : C.ink), stroke: (d: { soft?: boolean }) => (d.soft ? C.ink : C.bg), strokeWidth: 1.5 }));
   if (last && spec.end !== false) marks.push(
     Plot.dot([last], { x: "x", y: "y", r: 4.5, fill: C.acc, stroke: C.bg, strokeWidth: 2 }),
     Plot.tip([last], { x: "x", y: "y", title: (d: Pt) => fmt(d.y), anchor: "bottom", dy: -8, ...tipOpts }),

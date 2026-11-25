@@ -139,7 +139,7 @@ export async function updateInjury(id: string, patch: Partial<Injury>) {
   const cur = injuries.value[id]; if (!cur) throw new ActionError("missing", "Немає такого запису");
   await put("injuries", id, { ...cur, ...patch });
 }
-export async function setLayout(l: Layout) { await put("layout", "home", l); }
+export async function setLayout(screen: string, l: Layout) { await put("layout", screen, l); }
 export async function updateAthlete(patch: Partial<Athlete>) { await put("athlete", "me", drop({ ...(athlete.value ?? {}), ...patch })); }
 /** A new threshold from the watch or a test: every zone and pace follows it from that date. */
 export async function addThreshold(t: Threshold) { await put("thresholds", t.date, t); return thresholds.value; }
