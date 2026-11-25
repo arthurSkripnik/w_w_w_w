@@ -83,7 +83,7 @@ export function Report({ day, rh }: { day: Day; rh: number | null }) {
 
   return <div class="report">
     <section class="rcard">
-      <header class="card-head"><h3 class="card-title">Звіт зі Strava</h3><span class="card-aside label">{rep.name}</span></header>
+      <header class="card-head"><h4 class="card-title">Звіт зі Strava</h4><span class="card-aside label">{rep.name}</span></header>
       <Stat value={rep.km.toFixed(2)} unit="км" caption="Дистанція" />
       <div class="rtiles">
         <Tile k="Час руху" v={mmss(rep.t)} />
@@ -98,7 +98,7 @@ export function Report({ day, rh }: { day: Day; rh: number | null }) {
     </section>
 
     {A && <section class="rcard">
-      <header class="card-head"><h3 class="card-title">Точність виконання</h3><span class="card-aside"><Pill tone={A.score >= 90 ? "ink" : A.score >= 50 ? "line" : "err"}>{A.label}</Pill></span></header>
+      <header class="card-head"><h4 class="card-title">Точність виконання</h4><span class="card-aside"><Pill tone={A.score >= 90 ? "ink" : A.score >= 50 ? "line" : "err"}>{A.label}</Pill></span></header>
       <Stat value={`${A.score}`} unit="%" acc />
       <div class="accstrip" role="img" aria-label={`Частини тренування за вагою: ${A.parts.map(p => `${p.name || ACC_NAME[p.key]} ${pc(p.s)}%`).join(", ")}`}>
         {A.parts.map((p, i) => <span key={i} style={{ flex: p.share.toFixed(3) }} title={`${p.name || ACC_NAME[p.key]}: ${pc(p.s)}%`}><i style={{ width: `${pc(p.s)}%` }} /></span>)}
@@ -110,7 +110,7 @@ export function Report({ day, rh }: { day: Day; rh: number | null }) {
     </section>}
 
     {L.length >= 2 && <section class="rcard">
-      <header class="card-head"><h3 class="card-title">Темп</h3><span class="card-aside label num">{bestKm ? `найкращий км ${fmtPace(bestKm)} · ` : ""}середній {rep.pace ? fmtPace(rep.pace) : "—"}</span></header>
+      <header class="card-head"><h4 class="card-title">Темп</h4><span class="card-aside label num">{bestKm ? `найкращий км ${fmtPace(bestKm)} · ` : ""}середній {rep.pace ? fmtPace(rep.pace) : "—"}</span></header>
       <LapBars rep={rep} val={l => -lapPace(l)} lo={-pSlow} hi={-pFast} band={[-zb.slow, -zb.fast]} avg={rep.pace ? -rep.pace : null}
         label={`Темп по колах: ${P.map(fmtPace).join(", ")}`} tip={l => `${fmtPace(lapPace(l))} /км${l[2] ? `, пульс ${l[2]}` : ""}`} />
       <p class="label">Вище = швидше, помаранчеві = робота, ширина = час кола. Смуга: {ZONE_TXT[workKey]} {fmtPace(zb.fast)}–{fmtPace(zb.slow)}, лінія: середній.</p>
@@ -118,14 +118,14 @@ export function Report({ day, rh }: { day: Day; rh: number | null }) {
     </section>}
 
     {hrs.length >= 2 && <section class="rcard">
-      <header class="card-head"><h3 class="card-title">Пульс</h3><span class="card-aside label num">макс. коло {maxHr} · середній {rep.hr || "—"}</span></header>
+      <header class="card-head"><h4 class="card-title">Пульс</h4><span class="card-aside label num">макс. коло {maxHr} · середній {rep.hr || "—"}</span></header>
       <LapBars rep={rep} val={l => l[2] || hLo} lo={hLo} hi={hHi} avg={rep.hr} label={`Пульс по колах: ${L.map(l => l[2] || "—").join(", ")}`} tip={l => `пульс ${l[2] || "—"}, ${fmtPace(lapPace(l))} /км`} />
       <p class="label">Стеля легкого дня {ceil} · поріг {Z.thrHR} · {rep.hrz ? "зони посекундно з потоку Strava" : "зони по колах"}</p>
       <ZoneBars rows={hrRows(rep, Z)} />
     </section>}
 
     <section class="rcard">
-      <header class="card-head"><h3 class="card-title">Кола</h3><span class="card-aside label">{L.length} {plural(L.length, "коло", "кола", "кіл")}</span></header>
+      <header class="card-head"><h4 class="card-title">Кола</h4><span class="card-aside label">{L.length} {plural(L.length, "коло", "кола", "кіл")}</span></header>
       <div class="tbl-wrap"><table class="tbl laps">
         <thead><tr><th>№</th><th class="n">Км</th><th class="n">Час</th><th class="n">Темп</th><th class="n">Пульс</th><th><span class="vh">Відрізок</span></th></tr></thead>
         <tbody>{rep.laps.map((l, i) => { if (l[1] < 100) return null; no++; const p = lapPace(l), best = !!bestKm && Math.abs(p - bestKm) < 0.01 && l[1] >= 950;
@@ -137,7 +137,7 @@ export function Report({ day, rh }: { day: Day; rh: number | null }) {
     </section>
 
     <section class="rcard">
-      <header class="card-head"><h3 class="card-title">Висновки</h3></header>
+      <header class="card-head"><h4 class="card-title">Висновки</h4></header>
       <ul class="finds">{F.map((f, i) => <li key={i}>{f.tag && <T t={f.tag} />}<span>{f.text}</span></li>)}</ul>
     </section>
   </div>;

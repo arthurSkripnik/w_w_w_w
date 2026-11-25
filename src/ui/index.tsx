@@ -1,6 +1,6 @@
 // Basic elements every screen is built from. Look and spacing live in styles/components.css.
 import type { ComponentChildren, ButtonHTMLAttributes, InputHTMLAttributes } from "preact";
-import { useId, useEffect, useRef } from "preact/hooks";
+import { useId, useEffect, useRef, useState } from "preact/hooks";
 import { createPortal } from "preact/compat";
 
 /** 12-column grid (6 on phones). Children are Cards or Cells with a span. */
@@ -126,8 +126,16 @@ export function Field({ label, hint, error, ...input }: InputHTMLAttributes<HTML
 }
 
 /** «Як це пораховано»: a closed block with the method behind a number. */
-export function Details({ summary, children }: { summary: string; children: ComponentChildren }) {
-  return <details class="how"><summary>{summary}</summary><div class="how-b">{children}</div></details>;
+export function Details({ summary, open, children }: { summary: ComponentChildren; open?: boolean; children: ComponentChildren }) {
+  return <details class="how" open={open}><summary>{summary}</summary><div class="how-b">{children}</div></details>;
+}
+/** «?»: an explanation that stays hidden until asked for. Put it at the end of a header; the text opens under it. */
+export function Hint({ label = "Пояснення", children }: { label?: string; children: ComponentChildren }) {
+  const [open, setOpen] = useState(false), id = useId();
+  return <span class="hint">
+    <button type="button" class="hint-b" aria-expanded={open} aria-controls={id} aria-label={label} title={label} onClick={() => setOpen(!open)}>?</button>
+    <span id={id} class="hint-t label" role="note" hidden={!open}>{children}</span>
+  </span>;
 }
 
 /** One line of state: a pill with the verdict, then the words. */

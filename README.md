@@ -178,3 +178,10 @@ Rule: a thing that means the same everywhere is one component; screens pass size
 - Headings: the card name is `h2` in a window (`WorkoutCard hLevel`); empty table headers got hidden text (`.vh`).
 - Touch screens (`pointer: coarse`): every choice is at least 44 px tall; summaries 44 px; text fields show a 2 px focus line.
 - Checked with axe-core 4.10 on the open day (light/dark, 1280/390): 0 violations.
+
+## Step 15: day window by phase
+
+- `dayPhase(day, today)` in `src/domain/home.ts`: future / today / done / missed / race; `phaseTag` is the status pill by the date («план», «сьогодні», «виконано 92%», «пропущено», «гонка»).
+- The day card is three groups in one order: «Результат» → «План» → «Дії». Ahead: plan open, «Змінити план» folded (open when the day was already changed). Today: «Записати, як пройшло» on top. Done: two columns on a wide screen, Strava report left; record, plan (folded) and actions right. Missed: «пропущено» and the record open. Race/start: the race plan first.
+- `Hint` in `src/ui`: «?» with the explanation behind it; grey explanatory paragraphs in the day card moved there. `Details` takes `open`.
+- Section titles inside the day card and the report are `h4` under the group `h3`.
