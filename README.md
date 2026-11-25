@@ -147,3 +147,14 @@ Rule: a thing that means the same everywhere is one component; screens pass size
   «Бос і перки» (full). Each stat links to the widget it comes from.
 - New board `profile` on top of the Profile (`layout/profile`); the widget menu now offers every other screen.
 - New ui primitive `Meter` (labelled 0–100 bar with an optional goal tick), shown in «Зразки».
+
+## Step 11: the journal form, the popup after a run, manual entry
+
+- `src/domain/journal.ts`: the coach chat's questions (feel, legs, RPE, pain, fuel, against the plan, sleep, note) as one set;
+  `journalPatch` writes only answered fields (a chat entry is merged), `injuryFor` puts pain into the injury log (extends yesterday's entry).
+- Journal schema: new optional `legs`, `fuel`, `fit`.
+- `src/calendar/JournalForm.tsx`: one form for the popup, the day card («Записати, як пройшло», with manual pace and HR when there is no Strava run)
+  and «Сьогодні». Shown in «Зразки».
+- `src/app/JournalPopup.tsx` + `src/store/journal.ts`: opens by itself for the latest run of the last 3 days without a record;
+  «Пізніше» puts it off for that day (browser storage).
+- The run-journal skill writes the same fields.
