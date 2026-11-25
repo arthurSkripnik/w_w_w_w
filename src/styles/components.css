@@ -97,6 +97,7 @@
   .tbl th { text-align: left; font-weight: 400; color: var(--mute); font-size: 12px; padding: 0 12px 8px 0; border-bottom: 1px solid var(--line); }
   .tbl td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--hair); vertical-align: baseline; }
   .tbl .n { text-align: right; }
+  @media (max-width: 480px) { .tbl .wide { display: none; } .tbl th, .tbl td { padding-right: 8px; } }
 
   .field { display: grid; gap: 6px; }
   .field input { font-size: 17px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); min-height: 44px; }
