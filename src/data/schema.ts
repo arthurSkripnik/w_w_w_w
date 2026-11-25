@@ -86,7 +86,7 @@ export const Workout = z.discriminatedUnion("sport", [
 
 // ---- plan/<date> ---------------------------------------------------------
 export const PlanChange = z.object({
-  kind: z.enum(["swap", "level", "start", "eased"]),
+  kind: z.enum(["swap", "level", "start", "eased", "replace"]),
   from: z.string(),                                     // what it was (workout id or date)
   to: z.string(),
   note: z.string().optional(),

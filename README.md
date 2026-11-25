@@ -127,3 +127,12 @@ Rule: a thing that means the same everywhere is one component; screens pass size
   replace hand-made chips, level buttons, `<dl>` lists and difference bars on every screen.
 - «Зразки» (`#kit`) card 12 shows each component in its sizes and states.
 - Removed the old per-screen CSS (`cmp-row`, `cmp-chip`, `cmp-dl`, `lib-w`, `lib-kv`, `lib-rules`, `lib-card-kv`, `wc-lv`, `dc-kpis`, `today-kv`) and `weekRows`.
+
+## Step 9c: replace a day from the Base
+
+- Day card → «Змінити план» → «Замінити з Бази»: effort group chips (`Choice`), the Base sessions of that group as `WorkoutCard` M,
+  each at the level closest to the day's planned minutes (`src/domain/replace.ts`, `levelFor`).
+- Warnings from the plan rules before saving: two hard days in a row, a third hard day in the week, a hard day less than 4 days before the race.
+- `replaceDay` writes the new workout and a `replace` change into the day's history; «Повернути як було» undoes it.
+- Generator and saved personal plans (9a, 9b) are postponed.
+
