@@ -7,6 +7,7 @@ import { Profile } from "../screens/Profile";
 import { Lab } from "../screens/Lab";
 import { Compare } from "../screens/Compare";
 import { Library } from "../screens/Library";
+import { JournalPopup } from "./JournalPopup";
 
 export function Shell() {
   const current = SCREENS.find(s => s.id === route.value)!;
@@ -24,6 +25,7 @@ export function Shell() {
       <main class="main">
         {current.id === "home" ? <Home /> : current.id === "kit" ? <Kit /> : current.id === "calendar" ? <Calendar /> : current.id === "profile" ? <Profile /> : current.id === "lab" ? <Lab /> : current.id === "compare" ? <Compare /> : current.id === "library" ? <Library /> : <Placeholder screen={current} />}
       </main>
+      <JournalPopup />
     </div>
   );
 }

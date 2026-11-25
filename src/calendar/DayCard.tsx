@@ -5,6 +5,8 @@ import type { Day } from "../domain/days";
 import { Pill, Button, Segmented, StatusLine, Field, KV, Choice, Details } from "../ui";
 import { options, warnings, REPLACE_CATS, type Cat } from "../domain/replace";
 import { WorkoutCard } from "./WorkoutCard";
+import { JournalForm } from "./JournalForm";
+import { needsJournal } from "../domain/journal";
 import { Report } from "./Report";
 import { groupOf } from "../domain/compare";
 import { days, dayByDate, today, zones, goal, threshold } from "../store/derived";
@@ -168,35 +170,14 @@ function Actual({ day }: { day: Day }) {
 
 /** Record the fact: from Strava, or pace, HR and RPE by hand. */
 function Fact({ day }: { day: Day }) {
-  const t = typeOf(day.act), J = day.journal, Z = zones.value!, rpe0 = RPE_TARGET[t.cat];
-  const [pace, setPace] = useState(J?.manual?.pace ?? ""), [hr, setHr] = useState(J?.manual?.hr ? String(J.manual.hr) : "");
-  const [rpe, setRpe] = useState<number>(typeof J?.rpe === "number" ? J.rpe : Math.round((rpe0[0] + rpe0[1]) / 2));
-  const [err, setErr] = useState<string>(), { msg, busy, run } = useAct(), s = sync.value;
-  const saved = !!(day.run || typeof J?.rpe === "number");
-  const p = toSec(pace), v = p ? verdict(day.act, p, Z) : null;
-  const save = () => {
-    if (pace && !p) { setErr("Темп у форматі хв:с, наприклад 3:38"); return; }
-    if (hr && !/^\d{2,3}$/.test(hr)) { setErr("Пульс числом, наприклад 172"); return; }
-    setErr(undefined);
-    run(() => logDay(day.date, { rpe, manual: pace || hr ? { pace: pace || undefined, hr: hr ? +hr : undefined } : undefined }), "Записано");
-  };
-  return <details class="dc-sec dc-fact" open={!saved}>
-    <summary class="card-title">{saved ? "Факт записано · змінити" : "Записати факт"}</summary>
-    <div class="dc-row"><Button variant="ghost" disabled={s.busy} onClick={() => pullDay(day.date)}>Підтягнути зі Strava</Button>{s.text && <span class="status" role="status">{s.text}</span>}</div>
-    <div class="dc-row">
-      {t.work && <Field label={`${t.workLbl ?? "Темп"}, хв:с /км`} inputMode="numeric" value={pace} onInput={e => setPace((e.target as HTMLInputElement).value)} />}
-      <Field label="Середній пульс, уд/хв" inputMode="numeric" value={hr} onInput={e => setHr((e.target as HTMLInputElement).value)} />
-    </div>
-    {v && <p class="status"><T t={v} /></p>}
-    <div class="dc-row dc-rpe">
-      <label class="label" for={`rpe-${day.date}`}>RPE 1–10</label>
-      <input type="range" id={`rpe-${day.date}`} min={1} max={10} step={1} value={rpe} onInput={e => setRpe(+(e.target as HTMLInputElement).value)} />
-      <b class="num">{rpe}</b>
-      <Button disabled={busy} onClick={save}>{saved ? "Оновити" : "Зберегти"}</Button>
-    </div>
-    {err && <StatusLine tone="err" tag="помилка">{err}</StatusLine>}
-    <Msg m={msg} />
-    <p class="label">RPE — твоє відчуття зусилля: 1 зовсім легко, 10 межа. Для цього тренування очікувано {rpe0[0]}–{rpe0[1]}. Запис лише порівнюється з планом і план не змінює.</p>
+  const J = day.journal, s = sync.value, saved = !!(day.run || (J && !needsJournal(J)));
+  const t = typeOf(day.act), Z = zones.value!, p = toSec(J?.manual?.pace), v = !day.run && p ? verdict(day.act, p, Z) : null;
+  return <details class="dc-sec dc-fact" open={!saved || needsJournal(J)}>
+    <summary class="card-title">{J && !needsJournal(J) ? "Запис дня · змінити" : "Записати, як пройшло"}</summary>
+    {!day.run && <div class="dc-row"><Button variant="ghost" disabled={s.busy} onClick={() => pullDay(day.date)}>Підтягнути зі Strava</Button>{s.text && <span class="status" role="status">{s.text}</span>}</div>}
+    {v && <p class="status">{t.workLbl ?? "Темп"}: <T t={v} /></p>}
+    <JournalForm key={day.date} day={day} />
+    <p class="label">Ті самі питання, що в чаті з тренером: запис з чату і ручний лягають в одні поля. Запис лише порівнюється з планом і план не змінює.</p>
   </details>;
 }
 

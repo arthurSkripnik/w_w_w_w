@@ -4,6 +4,7 @@ import { COLLECTIONS, type CollectionName, type Journal, type Injury, type Layou
 import { blocksOf, spec, workoutId, FIXED_T } from "../domain/spec";
 import { addDays, mondayOf } from "../domain/util";
 import { TYPE } from "../domain/types";
+import { journalPatch, injuryFor, type Answers } from "../domain/journal";
 
 export class ActionError extends Error { constructor(public code: string, msg: string) { super(msg); } }
 
@@ -142,6 +143,11 @@ export async function addInjury(x: Injury) {
   const id = `${x.from}-${x.area}-${x.side}`.replace(/\s+/g, "_");
   await put("injuries", id, x);
   return id;
+}
+/** The journal form (after a run, the day card, «Сьогодні»): the answers into journal/<date>, a pain into the injury log. */
+export async function saveJournal(date: string, a: Answers) {
+  await logDay(date, journalPatch(a));
+  const inj = injuryFor(a, date, injuries.value); if (inj) await put("injuries", inj.id, inj.x);
 }
 export async function updateInjury(id: string, patch: Partial<Injury>) {
   const cur = injuries.value[id]; if (!cur) throw new ActionError("missing", "Немає такого запису");

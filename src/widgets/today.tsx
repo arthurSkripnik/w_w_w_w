@@ -3,6 +3,8 @@ import { useState } from "preact/hooks";
 import type { Widget } from "./types";
 import { Pill, Button, Field, StatusLine, KV } from "../ui";
 import { WorkoutCard } from "../calendar/WorkoutCard";
+import { needsJournal } from "../domain/journal";
+import { journalFor } from "../store/journal";
 import { today, days, zones } from "../store/derived";
 import { journal } from "../store/data";
 import { todayDay, ready } from "../store/home";
@@ -48,6 +50,8 @@ function Session() {
     return <WorkoutCard size="L" type={d.type} level={d.level} name={name} st="done" today label={name} aside={<Pill tone="line">виконано</Pill>}>
       <KV size="m" items={kv.map(([k, v, u]) => ({ k, v, u: u || undefined }))} />
       {d.acc && <StatusLine tone={accTone(d.acc.score)} tag={`${d.acc.score}%`}>Точність: {d.acc.label.toLowerCase()}</StatusLine>}
+      {needsJournal(d.journal) ? <Button onClick={() => (journalFor.value = d.date)}>Записати, як пройшло</Button>
+        : <p class="label">Записано: {[d.journal?.feel, d.journal?.rpe != null ? `RPE ${d.journal.rpe}` : null, d.journal?.legs ? `ноги ${d.journal.legs}` : null].filter(Boolean).join(" · ")} · <a href="#" onClick={e => { e.preventDefault(); journalFor.value = d.date; }}>змінити</a></p>}
     </WorkoutCard>;
   }
   const pace = paceText(d.workout?.zone ?? null, Z), mins = d.type === "race" ? null : dur(d.type, d.level);

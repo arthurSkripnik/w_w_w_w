@@ -2,6 +2,7 @@ import { useMemo, useState } from "preact/hooks";
 import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta } from "../ui";
 import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
 import { DayCell } from "../calendar/DayCell";
+import { JournalForm } from "../calendar/JournalForm";
 import { WeekLine, weekMin } from "../calendar/Week";
 import { dayState, DOW } from "../domain/home";
 import { FIXED_T } from "../domain/spec";
@@ -59,6 +60,8 @@ function Parts() {
           <KV size="rows" items={[{ k: "Поріг", sub: "з годинника", v: "3:40", u: "/км" }, { k: "10 км", sub: "поріг × 1,03", v: "37:50" }]} />
           <KV size="text" items={[{ k: "Правило", v: "Не більше двох важких днів на тиждень.", txt: true }]} />
         </div></section>
+      {done && <section><h3 class="label">Форма журналу (попап після пробіжки, картка дня, «Сьогодні»)</h3>
+        <div class="kit-col"><JournalForm day={done} compact /></div></section>}
       <section><h3 class="label">Різниця</h3>
         <div class="btn-row"><Delta d={-6} text="−0:06" better={-1} scale={10} /><Delta d={4} text="+4" better={-1} scale={10} /><Delta d={0.3} text="+0.3" better={0} scale={1} /><Delta d={null} text="" better={1} scale={1} /></div></section>
     </div>

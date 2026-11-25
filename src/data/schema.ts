@@ -143,7 +143,10 @@ export const Journal = z.object({
   rpe: z.number().optional(),
   sleepH: z.number().optional(),
   sleepText: z.string().optional(),
-  feel: z.string().optional(),
+  feel: z.string().optional(),                         // how the run felt (Журнал: легко / нормально / важко / дуже важко)
+  legs: z.string().optional(),                         // свіжі / трохи важкі / важкі / важкі і болять
+  fuel: z.string().optional(),                         // food and water before the run
+  fit: z.string().optional(),                          // against the plan: так / легше / важче / змінив структуру
   pains: z.record(z.string(), z.string()).optional(),   // body area → how it felt
   session: z.string().optional(),                       // what was done, as written
   numbers: z.string().optional(),                       // Strava numbers as written by the coach

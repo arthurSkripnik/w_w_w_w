@@ -137,3 +137,20 @@
   .kit-s { width: 130px !important; }
   .kit-col { display: grid; gap: 16px; max-width: 720px; }
 }
+@layer components {
+  /* ---- journal form and the popup after a run ---- */
+  .jf { display: grid; gap: 16px; }
+  .jf .seg[data-look="chips"] .seg-o > span { min-height: 36px; }
+  .jf-q { display: grid; gap: 6px; }
+  .jf-pain { display: grid; gap: 10px; padding: 12px; box-shadow: inset 2px 0 0 var(--acc); }
+  .jf-pain p { margin: 0; }
+  .jf-note textarea { width: 100%; font: inherit; font-family: var(--grot); padding: 8px 0; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--ink); resize: vertical; }
+  .jp-back { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--ink) 35%, transparent); display: grid; place-items: start center; overflow: auto; padding: 40px 16px; }
+  .jp { width: min(720px, 100%); background: var(--bg); padding: 20px 24px 28px; display: grid; gap: 16px; outline: none; box-shadow: 0 12px 40px rgb(0 0 0 / .25); }
+  .jp-h { display: flex; justify-content: space-between; align-items: center; }
+  .jp-q { margin: 8px 0 0; font: 400 24px/1.2 var(--serif); }
+  @media (max-width: 760px) {
+    .jp-back { padding: 0; }
+    .jp { min-height: 100%; padding: 16px 16px 96px; box-shadow: none; }
+  }
+}
