@@ -55,6 +55,7 @@ export function Calendar() {
           <WeekLine key={"w" + n} n={n} w={w} by={by} today={t} sel={sel} maxMin={maxMin} easyMinPerKm={z1mid} />];
       })}
     </div>
-    {open && <Modal wide label={`День ${dm(open.date)}`} onClose={() => go("calendar", null, true)}><DayCard key={open.date} day={open} /></Modal>}
+    {open && <Modal wide label={`${dm(open.date)}: ${open.workout?.name ?? "день плану"}`} onClose={() => go("calendar", null, true)}
+      returnTo={() => document.querySelector<HTMLElement>(`#app .cal [data-date="${open.date}"]`)}><DayCard key={open.date} day={open} /></Modal>}
   </>;
 }

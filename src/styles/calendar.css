@@ -72,8 +72,9 @@
   .chk { display: flex; gap: 8px; align-items: center; font-family: var(--grot); font-size: 14px; min-height: 44px; }
   .dc-rpe input[type="range"] { flex: 1 1 160px; accent-color: var(--acc); }
   .dc-rpe b { font-size: 20px; min-width: 2ch; }
-  .dc-fact summary { cursor: pointer; }
+  .dc-fact summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
   .dc-fact[open] { gap: 16px; }
+  .dc-fact .dc-row { margin-bottom: 16px; }
   .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   .steps li { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px; }
   .steps li[data-main] > span:last-child { font-size: 19px; }

@@ -22,7 +22,7 @@ export function DayCell({ day, iso, today, open, head, size = "S", plan, pick, o
   const label = `${dm(iso)}: ${name}${day.type === "race" ? "" : `, близько ${mins} хв`}` + (st === "done" ? ", виконано" + (r?.pace ? `, ${r.km.toFixed(1)} км, темп ${fmtPace(r.pace)}` : "") : st === "miss" ? ", пропущено" : "")
     + (day.acc ? `, точність ${day.acc.score}%` : "") + (changed ? ", змінено" : "") + (day.gym ? ", після бігу силове" : "");
   const lv = lvlOf(day.type, day.level);
-  return <WorkoutCard size={size} type={day.type} level={day.level} name={name} st={st} changed={changed} past={past} today={isToday} pressed={open ?? (pick === "a" || pick === "b")} head={head} pick={pick}
+  return <WorkoutCard date={iso} size={size} type={day.type} level={day.level} name={name} st={st} changed={changed} past={past} today={isToday} pressed={open ?? (pick === "a" || pick === "b")} head={head} pick={pick}
     label={(isToday ? "Сьогодні, " : "") + label + (lv ? `, рівень ${lv}` : "")} onClick={onPick ?? (() => go("calendar", open ? null : iso, route.value === "calendar"))}
     aside={st === "done" && <b class="ok" aria-hidden="true">✓</b>}
     bottom={facts ?? <>{bottom}{st === "plan" && lv && <span class="lvl"> · Р{lv}</span>}{day.acc && <b class="acc-n"> {day.acc.score}%</b>}{day.gym && <b class="gym"> +С</b>}</>} />;
