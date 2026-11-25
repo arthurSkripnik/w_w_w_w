@@ -136,3 +136,25 @@ Rule: a thing that means the same everywhere is one component; screens pass size
 - `replaceDay` writes the new workout and a `replace` change into the day's history; «Повернути як було» undoes it.
 - Generator and saved personal plans (9a, 9b) are postponed.
 
+
+## Step 10: the character in the Profile
+
+- `src/domain/character.ts`: stats 1–99 over 28 days (speed from the 10 km forecast, endurance from weekly km and the longest run,
+  strength from HR Z4–Z5 minutes and hills, economy from the aerobic base, discipline from plan days done and easy HR),
+  class from the two strongest body stats, HP from the form %, XP from km since the plan began, the race as a boss, perks.
+  Formulas carried over from v52; nothing is stored.
+- Widgets: «Персонаж» (compact and full, `src/widgets/character.tsx`, animated figure in `Runner.tsx`), «Характеристики» and
+  «Бос і перки» (full). Each stat links to the widget it comes from.
+- New board `profile` on top of the Profile (`layout/profile`); the widget menu now offers every other screen.
+- New ui primitive `Meter` (labelled 0–100 bar with an optional goal tick), shown in «Зразки».
+
+## Step 11: the journal form, the popup after a run, manual entry
+
+- `src/domain/journal.ts`: the coach chat's questions (feel, legs, RPE, pain, fuel, against the plan, sleep, note) as one set;
+  `journalPatch` writes only answered fields (a chat entry is merged), `injuryFor` puts pain into the injury log (extends yesterday's entry).
+- Journal schema: new optional `legs`, `fuel`, `fit`.
+- `src/calendar/JournalForm.tsx`: one form for the popup, the day card («Записати, як пройшло», with manual pace and HR when there is no Strava run)
+  and «Сьогодні». Shown in «Зразки».
+- `src/app/JournalPopup.tsx` + `src/store/journal.ts`: opens by itself for the latest run of the last 3 days without a record;
+  «Пізніше» puts it off for that day (browser storage).
+- The run-journal skill writes the same fields.

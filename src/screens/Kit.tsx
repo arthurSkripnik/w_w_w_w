@@ -1,5 +1,5 @@
 import { useMemo, useState } from "preact/hooks";
-import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta } from "../ui";
+import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter } from "../ui";
 import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
 import { DayCell } from "../calendar/DayCell";
 import { JournalForm } from "../calendar/JournalForm";
@@ -62,6 +62,9 @@ function Parts() {
         </div></section>
       {done && <section><h3 class="label">Форма журналу (попап після пробіжки, картка дня, «Сьогодні»)</h3>
         <div class="kit-col"><JournalForm day={done} compact /></div></section>}
+      <section><h3 class="label">Шкала (Персонаж, Бос, Характеристики)</h3>
+        <div class="kit-col"><Meter label="HP" value={81} text="81/100" sub="Форма 90%: свіжий" /><Meter label="ШВД" value={73} mark={75} text="73" sub="Прогноз 10 км 35:34" />
+          <Meter label="ВИТ" value={56} text="56" weak sub="Слабке місце" /><Meter label="Готовність" value={84} tone="acc" text="84%" /></div></section>
       <section><h3 class="label">Різниця</h3>
         <div class="btn-row"><Delta d={-6} text="−0:06" better={-1} scale={10} /><Delta d={4} text="+4" better={-1} scale={10} /><Delta d={0.3} text="+0.3" better={0} scale={1} /><Delta d={null} text="" better={1} scale={1} /></div></section>
     </div>

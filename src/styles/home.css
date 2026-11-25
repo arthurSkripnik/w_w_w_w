@@ -112,3 +112,44 @@
     .lib-gym { grid-template-columns: 1fr; }
   }
 }
+@layer screens {
+  /* ---- character (Персонаж) ---- */
+  .ch { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; align-items: center; }
+  .ch-full { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; }
+  .ch-side { display: grid; gap: 12px; min-width: 0; }
+  .ch-head { display: grid; gap: 2px; }
+  .ch-cls { margin: 0; font: 400 28px/1.1 var(--serif); }
+  .ch-desc { margin: 0; color: var(--mute); }
+  .ch-side .label { margin: 0; }
+  .runner { width: 100%; height: auto; display: block; overflow: visible; }
+  .runner .rn-l, .runner .rn-a { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
+  .runner .rn-a { stroke: var(--acc); }
+  .runner .rn-back { opacity: .35; }
+  .runner .rn-h { fill: var(--bg); stroke: var(--ink); }
+  .runner .rn-hf { fill: var(--acc); }
+  .runner .rn-hf.rn-ink { fill: var(--bg); }
+  .runner .rn-g { stroke: var(--line); stroke-dasharray: 2 4; }
+  .runner .rn-co { font: 500 11px var(--grot); fill: var(--ink); letter-spacing: .04em; }
+  .runner .rn-co circle { fill: var(--ink); }
+  .runner .rn-co path { fill: none; stroke: var(--mute); stroke-width: 1; }
+  .ch-stats { display: grid; gap: 14px; }
+  .ch-stats abbr { text-decoration: none; font-weight: 500; color: var(--ink); }
+  .ch-boss { display: grid; gap: 24px; }
+  .ch-boss section { display: grid; gap: 12px; }
+  .ch-boss p.label { margin: 0; }
+  .ch-perks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ch-perks li { display: grid; grid-template-columns: 48px 1fr; gap: 0 10px; padding: 8px; background: var(--chip); font-family: var(--grot); font-size: 14px; align-items: baseline; }
+  .ch-perks li .label { grid-column: 2; }
+  .ch-perks li:not([data-ok]) { background: none; box-shadow: inset 0 0 0 1px var(--hair); color: var(--mute); }
+  .ch-perks li:not([data-ok]) b { font-weight: 400; }
+  .ch-pi { grid-row: span 2; font-size: 12px; color: var(--acc-text); white-space: nowrap; }
+  .ch-perks li:not([data-ok]) .ch-pi { color: var(--mute); }
+  @media (max-width: 760px) {
+    .ch, .ch-full { grid-template-columns: minmax(0, 1fr); }
+    .ch-perks { grid-template-columns: minmax(0, 1fr); }
+  }
+}
+@layer screens {
+  .ch-full .runner { max-height: 360px; }
+  .board-profile { margin-bottom: 40px; }
+}
