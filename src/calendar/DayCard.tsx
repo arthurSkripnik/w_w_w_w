@@ -1,8 +1,10 @@
-// The day card, ported from v52 03-daycard.js: what to run and how, «Легше / Довше», splits, strength, race plan,
-// plan changes, what it actually was, the fact and the Strava report beside it.
+// The day card (in the calendar's window): three groups in one order, «Результат» → «План» → «Дії», shaped by the
+// day's phase. Ahead: the plan open, changes folded. Done: the Strava report and the record first, the plan folded,
+// two columns on a wide screen. Missed: «пропущено» and the record open. Race/start: the race plan first.
 import { useEffect, useState } from "preact/hooks";
+import type { ComponentChildren } from "preact";
 import type { Day } from "../domain/days";
-import { Pill, Button, Segmented, StatusLine, Field, KV, Choice, Details } from "../ui";
+import { Pill, Button, Segmented, StatusLine, Field, KV, Choice, Details, Hint } from "../ui";
 import { options, warnings, REPLACE_CATS, type Cat } from "../domain/replace";
 import { WorkoutCard } from "./WorkoutCard";
 import { JournalForm } from "./JournalForm";
@@ -19,7 +21,7 @@ import { typeOf, CAT, TYPE, RPE_TARGET } from "../domain/types";
 import { gen, kpis, splits, verdict, racePlan, type Tag } from "../domain/text";
 import { dur, FIXED_T, K5_TO_10K, K5_TO_THR } from "../domain/spec";
 import { fmtPace, toSec, addDays, daysBetween } from "../domain/util";
-import { DOW, dm, mmss, plural, dayState } from "../domain/home";
+import { DOW, dm, mmss, plural, dayState, dayPhase, phaseTag, type Phase } from "../domain/home";
 
 const dow = (iso: string) => DOW[(new Date(iso + "T00:00:00").getDay() + 6) % 7];
 const ADJ = [{ d: -2, name: "Легше" }, { d: 0, name: "За планом" }, { d: 2, name: "Довше" }];
@@ -39,9 +41,9 @@ function Level({ day }: { day: Day }) {
   const l0 = plannedLevel(day.date) ?? day.level, { msg, busy, run } = useAct();
   const opts = ADJ.map(o => ({ ...o, lv: Math.max(1, l0 + o.d) })).filter(o => o.d === 0 || o.lv !== l0);
   return <div class="dc-level">
-    <Segmented label="Тривалість тренування" value={String(day.level)} onChange={v => !busy && run(() => setLevel(day.date, +v))}
+    <div class="dc-row dc-lv"><Segmented label="Тривалість тренування" value={String(day.level)} onChange={v => !busy && run(() => setLevel(day.date, +v))}
       options={opts.map(o => ({ id: String(o.lv), title: `${o.name} · ${dur(day.type, o.lv)} хв` }))} />
-    <p class="label">Мало сил чи часу? «Легше» дає менше хвилин і повторів, а темп той самий. Вибір зберігається в плані.</p>
+    <Hint>Мало сил чи часу? «Легше» дає менше хвилин і повторів, а темп той самий. Вибір зберігається в плані.</Hint></div>
     <Msg m={msg} />
   </div>;
 }
@@ -53,10 +55,10 @@ function Splits({ day }: { day: Day }) {
     if (last && !x.w && !last.w && last.p === x.p) { last.to = i + 1; last.t = t; } else rows.push({ ...x, from: i + 1, to: i + 1, t }); });
   const fast = Math.min(...sp.map(x => x.p)), slow = Math.max(...sp.map(x => x.p)), bar = (p: number) => Math.round(40 + (60 * (slow - p)) / Math.max(1, slow - fast));
   return <section class="dc-sec">
-    <h3 class="card-title">Спліти по км</h3>
+    <header class="card-head"><h4 class="card-title">Спліти по км</h4><span class="card-aside label num">≈{sp.length} км за {mmss(t)}</span>
+      <Hint>{sp.some(x => x.w) ? "Прискорення рівне: кожен км трохи швидший за попередній, останній близько верху порогового темпу. " : ""}Перші км повільніші: тіло розігрівається.</Hint></header>
     <div class="tbl-wrap"><table class="tbl splits"><thead><tr><th>Км</th><th class="n">Темп /км</th><th><span class="vh">Темп на смузі</span></th><th class="n">Час</th></tr></thead>
       <tbody>{rows.map(r => <tr key={r.from} class={r.w ? "lwk" : undefined}><td class="num">{r.from === r.to ? r.from : `${r.from}–${r.to}`}</td><td class="n num"><b>{fmtPace(r.p)}</b></td><td class="sbar"><i style={{ width: `${bar(r.p)}%` }} /></td><td class="n num">{mmss(r.t)}</td></tr>)}</tbody></table></div>
-    <p class="label">≈{sp.length} км за {mmss(t)}. {sp.some(x => x.w) ? "Прискорення рівне: кожен км трохи швидший за попередній, останній близько верху порогового темпу. " : ""}Перші км повільніші: тіло розігрівається.</p>
   </section>;
 }
 
@@ -65,7 +67,7 @@ function Gym({ day }: { day: Day }) {
   const len = (r: { from: string; to: string }) => daysBetween(r.from, r.to);
   const wOf = (ws?: { from: string; to: string; w: string }[]) => { const rs = (ws ?? []).filter(r => day.date >= r.from && day.date <= r.to); return rs.length ? rs.reduce((a, r) => (len(r) < len(a) ? r : a)).w : null; };
   return <section class="dc-sec">
-    <header class="card-head"><h3 class="card-title">Після бігу: {g.name}</h3><span class="card-aside label">≈{g.min} хв</span></header>
+    <header class="card-head"><h4 class="card-title">Після бігу: {g.name}</h4><span class="card-aside label">≈{g.min} хв</span></header>
     <ol class="steps">{g.exercises.map((e, i) => { const w = wOf(e.weights); return <li key={i}><span class="label num">{e.dose}{w && <><br /><b>{w}</b></>}</span><span>{e.name}{e.cue && <span class="label"> {e.cue}</span>}</span></li>; })}
       {g.rules?.length ? <li class="hint"><span class="label">Вага</span><span>{g.rules.join(" ")}</span></li> : null}
       <li class="hint"><span class="label">Порада</span><span>Одразу після бігу або через кілька годин, 5 хв розминки перед першим підходом. Не до відмови.</span></li></ol>
@@ -75,7 +77,7 @@ function Gym({ day }: { day: Day }) {
 function RacePlan() {
   const Z = zones.value!, p = Z.race, at = (km: number) => mmss(p * km);
   return <section class="dc-sec">
-    <h3 class="card-title">План гонки</h3>
+    <h4 class="card-title">План гонки</h4>
     <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Відрізок</th><th>Темп, /км</th><th>Що робити</th></tr></thead>
       <tbody>{racePlan(p).map(([a, b, c]) => <tr key={a}><td><b>{a}</b></td><td class="num">{b}</td><td>{c}</td></tr>)}</tbody></table></div>
     <p class="label">Ціль {at(10)}: рівний темп {fmtPace(p)} /км. Відмітки: 1 км {at(1)}, 3 км {at(3)}, 5 км {at(5)}, 7 км {at(7)}, 10 км {at(10)}.</p>
@@ -89,6 +91,7 @@ function Replace({ day }: { day: Day }) {
   const [pick, setPick] = useState<string | null>(null), { msg, busy, run } = useAct(), by = dayByDate.value, t = today.value;
   const O = options(day, cat), sel = O.find(o => o.type === pick) ?? null, W = sel ? warnings(day, sel.type, by, goal.value?.date ?? null) : [];
   return <Details summary="Замінити з Бази">
+    <Hint>Рівень підібрано так, щоб час дня лишився близько {dur(day.type, Math.max(1, day.level))} хв. Після заміни його можна змінити кнопками «Легше» і «Довше». «Повернути як було» скасує заміну.</Hint>
     <Choice look="chips" label="Група зусилля" value={cat} onChange={c => { setCat(c); setPick(null); }} options={REPLACE_CATS} />
     <div class="dc-repl" role="group" aria-label="Тренування з Бази">
       {O.map(o => <WorkoutCard key={o.type} size="M" type={o.type} level={o.level} name={typeOf(o.type).name} past={day.date < t} pressed={o.type === pick}
@@ -102,7 +105,6 @@ function Replace({ day }: { day: Day }) {
         <a href="#library" class="btn" data-v="link">Що це за тренування</a>
       </div>
     </>}
-    <p class="label">Рівень підібрано так, щоб час дня лишився близько {dur(day.type, Math.max(1, day.level))} хв. Після заміни його можна змінити кнопками «Легше» і «Довше». «Повернути як було» скасує заміну.</p>
     <Msg m={msg} />
   </Details>;
 }
@@ -121,8 +123,7 @@ function PlanEdit({ day }: { day: Day }) {
     : c.kind === "swap" ? (c.from === "rest" ? `Перенесено з ${dm(c.note!.slice(-10))}.` : `Обмін з ${dm((c.note ?? "").slice(-10))}.`)
     : c.kind === "replace" ? `Замінено з Бази, було: ${(workouts.value[c.from]?.name ?? "інше тренування").toLowerCase()}.`
     : c.kind === "start" ? `Старт${c.from !== "rest" ? " замість тренування" : ""}.` : `Полегшено: ${c.note! > day.date ? "наступного дня" : "напередодні"} старт.`);
-  return <section class="dc-sec">
-    <h3 class="card-title">Змінити план</h3>
+  return <Details summary={notes.length ? "Змінити план · вже змінено" : "Змінити план"} open={notes.length > 0}>
     {notes.length > 0 && <p class="label">{[...new Set(notes)].join(" ")}</p>}
     <div class="dc-row">
       {targets.length > 0 && <label class="field"><span class="label">Перенести на</span>
@@ -136,11 +137,11 @@ function PlanEdit({ day }: { day: Day }) {
           {rest.map(d => <option key={d} value={d}>{dow(d)}, {dm(d)} · день відпочинку</option>)}
         </select></label>}
       {last && <Button variant="ghost" disabled={busy} onClick={() => run(() => revertDay(day.date))}>{isStart ? "Прибрати старт" : "Повернути як було"}</Button>}
+      <Hint>Перенесення міняє тренування місцями з обраним днем або ставить його на день відпочинку. Старт: день до і день після стають відновлювальними.</Hint>
     </div>
     {!isStart && !eased && <Replace day={day} />}
-    <p class="label">Перенесення міняє тренування місцями з обраним днем або ставить його на день відпочинку. Старт: день до і день після стають відновлювальними.</p>
     <Msg m={msg} />
-  </section>;
+  </Details>;
 }
 
 /** «Фактично було»: another session type, or not counted in the form analysis. */
@@ -154,7 +155,8 @@ function Actual({ day }: { day: Day }) {
     }
   });
   return <section class="dc-sec">
-    <h3 class="card-title">Фактично було</h3>
+    <header class="card-head"><h4 class="card-title">Фактично було</h4>
+      <Hint>«Не враховувати» для забігів не на результат, хвороби чи бігу з кимось: день зникає з графіків форми й аеробної бази.</Hint></header>
     <div class="dc-row">
       <label class="field"><span class="label">Тип</span>
         <select value={cur} disabled={busy || sync.value.busy} onChange={e => change((e.target as HTMLSelectElement).value)}>
@@ -163,21 +165,20 @@ function Actual({ day }: { day: Day }) {
         </select></label>
       {day.run && <label class="chk"><input type="checkbox" checked={!!day.run.exclude} disabled={busy} onChange={e => run(() => setExclude(day.run!.stravaId, (e.target as HTMLInputElement).checked))} /><span>Не враховувати в аналізі форми</span></label>}
     </div>
-    <p class="label">«Не враховувати» для забігів не на результат, хвороби чи бігу з кимось: день зникає з графіків форми й аеробної бази.</p>
     <Msg m={msg} />
   </section>;
 }
 
 /** Record the fact: from Strava, or pace, HR and RPE by hand. */
-function Fact({ day }: { day: Day }) {
+function Fact({ day, open }: { day: Day; open?: boolean }) {
   const J = day.journal, s = sync.value, saved = !!(day.run || (J && !needsJournal(J)));
   const t = typeOf(day.act), Z = zones.value!, p = toSec(J?.manual?.pace), v = !day.run && p ? verdict(day.act, p, Z) : null;
-  return <details class="dc-sec dc-fact" open={!saved || needsJournal(J)}>
-    <summary class="card-title">{J && !needsJournal(J) ? "Запис дня · змінити" : "Записати, як пройшло"}</summary>
-    {!day.run && <div class="dc-row"><Button variant="ghost" disabled={s.busy} onClick={() => pullDay(day.date)}>Підтягнути зі Strava</Button>{s.text && <span class="status" role="status">{s.text}</span>}</div>}
+  return <details class="dc-sec dc-fact" open={open ?? (!saved || needsJournal(J))}>
+    <summary class="card-title">{J && !needsJournal(J) ? `${[J.feel, typeof J.rpe === "number" ? `RPE ${J.rpe}` : null, J.legs ? `ноги ${J.legs}` : null].filter(Boolean).join(" · ")} · змінити` : "Записати, як пройшло"}</summary>
+    <div class="dc-row">{!day.run && <Button variant="ghost" disabled={s.busy} onClick={() => pullDay(day.date)}>Підтягнути зі Strava</Button>}{s.text && <span class="status" role="status">{s.text}</span>}
+      <Hint>Ті самі питання, що в чаті з тренером: запис з чату і ручний лягають в одні поля. Запис лише порівнюється з планом і план не змінює.</Hint></div>
     {v && <p class="status">{t.workLbl ?? "Темп"}: <T t={v} /></p>}
     <JournalForm key={day.date} day={day} />
-    <p class="label">Ті самі питання, що в чаті з тренером: запис з чату і ручний лягають в одні поля. Запис лише порівнюється з планом і план не змінює.</p>
   </details>;
 }
 
@@ -193,11 +194,16 @@ function TestResult({ day }: { day: Day }) {
   </div>;
 }
 
+/** A group of the day window: «Результат», «План», «Дії». */
+function G({ id, title, children }: { id: string; title: string; children: ComponentChildren }) {
+  return <section class="dc-group" aria-labelledby={`dc-${id}`}><h3 class="dc-gh label" id={`dc-${id}`}>{title}</h3>{children}</section>;
+}
+
 export function DayCard({ day }: { day: Day }) {
   const Z = zones.value, t = today.value, all = days.value, i = all.findIndex(d => d.date === day.date), prev = all[i - 1], next = all[i + 1];
   if (!Z) return null;
   const info = typeOf(day.type), lvl = day.type === "race" ? 0 : Math.max(1, day.level), g = gen(day.type, lvl, Z);
-  const past = day.date <= t, steps = [g.warmup && ["Розминка", g.warmup], [g.warmup || g.cooldown ? "Основна частина" : "Тренування", g.main], g.cooldown && ["Заминка", g.cooldown]].filter(Boolean) as [string, string][];
+  const steps = [g.warmup && ["Розминка", g.warmup], [g.warmup || g.cooldown ? "Основна частина" : "Тренування", g.main], g.cooldown && ["Заминка", g.cooldown]].filter(Boolean) as [string, string][];
   const total = Math.max(...all.map(d => d.plan.week)), name = day.workout?.name ?? info.name;
   const rh = (day.run?.weather as { rh?: number | null } | null | undefined)?.rh ?? null;
   useEffect(() => {   // ← → step through the plan days, unless a field or a choice has the keys
@@ -211,9 +217,49 @@ export function DayCard({ day }: { day: Day }) {
     addEventListener("keydown", key); return () => removeEventListener("keydown", key);
   }, [prev?.date, next?.date]);
   const nav = (d: Day | undefined, w: string) => (d ? `${w}: ${dm(d.date)}, ${d.workout?.name ?? typeOf(d.type).name}` : `${w} тренування немає`);
-  return <article class="daycard" aria-label={`${dm(day.date)}: ${name}`}>
+  const ph = dayPhase(day, t), tag = phaseTag(day, ph), ahead = ph === "future" || ph === "today" || ph === "race";
+
+  // three groups in one order: what happened, the plan, what can be done with the day
+  const planBody = <>
+    <section class="dc-sec">
+      <KV size="l" items={kpis(day.type, lvl, Z, !!athlete.value?.hrZoneTops?.length).map(k => ({ k: k.lbl, v: k.val, sub: k.sub, txt: k.txt }))} />
+      {!FIXED_T.includes(day.type) && day.date >= t && <Level day={day} />}
+    </section>
+    <section class="dc-sec">
+      <h4 class="card-title">Як бігти</h4>
+      <ol class="steps">
+        {steps.map(([l, x], n) => <li key={l} data-main={l.startsWith("Основна") || l === "Тренування" ? "" : undefined}><span class="label">{steps.length > 1 ? `${String(n + 1).padStart(2, "0")} ` : ""}{l}</span><span>{x}</span></li>)}
+        <li class="hint"><span class="label">Порада</span><span>{g.note}</span></li>
+      </ol>
+    </section>
+    <Splits day={day} />
+    <Gym day={day} />
+  </>;
+  const result = ph === "done" ? <>
+    {day.report && (day.run?.exclude ? <p class="status">День не враховується в аналізі форми. Його хвилини й навантаження лишаються в тижневому обсязі.</p> : <Report day={day} rh={rh} />)}
+    {day.type === "tt5k" && <TestResult day={day} />}
+    {day.extras.length > 0 && <p class="label">Ще {day.extras.length} {plural(day.extras.length, "пробіжка", "пробіжки", "пробіжок")} цього дня: {day.extras.map(r => `${r.km.toFixed(1)} км`).join(", ")}. Вони йдуть у тижневий обсяг і навантаження.</p>}
+  </> : ph === "missed" ? <>
+    <StatusLine tone="err">{day.journal?.skipped ? "Strava: пробіжки за цей день немає. У моделі навантаження день рахується як відпочинок." : "Пробіжки немає ні в Strava, ні в записі. Якщо бігав, підтягни її або запиши вручну."}</StatusLine>
+    <Fact key={day.date} day={day} open />
+  </> : ph === "today" ? <Fact key={day.date} day={day} open={false} /> : null;
+  const actions = <>
+    {(ph === "done" || ph === "missed") && <Actual day={day} />}
+    {ph === "done" && !day.run?.exclude && groupOf(day.act) && <p><a class="btn" data-v="ghost" href={`#compare/${day.date}`}>Порівняти з такими ж пробіжками</a></p>}
+    {ahead && <PlanEdit day={day} />}
+  </>;
+
+  const resultG = result && <G id="res" title={ph === "today" ? "Сьогодні" : "Результат"}>{result}</G>;
+  const planG = <G id="plan" title={ahead ? "План" : "Що було в плані"}>
+    {ph === "race" && day.type === "race" && <RacePlan />}
+    {ahead ? planBody : <Details summary={`${name} · ${dur(day.type, lvl)} хв`}>{planBody}</Details>}
+  </G>;
+  const actG = (ph === "done" || ph === "missed" || day.type !== "race") && <G id="act" title="Дії">{actions}</G>;
+  const recG = <G id="rec" title="Запис дня"><Fact key={day.date} day={day} /></G>;
+
+  return <article class="daycard" data-phase={ph} aria-label={`${dm(day.date)}: ${name}, ${tag.tag}`}>
     <header class="dc-head">
-      <span class="label num">Тиждень {String(day.plan.week).padStart(2, "0")}/{total} · {dow(day.date)}, {dm(day.date)}</span>
+      <span class="dc-when"><span class="label num">Тиждень {String(day.plan.week).padStart(2, "0")}/{total} · {dow(day.date)}, {dm(day.date)}</span><Pill tone={tag.tone}>{tag.tag}</Pill></span>
       <span class="dc-nav">
         <Button variant="ghost" aria-label={nav(prev, "Попереднє")} disabled={!prev} title="Попередній день (←)" onClick={() => prev && go("calendar", prev.date, true)}>←</Button>
         <Button variant="ghost" aria-label={nav(next, "Наступне")} disabled={!next} title="Наступний день (→)" onClick={() => next && go("calendar", next.date, true)}>→</Button>
@@ -221,35 +267,9 @@ export function DayCard({ day }: { day: Day }) {
       </span>
     </header>
     <WorkoutCard size="L" hLevel={2} type={day.type} level={day.level} name={name} st={dayState(day)} label={name}
-      aside={<span class="dc-cat label">{CAT[info.cat]}{(day.run || typeof day.journal?.rpe === "number") && <Pill tone="line">записано</Pill>}</span>} />
-
-    <div class={`dc-grid${day.report ? " two" : ""}`}>
-      <div class="dc-col">
-        <section class="dc-sec">
-          <KV size="l" items={kpis(day.type, lvl, Z, !!athlete.value?.hrZoneTops?.length).map(k => ({ k: k.lbl, v: k.val, sub: k.sub, txt: k.txt }))} />
-          {!FIXED_T.includes(day.type) && day.date >= t && <Level day={day} />}
-        </section>
-        {day.type === "tt5k" && <TestResult day={day} />}
-        <section class="dc-sec">
-          <h3 class="card-title">Як бігти</h3>
-          <ol class="steps">
-            {steps.map(([l, x], n) => <li key={l} data-main={l.startsWith("Основна") || l === "Тренування" ? "" : undefined}><span class="label">{steps.length > 1 ? `${String(n + 1).padStart(2, "0")} ` : ""}{l}</span><span>{x}</span></li>)}
-            <li class="hint"><span class="label">Порада</span><span>{g.note}</span></li>
-          </ol>
-        </section>
-        <Splits day={day} />
-        <Gym day={day} />
-        {day.type === "race" && <RacePlan />}
-        <PlanEdit day={day} />
-        {past && (day.run || day.journal) && <Actual day={day} />}
-        {day.journal?.skipped && <p class="dc-sec status">Strava: пробіжки за цей день немає. У моделі навантаження день рахується як відпочинок.</p>}
-        {day.extras.length > 0 && <p class="dc-sec label">Ще {day.extras.length} {plural(day.extras.length, "пробіжка", "пробіжки", "пробіжок")} цього дня: {day.extras.map(r => `${r.km.toFixed(1)} км`).join(", ")}. Вони йдуть у тижневий обсяг і навантаження.</p>}
-        {past ? <Fact key={day.date} day={day} /> : <p class="dc-sec label">Записати факт можна з {dm(day.date)}.</p>}
-      </div>
-      {day.report && <div class="dc-col dc-rep" aria-label="Звіт зі Strava">
-        {day.run?.exclude ? <p class="status">День не враховується в аналізі форми. Його хвилини й навантаження лишаються в тижневому обсязі.</p> : <Report day={day} rh={rh} />}
-        {!day.run?.exclude && groupOf(day.act) && <p class="dc-sec"><a class="btn" data-v="ghost" href={`#compare/${day.date}`}>Порівняти з такими ж пробіжками</a></p>}
-      </div>}
-    </div>
+      aside={<span class="dc-cat label">{CAT[info.cat]}</span>} />
+    {ph === "done"
+      ? <div class="dc-grid two"><div class="dc-col">{resultG}</div><div class="dc-col">{recG}{planG}{actG}</div></div>
+      : <div class="dc-grid"><div class="dc-col">{resultG}{planG}{actG}</div></div>}
   </article>;
 }

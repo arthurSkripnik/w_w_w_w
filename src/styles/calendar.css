@@ -75,6 +75,18 @@
   .dc-fact summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
   .dc-fact[open] { gap: 16px; }
   .dc-fact .dc-row { margin-bottom: 16px; }
+  /* day window: phase status by the date, the three groups */
+  .dc-when { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .dc-group { display: grid; gap: 20px; align-content: start; min-width: 0; }
+  .dc-gh { margin: 0; color: var(--ink); border-top: 2px solid var(--ink); padding-top: 8px; }
+  .dc-group > .dc-gh + *, .dc-group > .dc-gh + * > .dc-sec:first-child, .dc-group > .dc-gh + .report > .rcard:first-child { border-top: 0; padding-top: 0; }
+  .dc-col { gap: 48px; }
+  .dc-group > .how + .how, .dc-group > .dc-sec + .how { border-top: 1px solid var(--line); }
+  .dc-group > .how > summary { font-weight: 500; }
+  .dc-fact > .dc-row { align-items: center; }
+  .dc-lv { align-items: center; flex-wrap: wrap; }
+  .dc-lv > .seg { flex: 1 1 auto; }
+  [data-phase="today"] .dc-fact:not([open]) > summary { justify-content: center; background: var(--ink); color: var(--on-ink); padding: 0 20px; }
   .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   .steps li { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px; }
   .steps li[data-main] > span:last-child { font-size: 19px; }

@@ -8,6 +8,16 @@
   .card-n { font-size: 12px; color: var(--mute); }
   .card-title { font-family: var(--grot); font-size: 15px; font-weight: 500; }
   .card-aside { margin-left: auto; }
+  .card-head:has(.hint) { flex-wrap: wrap; align-items: center; }
+  /* «?»: the explanation behind a small round button; its text takes a full line under the row it sits in */
+  .hint { display: contents; }
+  .hint-b { position: relative; flex: none; width: 24px; height: 24px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: none; color: var(--mute); font: 500 13px/1 var(--grot); cursor: pointer; }
+  .hint-b::after { content: ""; position: absolute; inset: -10px; }   /* 44 px to touch */
+  .hint-b:hover, .hint-b[aria-expanded="true"] { border-color: var(--ink); color: var(--ink); }
+  .hint-b[aria-expanded="true"] { background: var(--ink); color: var(--on-ink); }
+  .hint-b:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .hint-t { flex-basis: 100%; order: 99; display: block; max-width: 68ch; margin: 0; }
+  .hint-t[hidden] { display: none; }
 
   .stat-v { display: flex; align-items: baseline; gap: 6px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
   .stat[data-size="l"] .stat-v { font-size: clamp(40px, 5vw, 64px); }

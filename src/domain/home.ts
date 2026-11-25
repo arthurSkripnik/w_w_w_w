@@ -59,6 +59,23 @@ export function readiness(J: Record<string, Journal>, iso: string, norm: number,
 /** Day state as on the calendar: done (a run or RPE), missed (journal says skipped), else planned. */
 export const dayState = (d: Day) => (d.run || typeof d.journal?.rpe === "number" ? "done" : d.journal?.skipped ? "miss" : "plan");
 
+/** Where a day stands, for the day window: what goes first and what is folded. Race and start lead with their plan
+ *  until done; a past day without a run or a record is missed; today keeps its plan first. */
+export type Phase = "future" | "today" | "done" | "missed" | "race";
+export function dayPhase(d: Day, today: string): Phase {
+  if (dayState(d) === "done") return "done";
+  if (d.date >= today && (d.type === "race" || d.type === "start")) return "race";
+  return d.date === today ? "today" : d.date > today ? "future" : "missed";
+}
+/** The short status beside the date in the day window. */
+export function phaseTag(d: Day, ph: Phase): { tag: string; tone: "ink" | "acc" | "line" | "err" } {
+  if (ph === "done") return { tag: d.acc && !d.run?.exclude ? `виконано ${d.acc.score}%` : "виконано", tone: "ink" };
+  if (ph === "missed") return { tag: "пропущено", tone: "err" };
+  if (ph === "today") return { tag: "сьогодні", tone: "acc" };
+  if (ph === "race") return { tag: d.type === "race" ? "гонка" : "старт", tone: "acc" };
+  return { tag: "план", tone: "line" };
+}
+
 /** The plan week containing today (or the next one): km run against planned km (minutes at the middle of the easy zone). */
 export function weekStat(days: Day[], runs: Record<string, Run>, today: string, Z: Zones | null) {
   const cur = days.find(d => d.date >= today) ?? days[days.length - 1];
