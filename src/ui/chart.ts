@@ -13,11 +13,15 @@ export interface Axis {
 }
 export interface Pt { x: Date; y: number; tip?: string }
 export interface Band { lo: number; hi: number; label?: string; strong?: boolean }
+/** Names written on the chart next to the series (richprjcts): a small square in the series colour and a word.
+ *  data/plan/compare/lines sit at their last point; key/soft/dots at the last dot of that kind. Replaces legends. */
+export interface Tags { data?: string; plan?: string; compare?: string; key?: string; soft?: string; dots?: string }
 
 export type ChartSpec =
   | { kind: "line"; data: Pt[]; plan?: Pt[]; dots?: (Pt & { key?: boolean; soft?: boolean; square?: boolean; label?: string })[]; y: Axis; bands?: Band[]; ref?: { y: number; label: string }; today?: Date; x?: [Date, Date]; height?: number; end?: boolean; compare?: Pt[];
       area?: { x: Date; lo: number; hi: number }[];                  // a scenario band (model)
-      lines?: { data: Pt[]; dash?: boolean; tone?: "ink" | "mute" }[]; // more series: model middle, long runs
+      lines?: { data: Pt[]; dash?: boolean; tone?: "ink" | "mute"; tag?: string }[]; // more series: model middle, long runs
+      tags?: Tags;
       segs?: { x1: Date; x2: Date; y: number; label: string; tip?: string }[];
       step?: boolean }                                              // a level that holds until the next point   // a value over a window (Strava forecast)
   | { kind: "bars"; data: (Pt & { plan?: boolean })[]; y: Axis; height?: number; today?: Date }
@@ -33,7 +37,7 @@ const base = (width: number, height: number) => ({
   width, height, marginLeft: 44, marginRight: 16, marginTop: 24, marginBottom: 28,
   style: { background: "transparent", fontFamily: "var(--grot)", fontSize: "12px", color: "currentColor", overflow: "visible" },
 });
-const tipOpts = { fill: C.ink, stroke: "none", textPadding: 6, pointerSize: 0, fontSize: 12 } as const;
+const tipOpts = { fill: C.ink, stroke: "none", textPadding: 6, pointerSize: 0, fontSize: 12, className: "ch-tip" } as const;   // a class: Chart strips aria-labels
 
 export function chart(spec: ChartSpec, width: number): SVGSVGElement | HTMLElement {
   if (spec.kind === "spark") {
@@ -97,11 +101,14 @@ export function chart(spec: ChartSpec, width: number): SVGSVGElement | HTMLEleme
   const last = spec.data[spec.data.length - 1];
   const fmt = spec.y.fmt;
   const marks: Plot.Markish[] = [];
-  const side = width >= 560 && (spec.bands ?? []).some(b => b.label);   // band names in a right margin
+  const wide = width >= 560;
+  const T = endTags(spec);
   (spec.bands ?? []).forEach(b => {
     marks.push(Plot.rectY([b], { x1: () => spec.x?.[0] ?? all[0]?.x, x2: () => spec.x?.[1] ?? all[all.length - 1]?.x, y1: "lo", y2: "hi", fill: b.strong ? C.band : "none" }));
     if (!b.strong) marks.push(Plot.ruleY([b.lo], { stroke: C.hair }));
-    if (b.label && side) marks.push(Plot.text([b], { frameAnchor: "right", y: (d: Band) => (d.lo + d.hi) / 2, text: "label", fill: C.mute, textAnchor: "start", dx: 8 }));   // narrow: the legend names them
+    if (!b.label) return;
+    if (wide) T.push({ p: { x: new Date(NaN), y: (b.lo + b.hi) / 2 }, text: b.label, tone: "band" });   // wide: band names join the column on the right
+    else if (b.strong) marks.push(Plot.text([b], { frameAnchor: "left", y: (d: Band) => (d.lo + d.hi) / 2, text: "label", fill: C.mute, textAnchor: "start", dx: 6, className: "ch-band" }));   // narrow: only the target band, inside it
   });
   if (spec.ref) marks.push(Plot.ruleY([spec.ref.y], { stroke: C.acc, strokeDasharray: "4 3" }), Plot.text([spec.ref], { frameAnchor: "left", y: "y", text: "label", fill: C.mute, dy: -8, dx: 4, textAnchor: "start" }));
   if (spec.today) marks.push(Plot.ruleX([spec.today], { stroke: C.line }), Plot.text([spec.today], { x: (d: Date) => d, frameAnchor: "top", text: () => "сьогодні", fill: C.mute, dx: -4, dy: -14, textAnchor: "end" }));
@@ -124,10 +131,51 @@ export function chart(spec: ChartSpec, width: number): SVGSVGElement | HTMLEleme
     Plot.ruleX(all, Plot.pointerX({ x: "x", stroke: C.line })),
     Plot.tip(all, Plot.pointerX({ x: "x", y: "y", title: (d: Pt) => d.tip ?? `${dm(d.x)} · ${fmt(d.y)}`, ...tipOpts })),
   );
-  return Plot.plot({
-    ...base(width, h), ...(side ? { marginRight: 96 } : {}),
+  const mr = Math.max(16, ...T.filter(t => !t.below).map(t => 26 + t.text.length * 8.6));   // uppercase, tracked
+  const svg = Plot.plot({
+    ...base(width, h), marginRight: Math.min(mr, wide ? 150 : 96),
     x: { type: "time", domain: spec.x, tickFormat: monthTick, ticks: "month", tickSize: 0, label: null },
     y: { grid: true, ticks: spec.y.ticks ?? 4, tickFormat: fmt, reverse: spec.y.reverse, domain: spec.y.domain, label: null, tickSize: 0, nice: true },
     marks,
+  }) as SVGSVGElement & Plot.Plot;
+  if (T.length) drawTags(svg, T, h, width - Math.min(mr, wide ? 150 : 96), width);
+  return svg;
+}
+
+const TONE = { ink: C.ink, acc: C.acc, cmp: C.cmp, mute: C.mute, soft: C.bg, band: "none" };
+type EndTag = { p: Pt; text: string; tone: keyof typeof TONE; below?: boolean };   // tone "band": a band name in the same column
+const lastOf = <T extends Pt>(a?: T[]) => (a?.length ? a.reduce((m, p) => (p.x > m.x ? p : m)) : undefined);
+function endTags(spec: Extract<ChartSpec, { kind: "line" }>): EndTag[] {
+  const g = spec.tags ?? {}, out: EndTag[] = [];
+  const add = (p: Pt | undefined, text: string | undefined, tone: EndTag["tone"], below?: boolean) => { if (p && text) out.push({ p, text, tone, below }); };
+  add(lastOf(spec.data), g.data, spec.end === false ? "ink" : "acc", !!spec.plan?.length);   // the plan carries on from here: the name goes under the end
+  add(lastOf(spec.plan), g.plan, "ink");
+  add(lastOf(spec.compare), g.compare, "cmp");
+  (spec.lines ?? []).forEach(l => add(lastOf(l.data), l.tag, l.tone === "mute" ? "mute" : "ink"));
+  const D = spec.dots ?? [];
+  add(lastOf(D.filter(d => d.key)), g.key, "acc");
+  add(lastOf(D.filter(d => d.soft)), g.soft, "soft");
+  add(lastOf(D.filter(d => !d.key && !d.soft)), g.dots, "ink");
+  return out;
+}
+/** Tags are drawn over the finished plot with its own scales; side tags are pushed apart so they never overlap. */
+function drawTags(svg: SVGSVGElement & Plot.Plot, T: EndTag[], h: number, right: number, width: number) {
+  const xs = svg.scale("x")!, ys = svg.scale("y")!, NS = "http://www.w3.org/2000/svg", GAP = 15, top = 30, bot = h - 34;
+  const P = T.map(t => ({ ...t, px: t.below ? (xs.apply(t.p.x) as number) : right, py: ys.apply(t.p.y) as number }));   // one column on the right
+  const side = P.filter(t => !t.below).sort((a, b) => a.py - b.py);
+  side.forEach((t, i) => { t.py = Math.max(top, i ? Math.max(t.py, side[i - 1].py + GAP) : t.py); });
+  for (let i = side.length - 1; i >= 0; i--) side[i].py = Math.min(side[i].py, i === side.length - 1 ? bot : side[i + 1].py - GAP);
+  const g = document.createElementNS(NS, "g"); g.setAttribute("class", "ch-tags"); g.setAttribute("aria-hidden", "true");
+  P.forEach(t => {
+    const it = document.createElementNS(NS, "g"), sq = document.createElementNS(NS, "rect"), tx = document.createElementNS(NS, "text");
+    it.setAttribute("transform", `translate(${Math.round(t.px + (t.below ? -6 : 12))},${Math.round(t.py + (t.below ? 18 : 0))})`);
+    sq.setAttribute("x", t.below ? "-7" : "0"); sq.setAttribute("y", "-3.5"); sq.setAttribute("width", "7"); sq.setAttribute("height", "7");
+    sq.setAttribute("fill", TONE[t.tone]); if (t.tone === "soft") { sq.setAttribute("stroke", C.ink); sq.setAttribute("stroke-width", "1.2"); }
+    tx.setAttribute("x", t.below ? "-12" : "11"); tx.setAttribute("dy", "0.35em"); tx.setAttribute("text-anchor", t.below ? "end" : "start");
+    const room = Math.floor((width - right - 26) / 8.6);   // a long name loses its tail words on a phone
+    tx.textContent = t.below || t.text.length <= room ? t.text : t.text.split(/[ ,]+/)[0];
+    if (t.tone === "band") it.append(tx); else it.append(sq, tx);   // a band name has no square: it names an area, not a line
+    g.append(it);
   });
+  svg.append(g);
 }

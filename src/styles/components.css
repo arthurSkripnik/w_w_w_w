@@ -177,10 +177,12 @@
   /* charts (src/ui/Chart.tsx) */
   .chart { position: relative; color: var(--ink); }
   .chart svg { display: block; overflow: visible; font-family: var(--grot); }
-  .chart [aria-label="tip"] path { fill: var(--ink); stroke: none; }
-  .chart [aria-label="tip"] text { fill: var(--on-ink); }
+  .ch-tip path { fill: var(--ink); stroke: none; }
+  .ch-tip text { fill: var(--on-ink); }
   .chart-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--grot); font-size: 13px; color: var(--mute); margin-bottom: 8px; }
   .chart-legend span { white-space: nowrap; }
+  .ch-tags text, .ch-band text { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .ch-tags text { fill: var(--mute); }
   .chart-legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; background: var(--ink); }
   .chart-legend i[data-k="acc"] { background: var(--acc); }
   .chart-legend i[data-k="cmp"] { background: var(--cmp); }
