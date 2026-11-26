@@ -1,10 +1,10 @@
 // «Тренд однотипних»: the key metric of the kind chosen in Порівняння over its runs. Compact: the last run against
-// the one before it; full: the trend chart with the pair or the 6-week mean marked.
+// the one before it; full: kind chips (shared with Порівняння) and the trend chart with the pair or the 6-week mean marked.
 import type { Widget } from "../types";
-import { Stat } from "../../ui";
+import { Stat, Choice } from "../../ui";
 import { Spark } from "../Spark";
 import { Trend } from "../../screens/Compare";
-import { cmpPair } from "../../store/compare";
+import { cmpPair, cmpGroups, pickGroup } from "../../store/compare";
 import { trendVal, trendLabel } from "../../domain/compare";
 import { fmtPace } from "../../domain/util";
 import { dm } from "../../domain/home";
@@ -23,7 +23,8 @@ function Compact() {
 function Full() {
   const p = cmpPair.value; if (!p) return <p class="status">Ще немає пробіжок зі Strava.</p>;
   return <>
-    <p class="status">{p.g.name}: {trendLabel(p.g.k).toLowerCase()} за кожною пробіжкою. Тип і пару обираєш у <a href="#compare">Порівнянні</a>.</p>
+    <Choice look="chips" label="Тип пробіжок" value={p.g.k} onChange={pickGroup} options={cmpGroups.value.map(x => ({ id: x.k, title: x.name, count: x.runs.length }))} />
+    <p class="status cmp-hint">{p.g.name}: {trendLabel(p.g.k).toLowerCase()} за кожною пробіжкою. Тип спільний з <a href="#compare">Порівнянням</a>, пару обираєш там.</p>
     <Trend height={200} />
   </>;
 }
