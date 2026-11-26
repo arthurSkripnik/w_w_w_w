@@ -1,6 +1,10 @@
 @layer screens {
   .hub-head { font: 400 clamp(28px, 3.6vw, 44px)/1.15 var(--serif); margin: 8px 0 40px; max-width: 34ch; }
   .hub-head i { color: var(--mute); }
+  .hub-count { margin: 0 0 56px; }
+  .wg-dial { display: flex; justify-content: center; }
+  .wg-beads, .wg-dots { margin-top: 12px; overflow-x: auto; }
+  .wg-dots .dots { margin-inline: auto; }
   .hub { grid-auto-flow: row dense; }
   .wg[data-rows="2"] { grid-row: span 2; }
   .wg-link { font-family: var(--grot); font-size: 13px; color: var(--mute); text-decoration: none; }
@@ -208,4 +212,7 @@
     .board-bar { margin-top: -16px; }
     .wg[data-drop="before"]::before { left: -9px; }
   }
+  /* phones: in a half-width card the title gets its own row under number, link and menu (as in «Редагувати») */
+  @media (max-width: 640px) { .wg[data-span="3"] .card-head { flex-wrap: wrap; row-gap: 2px; }
+    .wg[data-span="3"] .card-title { order: 9; flex: 1 0 100%; white-space: normal; } }
 }

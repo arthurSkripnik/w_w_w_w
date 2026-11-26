@@ -9,6 +9,7 @@ import { weekkmW } from "./weekkm";
 import { vo2maxW } from "./vo2max";
 import { sleepW } from "./sleep";
 import { weekW } from "./week";
+import { planW } from "./plan";
 import { ForecastFull, ForecastHow } from "./full/forecast";
 import { FormFull, FormHow } from "./full/form";
 import { AerobicFull, AerobicHow } from "./full/aerobic";
@@ -24,13 +25,13 @@ import { bossW } from "./full/boss";
 
 export const WIDGETS: Widget[] = [
   todayW, { ...forecastW, Full: ForecastFull, how: ForecastHow }, { ...formW, Full: FormFull, how: FormHow },
-  { ...aerobicW, Full: AerobicFull, how: AerobicHow }, { ...weekkmW, Full: WeeksFull, how: WeeksHow }, injuriesW, vo2maxW, sleepW, weekW, vo2intW, hrzW, historyW, distancesW, cmptrendW, characterW, statsW, bossW,
+  { ...aerobicW, Full: AerobicFull, how: AerobicHow }, { ...weekkmW, Full: WeeksFull, how: WeeksHow }, injuriesW, vo2maxW, sleepW, weekW, planW, vo2intW, hrzW, historyW, distancesW, cmptrendW, characterW, statsW, bossW,
 ];
 export type BoardId = "home" | "lab" | "profile";
 export const BOARDS: BoardId[] = ["home", "lab", "profile"];
 const set = (ids: string[], size: Size) => ids.map(id => ({ id, size }));
 export const DEFAULTS: Record<BoardId, { id: string; size: Size; hidden?: boolean }[]> = {
-  home: set(["today", "forecast", "form", "aerobic", "weekkm", "injuries", "vo2max", "sleep", "week"], "compact"),
+  home: set(["today", "forecast", "form", "aerobic", "weekkm", "injuries", "vo2max", "sleep", "week", "plan"], "compact"),
   lab: set(["forecast", "distances", "form", "vo2int", "aerobic", "hrz", "weekkm", "history", "cmptrend"], "full"),
   profile: set(["character", "stats", "boss"], "full"),
 };
