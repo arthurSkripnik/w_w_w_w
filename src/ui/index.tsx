@@ -178,3 +178,5 @@ export function Modal({ label, onClose, wide, returnTo, children }: { label: str
     <div class={`modal${wide ? " modal-wide" : ""}`} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} ref={ref}>{children}</div>
   </div>, document.body);
 }
+
+export { Dot, DotRow, DotMatrix, Beads, Dial, Ramp, type DotItem, type DotState, type BeadCol } from "./dots";

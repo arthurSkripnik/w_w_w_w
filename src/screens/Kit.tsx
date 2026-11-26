@@ -1,5 +1,5 @@
 import { useMemo, useState } from "preact/hooks";
-import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint } from "../ui";
+import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint, DotMatrix, Beads, Dial, Ramp, type DotItem, type BeadCol } from "../ui";
 import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
 import { DayCell } from "../calendar/DayCell";
 import { JournalForm } from "../calendar/JournalForm";
@@ -17,6 +17,8 @@ import { ZONE_NAME } from "../data/schema";
 import { StoreCheck } from "./StoreCheck";
 import { DataCheck } from "./DataCheck";
 import type { Day } from "../domain/days";
+import { typeOf } from "../domain/types";
+import { dur } from "../domain/spec";
 
 // Step 4 sample page: every basic element and chart on real data, for checking the look before screens are built.
 const D = (iso: string) => new Date(iso + "T00:00:00");
@@ -24,6 +26,37 @@ const dm = (iso: string) => iso.slice(8, 10) + "." + iso.slice(5, 7);
 const pace = (v: number) => fmtPace(v);
 const accTone = (s: number): "ink" | "line" | "err" => (s >= 90 ? "ink" : s >= 50 ? "line" : "err");
 
+
+// Step 17: the plan as dots (a row per week), weekly km as beads, form as a dial.
+function DotsDemo() {
+  const all = days.value, t = today.value, by = dayByDate.value, Z = zones.value, F = form.value, R = runs.value;
+  if (!all.length) return null;
+  const maxMin = Math.max(...all.map(d => dur(d.type, Math.max(1, d.level)) ?? 0), 1);
+  const mons = [...new Set(all.map(d => mondayOf(d.date)))].sort();
+  const item = (iso: string): DotItem => { const d = by[iso], today_ = iso === t;
+    if (!d) return { state: "rest", label: `${dm(iso)}: відпочинок`, today: today_ };
+    const st = dayState(d), m = dur(d.type, Math.max(1, d.level)) ?? 0, hard = ["z3", "race"].includes(typeOf(d.type).cat);
+    const name = d.workout?.name ?? typeOf(d.type).name;
+    return { state: st === "done" ? "done" : st === "miss" ? "miss" : "plan", hard, v: m / maxMin, today: today_,
+      label: `${dm(iso)}: ${name}, ${st === "done" ? "виконано" : st === "miss" ? "пропущено" : `план ≈${m} хв`}` }; };
+  const rows = mons.map(m => Array.from({ length: 7 }, (_, i) => item(addDays(m, i))));
+  const easy = Z ? (Z.z1.fast + Z.z1.slow) / 2 / 60 : null;
+  const i0 = Math.max(0, mons.findIndex(m => m === mondayOf(t)) - 5), sel = mons.slice(i0, i0 + 8);
+  const cols: BeadCol[] = sel.map(m => { const w = all.filter(d => d.date >= m && d.date <= addDays(m, 6));
+    const done = Object.values(R).filter(r => r.date >= m && r.date <= addDays(m, 6) && r.date <= t).reduce((a, r) => a + r.km, 0);
+    return { label: dm(m).slice(0, 5), done, plan: easy ? weekMin(w) / easy : undefined, key: w.some(d => d.type === "race"), now: m === mondayOf(t) }; });
+  const r = F?.now ? Math.round(F.now.r) : null;
+  return <>
+    <section><h3 class="label">Сірі тони 01–05 (токени --g1…--g5; line, hair, chip, mute вказують на них)</h3><Ramp /></section>
+    <section><h3 class="label">Точки: план до старту (рядок = тиждень; залита = виконано, контур = план, помаранчева = поріг або старт, × = пропуск, розмір = хвилини)</h3>
+      <div class="kit-dots"><DotMatrix rows={rows} heads={DOW} rowLabels={mons.map((_, i) => String(i + 1).padStart(2, "0"))} label={`План по тижнях: ${rows.length} тижнів, точка на день`} /></div></section>
+    <section><h3 class="label">Кульки: км по тижнях (кулька = 5 км; суцільна нитка = факт, пунктир = план)</h3>
+      <div class="kit-dots"><Beads cols={cols} per={5} unit="км" label="Км по тижнях" /></div></section>
+    <section><h3 class="label">Прилад: форма (поділки = 0–200%, довгі = межі зон)</h3>
+      <div class="kit-dots"><Dial value={r} min={0} max={200} bands={FATIGUE.map(z => z.lo).filter(x => x > 0)} text={r != null ? `${r}%` : "—"} sub={F?.zone?.name} label="Форма: втома 7 днів до звичного за 6 тижнів" />
+        <Dial value={84} text="84%" sub="Готовність" mark={90} label="Готовність, приклад" size={120} /></div></section>
+  </>;
+}
 
 function Parts() {
   const all = days.value, t = today.value, by = dayByDate.value;
@@ -34,6 +67,7 @@ function Parts() {
   const mon = mondayOf(t), wk = all.filter(d => d.date >= mon && d.date <= addDays(mon, 6));
   return <Card n="12" title="Компоненти" span={12} aside={<span class="label">один компонент на сутність, усі розміри й стани</span>}>
     <div class="kit-parts">
+      <DotsDemo />
       <section><h3 class="label">Картка тренування · S (календар, тиждень на Головній)</h3>
         <div class="kit-row">{sample.map(d => <div key={d.date} class="kit-s"><DayCell day={d} iso={d.date} today={t} /></div>)}</div></section>
       <section><h3 class="label">Картка тренування · M (список календаря, Порівняння)</h3>

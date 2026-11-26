@@ -167,6 +167,35 @@
   }
 }
 @layer screens {
+  /* Dots, beads, dials (step 17): fact filled or solid, plan outlined or dashed, accent for hard days. */
+  .dots, .beads { display: block; max-width: 100%; height: auto; overflow: visible; }
+  .dt[data-st="done"] { fill: var(--ink); }
+  .dt[data-st="plan"] { fill: none; stroke: var(--ink); stroke-width: 1; }
+  .dt[data-hard][data-st="done"] { fill: var(--acc); }
+  .dt[data-hard][data-st="plan"] { stroke: var(--acc); stroke-width: 1.5; }
+  .dt[data-st="rest"] { fill: var(--g3); }
+  .dt-miss { stroke: var(--g5); stroke-width: 1.5; }
+  .dt-today { fill: none; stroke: var(--acc); stroke-width: 1.5; stroke-dasharray: var(--dash); }
+  .dt-h { font: 11px var(--grot); fill: var(--mute); font-variant-numeric: tabular-nums; }
+  .dt-h[data-now] { fill: var(--ink); font-weight: 500; }
+  .bd[data-st="done"] { fill: var(--ink); }
+  .bd[data-st="plan"] { fill: var(--bg); stroke: var(--g4); stroke-width: 1; }
+  .beads [data-key] .bd[data-st="done"] { fill: var(--acc); }
+  .bd-thread { stroke: var(--ink); stroke-width: 1; }
+  .bd-thread[data-plan] { stroke: var(--g4); stroke-dasharray: var(--dash); }
+  .dial { position: relative; flex: none; }
+  .dial svg { display: block; }
+  .dl-t { stroke: var(--g3); stroke-width: 1.5; }
+  .dl-t.on { stroke: var(--ink); }
+  .dl-b { stroke: var(--ink); stroke-width: 1; }
+  .dl-m { stroke: var(--acc); stroke-width: 2.5; }
+  .dial-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 2px; }
+  .dial-c b { font: 500 32px/1 var(--grot); letter-spacing: -.01em; }
+  .ramp { display: flex; flex-wrap: wrap; gap: 12px; max-width: 760px; }
+  .ramp-i { width: 96px; }
+  .ramp-i { display: grid; gap: 4px; font-size: 13px; }
+  .ramp-s { display: block; height: 56px; box-shadow: inset 0 0 0 1px var(--hair); }
+  .kit-dots { display: flex; flex-wrap: wrap; gap: 24px 40px; align-items: end; }
   .kit-bar { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0 40px; }
   .kit-els { display: grid; gap: 20px; max-width: 640px; }
   .kit-parts { display: grid; gap: 32px; }

@@ -10,9 +10,13 @@
   --ease:cubic-bezier(.2,.7,.2,1);
   --r:0px; --r-s:0px;                        /* card and control radius: none */
   --bg:#FFFFFF; --paper:#FFFFFF;             /* page, cards: one white sheet */
-  --ink:#000000; --on-ink:#FFFFFF; --mute:#6B6B68;
-  --line:#B9B9B6; --hair:#E4E4E2;            /* rules: stronger, hairline */
-  --chip:#F4F4F2; --chip-h:#E4E4E2;          /* calendar day, hovered */
+  /* Grey ramp 01–05 (step 17, after Holographik's A01–A05): the only greys; named tokens below point at them. */
+  --g1:#F4F4F2; --g2:#E4E4E2; --g3:#B9B9B6; --g4:#9A9A96; --g5:#6B6B68;
+  --ink:#000000; --on-ink:#FFFFFF; --mute:var(--g5);
+  --line:var(--g3); --hair:var(--g2);        /* rules: stronger, hairline */
+  --chip:var(--g1); --chip-h:var(--g2);      /* calendar day, hovered */
+  /* Plan is dashed, fact is solid: one rule for calendar, charts and dots. */
+  --dash:3 3;                                /* SVG stroke-dasharray of a planned line */
   --sel:#E9E9E6;                             /* selected day / segment */
   --cmp:#BDBDBD;                             /* compared run in charts */
   --acc:#FF5000; --acc-text:#D24500; --on-acc:#000000;   /* bright orange; text shade keeps AA 4.5:1 on white */
@@ -29,9 +33,9 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]):not([data-ui="light"]){
   --bg:#0B0B0B; --paper:#0B0B0B;
-  --ink:#F2F2EF; --on-ink:#0B0B0B; --mute:#9A9A95;
-  --line:#4A4A47; --hair:#262624;
-  --chip:#161615; --chip-h:#22221F;
+  --g1:#161615; --g2:#262624; --g3:#4A4A47; --g4:#6E6E6A; --g5:#9A9A95;
+  --ink:#F2F2EF; --on-ink:#0B0B0B;
+  --chip-h:#22221F;
   --sel:#2A2A28;
   --cmp:#555555;
   --acc:#FF6A1A; --acc-text:#FF7A33; --on-acc:#0B0B0B;
@@ -44,9 +48,9 @@
 }
 :root[data-theme="dark"]:not([data-ui="light"]), :root[data-ui="dark"]{
   --bg:#0B0B0B; --paper:#0B0B0B;
-  --ink:#F2F2EF; --on-ink:#0B0B0B; --mute:#9A9A95;
-  --line:#4A4A47; --hair:#262624;
-  --chip:#161615; --chip-h:#22221F;
+  --g1:#161615; --g2:#262624; --g3:#4A4A47; --g4:#6E6E6A; --g5:#9A9A95;
+  --ink:#F2F2EF; --on-ink:#0B0B0B;
+  --chip-h:#22221F;
   --sel:#2A2A28;
   --cmp:#555555;
   --acc:#FF6A1A; --acc-text:#FF7A33; --on-acc:#0B0B0B;
