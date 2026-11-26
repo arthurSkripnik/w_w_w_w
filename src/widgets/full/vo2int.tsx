@@ -32,7 +32,8 @@ function Vo2IntFull() {
         dots: pts.map(p => ({ x: D(p.d), y: p.pace, key: !BY_FEEL.includes(p.t), soft: BY_FEEL.includes(p.t), label: p.hr ? String(p.hr) : undefined,
           tip: `${dm(p.d)} · ${typeOf(p.t).name}: ${fmtPace(p.pace)} /км${p.hr ? `, пульс ${p.hr}` : ""}${p.km ? `, ${p.km.toFixed(1)} км` : ""} · ${p.pace < Z.z3.fast ? "швидше за зону" : p.pace > Z.z3.slow ? "повільніше за зону" : "у зоні"}` })) }} />
     <p class="status">{note}</p>
-    <p class="pf-note">Середній темп і пульс робочих відрізків зі Strava, число над точкою: пульс. Смуга: твоя зона «швидкий».</p>
   </>;
 }
-export const vo2intW: Widget = { id: "vo2int", title: "Відрізки VO2max", about: "Темп і пульс на інтервалах VO2max", span: 3, link: { label: "Графік", href: "#lab/vo2int" }, C: Vo2Int, Full: Vo2IntFull };
+/** «?» in the card head: where the numbers come from. */
+export const Vo2IntHow = () => <>Середній темп і пульс робочих відрізків зі Strava, число над точкою: пульс. Смуга: твоя зона «швидкий».</>;
+export const vo2intW: Widget = { id: "vo2int", title: "Відрізки VO2max", about: "Темп і пульс на інтервалах VO2max", span: 3, link: { label: "Графік", href: "#lab/vo2int" }, C: Vo2Int, Full: Vo2IntFull, how: Vo2IntHow };

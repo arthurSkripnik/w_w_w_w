@@ -16,8 +16,11 @@
   .hint-b:hover, .hint-b[aria-expanded="true"] { border-color: var(--ink); color: var(--ink); }
   .hint-b[aria-expanded="true"] { background: var(--ink); color: var(--on-ink); }
   .hint-b:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .hint-t { flex-basis: 100%; order: 99; display: block; max-width: 68ch; margin: 0; }
+  /* always a line of its own, even when the row has room: the measure stays ≈68ch through padding */
+  .hint-t { flex: 0 0 100%; order: 99; display: block; max-width: none; padding-right: max(0px, calc(100% - 68ch)); box-sizing: border-box; margin: 0; }
   .hint-t[hidden] { display: none; }
+  .hint-p { display: block; }
+  .hint-p + .hint-p { margin-top: 6px; }
 
   .stat-v { display: flex; align-items: baseline; gap: 6px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
   .stat[data-size="l"] .stat-v { font-size: clamp(40px, 5vw, 64px); }

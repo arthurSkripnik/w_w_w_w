@@ -9,10 +9,10 @@ import { weekkmW } from "./weekkm";
 import { vo2maxW } from "./vo2max";
 import { sleepW } from "./sleep";
 import { weekW } from "./week";
-import { ForecastFull } from "./full/forecast";
-import { FormFull } from "./full/form";
-import { AerobicFull } from "./full/aerobic";
-import { WeeksFull } from "./full/weeks";
+import { ForecastFull, ForecastHow } from "./full/forecast";
+import { FormFull, FormHow } from "./full/form";
+import { AerobicFull, AerobicHow } from "./full/aerobic";
+import { WeeksFull, WeeksHow } from "./full/weeks";
 import { vo2intW } from "./full/vo2int";
 import { hrzW } from "./full/hrz";
 import { historyW } from "./full/history";
@@ -23,8 +23,8 @@ import { statsW } from "./full/stats";
 import { bossW } from "./full/boss";
 
 export const WIDGETS: Widget[] = [
-  todayW, { ...forecastW, Full: ForecastFull }, { ...formW, Full: FormFull }, { ...aerobicW, Full: AerobicFull },
-  { ...weekkmW, Full: WeeksFull }, injuriesW, vo2maxW, sleepW, weekW, vo2intW, hrzW, historyW, distancesW, cmptrendW, characterW, statsW, bossW,
+  todayW, { ...forecastW, Full: ForecastFull, how: ForecastHow }, { ...formW, Full: FormFull, how: FormHow },
+  { ...aerobicW, Full: AerobicFull, how: AerobicHow }, { ...weekkmW, Full: WeeksFull, how: WeeksHow }, injuriesW, vo2maxW, sleepW, weekW, vo2intW, hrzW, historyW, distancesW, cmptrendW, characterW, statsW, bossW,
 ];
 export type BoardId = "home" | "lab" | "profile";
 export const BOARDS: BoardId[] = ["home", "lab", "profile"];

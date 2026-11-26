@@ -185,3 +185,9 @@ Rule: a thing that means the same everywhere is one component; screens pass size
 - The day card is three groups in one order: «Результат» → «План» → «Дії». Ahead: plan open, «Змінити план» folded (open when the day was already changed). Today: «Записати, як пройшло» on top. Done: two columns on a wide screen, Strava report left; record, plan (folded) and actions right. Missed: «пропущено» and the record open. Race/start: the race plan first.
 - `Hint` in `src/ui`: «?» with the explanation behind it; grey explanatory paragraphs in the day card moved there. `Details` takes `open`.
 - Section titles inside the day card and the report are `h4` under the group `h3`.
+
+## Лабораторія: «?» in the card head
+
+- A widget can give `how` (a small component): the board draws a «?» (`Hint` from `src/ui`) after the title of the full card, and the explanation opens on a line of its own under the head. Compact tiles have no «?».
+- The grey «how it is counted» notes under the charts (forecast, form, VO2max reps, aerobic base, HR zones, weeks, history, distances, Характеристики) moved there; «Прогноз 10 км» lost its «Як це пораховано» block for the same «?».
+- `.hint-t` now always takes its own line (it sat beside a short head on wide screens), the measure stays ≈68ch.

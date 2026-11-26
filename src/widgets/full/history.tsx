@@ -30,7 +30,8 @@ function HistoryFull() {
       { key: "h", title: "Пульс", num: true, cell: k => k.hr ?? "—" },
       { key: "e", title: "10 км ≈", num: true, cell: k => <b>{mmss(k.t10)}</b> },
     ]} /> : <p class="status">Стартів (ціла пробіжка швидше за поріг із запасом на дистанцію) в історії не знайдено.</p>}
-    <p class="pf-note">Зберігаються лише підсумки пробіжок від першої з COROS. Оновити історію: Профіль → Дані.</p>
   </>;
 }
-export const historyW: Widget = { id: "history", title: "Історія з COROS", about: "Пороги й прогнози з годинника COROS", span: 3, link: { label: "Графік", href: "#lab/history" }, C: History, Full: HistoryFull };
+/** «?» in the card head: where the numbers come from. */
+export const HistoryHow = () => <>Зберігаються лише підсумки пробіжок від першої з COROS. Оновити історію: Профіль → Дані.</>;
+export const historyW: Widget = { id: "history", title: "Історія з COROS", about: "Пороги й прогнози з годинника COROS", span: 3, link: { label: "Графік", href: "#lab/history" }, C: History, Full: HistoryFull, how: HistoryHow };
