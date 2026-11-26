@@ -1,7 +1,7 @@
 // Store values and view state behind Порівняння (domain/compare.ts does the arithmetic).
 import { signal, computed } from "@preact/signals";
 import { days, aerobic } from "./derived";
-import { groups, defaultGroup, groupOf, one, avgSide, type GroupRuns, type Side, type CmpRun } from "../domain/compare";
+import { groups, defaultGroup, groupOf, one, avgSide, prevOf, type GroupRuns, type Side, type CmpRun } from "../domain/compare";
 
 export const cmpGroups = computed(() => groups(days.value, aerobic.value.pts));
 
@@ -17,14 +17,16 @@ const keep = () => { try { localStorage.setItem(KEY, JSON.stringify({ g: cmpG.va
 
 export const cmpGroup = computed<GroupRuns | null>(() => cmpGroups.value.find(g => g.k === cmpG.value) ?? defaultGroup(cmpGroups.value));
 /** The pair on screen: B is the newer chosen run; A is the older chosen run, or the 6-week mean before B. */
-export const cmpPair = computed<{ g: GroupRuns; A: Side | null; B: CmpRun; avgOk: boolean } | null>(() => {
+/** auto: the pair was picked by prevOf (same session and level), not tapped. */
+export const cmpPair = computed<{ g: GroupRuns; A: Side | null; B: CmpRun; avgOk: boolean; auto: boolean } | null>(() => {
   const g = cmpGroup.value; if (!g) return null;
-  const ds = g.runs.map(r => r.d), ok = cmpSel.value.filter(d => ds.includes(d)).sort();
-  const sel = ok.length ? ok : ds.slice(-2);
+  const ds = g.runs.map(r => r.d), ok = cmpSel.value.filter(d => ds.includes(d)).sort(), last = g.runs[g.runs.length - 1];
+  const auto = !ok.length, pa = auto ? prevOf(g, last) : null;
+  const sel = ok.length ? ok : pa ? [pa.d, last.d] : [last.d];
   const B = g.runs.find(r => r.d === sel[sel.length - 1])!, av = avgSide(g, B);
-  if (cmpMode.value === "avg") return { g, A: av, B, avgOk: !!av };
+  if (cmpMode.value === "avg") return { g, A: av, B, avgOk: !!av, auto };
   const a = sel.length === 2 ? g.runs.find(r => r.d === sel[0])! : null;
-  return { g, A: a ? one(a) : null, B, avgOk: !!av };
+  return { g, A: a ? one(a) : null, B, avgOk: !!av, auto };
 });
 export function pickGroup(k: string) { cmpG.value = k; cmpSel.value = []; keep(); }
 export function pickMode(m: "run" | "avg") { cmpMode.value = m; keep(); }
@@ -42,7 +44,7 @@ export function toggleRun(d: string) {
 export function openFor(date: string) {
   const d = days.value.find(x => x.date === date), g = d && groupOf(d.act), G = g && cmpGroups.value.find(x => x.k === g.k);
   if (!G) return false;
-  const prev = G.runs.filter(r => r.d < date).pop();
+  const B = G.runs.find(r => r.d === date), prev = B ? prevOf(G, B) : null;
   cmpG.value = G.k; cmpMode.value = "run"; cmpSel.value = prev ? [prev.d, date] : [date]; keep();
   return true;
 }

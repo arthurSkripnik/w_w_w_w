@@ -8,7 +8,7 @@ export function Chart({ spec, label, legend }: { spec: ChartSpec; label: string;
     const el = box.current!; let w = 0;
     const draw = () => {
       const nw = Math.floor(el.clientWidth); if (!nw || nw === w) return; w = nw;
-      const svg = chart(spec, w); svg.setAttribute("role", "img"); svg.setAttribute("aria-label", label);
+      const svg = chart(spec, w); svg.querySelectorAll("[aria-label]").forEach(n => n.removeAttribute("aria-label")); svg.setAttribute("role", "img"); svg.setAttribute("aria-label", label);
       el.replaceChildren(svg);
     };
     draw();
