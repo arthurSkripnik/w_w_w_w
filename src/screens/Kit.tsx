@@ -1,9 +1,9 @@
 import { useMemo, useState } from "preact/hooks";
-import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal } from "../ui";
+import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint } from "../ui";
 import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
 import { DayCell } from "../calendar/DayCell";
 import { JournalForm } from "../calendar/JournalForm";
-import { WeekLine, weekMin } from "../calendar/Week";
+import { Week, WeekLine, weekMin } from "../calendar/Week";
 import { dayState, DOW } from "../domain/home";
 import { FIXED_T } from "../domain/spec";
 import { Chart } from "../ui/Chart";
@@ -44,6 +44,8 @@ function Parts() {
       <section><h3 class="label">Тиждень (Календар, Головна, База)</h3>
         <div class="cal-dow label" aria-hidden="true"><span />{DOW.map(d => <span key={d}>{d}</span>)}</div>
         {wk.length > 0 && <WeekLine n={wk[0].plan.week} w={wk} by={by} today={t} maxMin={weekMin(wk)} easyMinPerKm={null} />}</section>
+      <section><h3 class="label">Тиждень з датами (віджет «Цей тиждень» на Головній)</h3>
+        <div class="wk"><Week mon={mon} by={by} today={t} heads /></div></section>
       <section><h3 class="label">Позначка типу</h3>
         <div class="btn-row">{["base", "long", "fartlek", "fastfinish", "shortint", "longint", "race"].map(x => <TypeTag key={x} type={x} level={x === "race" ? null : 3} />)}</div></section>
       <section><h3 class="label">Вибір · seg, chips, nums</h3>
@@ -62,6 +64,12 @@ function Parts() {
         </div></section>
       {done && <section><h3 class="label">Форма журналу (попап після пробіжки, картка дня, «Сьогодні»)</h3>
         <div class="kit-col"><JournalForm day={done} compact /></div></section>}
+      <section><h3 class="label">Пояснення «?» (картка дня: рівень, спліти, заміна, перенесення)</h3>
+        <div class="kit-col">
+          <div class="kit-hint"><span class="label">Спліти по км</span><Hint>Перші км повільніші: тіло розігрівається.</Hint></div>
+          <div class="kit-hint"><Choice label="Тривалість" value={seg} onChange={setSeg} options={[{ id: "run", title: "Легше · 40 хв" }, { id: "avg", title: "Як у плані · 52 хв" }]} />
+            <Hint>Мало сил чи часу? «Легше» дає менше хвилин і повторів, а темп той самий.</Hint></div>
+        </div></section>
       <section><h3 class="label">Вікно (картка дня в Календарі, журнал після пробіжки)</h3>
         <div class="kit-col"><Button variant="ghost" onClick={() => setWin(true)}>Відкрити вікно</Button>
           {win && <Modal label="Зразок вікна" onClose={() => setWin(false)}><p>Esc, клік по тлу або кнопка закривають вікно.</p><Button onClick={() => setWin(false)}>Закрити</Button></Modal>}</div></section>

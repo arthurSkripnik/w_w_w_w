@@ -76,8 +76,6 @@ export function KV({ items, size = "m" }: { items: KVItem[]; size?: "l" | "m" | 
   </div>)}</dl>;
 }
 
-/** A difference B − A: the signed text and a bar from the centre; better is accent, worse is grey, never red/green.
- *  better: −1 lower is better, 1 higher is better, 0 neutral; scale: the difference that fills half the bar. */
 /** A labelled 0–100 bar: HP, XP, a stat, readiness. `mark` puts a tick (a goal) on the track, `weak` underlines the row. */
 export function Meter({ label, value, text, mark, tone = "ink", weak, sub }: { label: ComponentChildren; value: number | null; text: string; mark?: number | null; tone?: "ink" | "acc"; weak?: boolean; sub?: ComponentChildren }) {
   const v = value == null ? 0 : Math.max(0, Math.min(100, value));
@@ -91,6 +89,8 @@ export function Meter({ label, value, text, mark, tone = "ink", weak, sub }: { l
   </div>;
 }
 
+/** A difference B − A: the signed text and a bar from the centre; better is accent, worse is grey, never red/green.
+ *  better: −1 lower is better, 1 higher is better, 0 neutral; scale: the difference that fills half the bar. */
 export function Delta({ d, text, better, scale }: { d: number | null; text: string; better: -1 | 0 | 1; scale: number }) {
   if (d === null) return <span class="delta mute">—</span>;
   const good = better !== 0 && d * better > 0, w = scale ? Math.min(50, (Math.abs(d) / scale) * 50) : 0;
