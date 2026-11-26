@@ -64,6 +64,27 @@
   .seg[data-look="nums"] .seg-o input:checked + span { color: var(--on-ink); box-shadow: none; }
   .seg-o:hover input:not(:checked) + span { background: var(--chip-h); }
 
+  /* Choice look="scale": stops on a hairline, the chosen stop a filled dot, words under (step 18). */
+  .seg[data-look="scale"] { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); width: 100%; box-shadow: none; position: relative; }
+  .seg[data-look="scale"]::before { content: ""; position: absolute; top: 21px; left: calc(50% / var(--n)); right: calc(50% / var(--n)); border-top: 1px solid var(--ink); }
+  .seg[data-look="scale"] .seg-o > span { position: relative; display: grid; justify-items: center; gap: 8px; padding: 14px 2px 4px; min-height: 44px; text-align: center; font-size: 13px; color: var(--mute); background: none; }
+  .seg[data-look="scale"] .seg-o > span::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--ink); transition: transform .15s var(--ease); }
+  .seg[data-look="scale"] .seg-o input:checked + span { background: none; color: var(--ink); font-weight: 500; }
+  .seg[data-look="scale"] .seg-o input:checked + span::before { background: var(--ink); box-shadow: none; transform: scale(1.8); }
+  .seg[data-look="scale"] .seg-o:hover input:not(:checked) + span { background: none; color: var(--ink); }
+  .seg[data-look="scale"] .seg-o input:focus-visible + span { outline-offset: -2px; }
+
+  /* DateTag: «чт (26) (лис) 07:30», Nothing-style pills; today's day filled. */
+  .dtag { display: inline-flex; align-items: center; gap: 4px; font: 500 14px/1 var(--grot); font-variant-numeric: tabular-nums; text-transform: uppercase; letter-spacing: .02em; }
+  .dtag > :not(.vh) { display: inline-flex; align-items: center; min-height: 24px; }
+  .dtag-d, .dtag-m { padding: 0 9px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--ink); }
+  .dtag-d { font-weight: 500; }
+  .dtag-d[data-today] { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+  .dtag-t { margin-left: 6px; }
+  .dtag[data-size="l"] { font-size: 28px; gap: 6px; }
+  .dtag[data-size="l"] > :not(.vh) { min-height: 40px; }
+  .dtag[data-size="l"] .dtag-d, .dtag[data-size="l"] .dtag-m { padding: 0 14px; }
+
   .kv { margin: 0; display: grid; font-family: var(--grot); }
   .kv dd { margin: 0; }
   .kv b { font-weight: 500; }

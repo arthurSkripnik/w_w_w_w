@@ -48,10 +48,10 @@ export function Button({ variant = "primary", children, ...rest }: BtnProps) {
  *  seg = 2–4 words (calendar view, chart metric), chips = a row of named groups with counts (kinds of runs),
  *  nums = a strip of numbers (levels 1–10); `mark` underlines options that matter (levels in the plan). */
 export interface ChoiceOpt<T> { id: T; title: string; count?: number; mark?: boolean; hint?: string }
-export function Choice<T extends string | number>({ label, options, value, onChange, look = "seg" }: { label: string; options: ChoiceOpt<T>[]; value: T; onChange: (v: T) => void; look?: "seg" | "chips" | "nums" }) {
+export function Choice<T extends string | number>({ label, options, value, onChange, look = "seg" }: { label: string; options: ChoiceOpt<T>[]; value: T; onChange: (v: T) => void; look?: "seg" | "chips" | "nums" | "scale" }) {
   const name = useId();
   return (
-    <div class="seg" data-look={look} role="radiogroup" aria-label={label}>
+    <div class="seg" data-look={look} role="radiogroup" aria-label={label} style={look === "scale" ? { "--n": options.length } : undefined}>
       {options.map(o => (
         <label class="seg-o" key={String(o.id)} title={o.hint} data-mark={o.mark ? "" : undefined}>
           <input type="radio" name={name} value={String(o.id)} checked={o.id === value} onChange={() => onChange(o.id)} />
@@ -61,6 +61,8 @@ export function Choice<T extends string | number>({ label, options, value, onCha
     </div>
   );
 }
+/** look="scale" (step 18, after Holographik's self-evaluation): stops on a line, the chosen one a filled dot, words under
+ *  the stops. For ordered answers (how it felt, legs, effort); same radios, same keyboard as every Choice. */
 /** The 2–4 word switch: Choice with the segmented look. */
 export function Segmented<T extends string>(p: { label: string; options: { id: T; title: string }[]; value: T; onChange: (v: T) => void }) {
   return <Choice {...p} look="seg" />;
@@ -180,3 +182,16 @@ export function Modal({ label, onClose, wide, returnTo, children }: { label: str
 }
 
 export { Dot, DotRow, DotMatrix, Beads, Dial, Ramp, type DotItem, type DotState, type BeadCol } from "./dots";
+
+/** A date as Nothing writes it: «чт (26) (лис) 07:30». The day sits in a pill, filled for today; the month in an outline. */
+const MON = ["січ", "лют", "бер", "кві", "тра", "чер", "лип", "сер", "вер", "жов", "лис", "гру"];
+const DOW_S = ["нд", "пн", "вт", "ср", "чт", "пт", "сб"];
+const MON_FULL = ["січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
+export function DateTag({ iso, time, today, size = "m" }: { iso: string; time?: string; today?: boolean; size?: "m" | "l" }) {
+  const d = new Date(iso + "T00:00:00"), n = d.getDate(), m = d.getMonth();
+  return <span class="dtag" data-size={size}>
+    <span class="vh">{`${today ? "Сьогодні, " : ""}${n} ${MON_FULL[m]}${time ? `, ${time}` : ""}`}</span>
+    <span aria-hidden="true">{DOW_S[d.getDay()]}</span><b aria-hidden="true" class="dtag-d" data-today={today ? "" : undefined}>{n}</b>
+    <span aria-hidden="true" class="dtag-m">{MON[m]}</span>{time && <span aria-hidden="true" class="dtag-t">{time}</span>}
+  </span>;
+}
