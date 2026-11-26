@@ -40,6 +40,10 @@
 /* widget boards (Головна, Лабораторія): card menu, full-size widgets */
 @layer screens {
   .wg .card-head { position: relative; }
+  .wg .card-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* edit mode: a tool row (handle, number, pin, menu), the full title under it */
+  .board[data-edit] .wg .card-title { order: 9; flex: 1 0 100%; white-space: normal; margin-top: 2px; }
+  .board[data-edit] .wg-pin { margin-left: auto; }
   .wg-menu { margin-left: 8px; }
   .wg-link + .wg-menu, .card-aside + .wg-menu { margin-left: 8px; }
   .card-title + .wg-menu { margin-left: auto; }
@@ -152,4 +156,53 @@
 @layer screens {
   .ch-full .runner { max-height: 360px; }
   .board-profile { margin-bottom: 40px; }
+}
+
+/* widget canvas (Board.tsx): «Редагувати» mode, drag handle, pin, size, the «Додати віджет» list */
+@layer screens {
+  .board-bar { display: flex; justify-content: flex-end; gap: 12px; margin: -24px 0 16px; }
+  .board[data-edit] .hub { min-height: 160px; outline: 1px dashed var(--line); outline-offset: 10px; }
+  .board[data-edit] .wg { position: relative; }
+  .board[data-edit] .wg > :not(.card-head):not(.wg-edit) { pointer-events: none; }
+  /* narrow cards (¼, phones): the handle, pin and menu fit by wrapping, the title shortens */
+  .board[data-edit] .wg .card-head { flex-wrap: wrap; align-items: center; row-gap: 0; }
+  .board[data-edit] .wg[data-pinned] { border-top-color: var(--acc); }
+  .wg[data-dragging] { opacity: .35; }
+  .wg[data-drop="before"]::before, .hub[data-drop-end] > .wg:last-child::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 3px; background: var(--acc); }
+  .wg[data-drop="before"]::before { left: -12px; }
+  .hub[data-drop-end] > .wg:last-child::after { right: -12px; }
+  .wg-handle { flex: none; min-width: 44px; min-height: 44px; margin: -12px 0 -12px -12px; font-size: 18px; color: var(--mute); cursor: grab; touch-action: none; }
+  .wg-handle:hover:not(:disabled) { color: var(--ink); }
+  .wg-handle:active { cursor: grabbing; }
+  .wg-handle:disabled { opacity: .3; cursor: default; }
+  .wg-pin { min-width: 44px; min-height: 44px; margin: -12px 0; filter: grayscale(1); opacity: .45; }
+  .wg-pin[aria-pressed="true"] { filter: none; opacity: 1; }
+  .card-head .wg-pin + .wg-menu { margin-left: 0; }
+  .wg-edit { margin: -8px 0 12px; }
+  .wg-edit .seg { flex-wrap: wrap; max-width: 100%; }
+  .wg-edit .seg-o > span { padding: 7px 12px; min-height: 32px; }
+  .wg-panel { position: fixed; z-index: 30; right: 0; top: 0; bottom: 0; width: 340px; overflow-y: auto; overscroll-behavior: contain;
+    background: var(--bg); box-shadow: inset 1px 0 0 var(--line), var(--shadow-pop); padding: 16px 20px 24px; }
+  .wg-panel-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+  .wg-list { list-style: none; margin: 0; padding: 0; }
+  .wg-li { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 4px; border-bottom: 1px solid var(--hair); padding: 6px 0; }
+  .wg-li .wg-handle { margin: 0; }
+  .wg-li-t { display: grid; gap: 2px; font-family: var(--grot); font-size: 15px; }
+  .wg-li-t b { font-weight: 500; }
+  .wg-add { min-width: 44px; min-height: 44px; font-size: 22px; box-shadow: inset 0 0 0 1px var(--ink); }
+  .wg-add:hover { background: var(--ink); color: var(--on-ink); }
+  .wg-ghost { position: fixed; z-index: 40; pointer-events: none; padding: 8px 12px; font-family: var(--grot); font-size: 14px; background: var(--ink); color: var(--on-ink); box-shadow: var(--shadow-pop); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media (min-width: 1000px) {
+    body:has(.wg-panel) { padding-right: 340px; }
+  }
+  @media (max-width: 999px) {
+    .wg-panel { top: auto; left: 0; width: auto; max-height: 50vh; box-shadow: inset 0 1px 0 var(--line), var(--shadow-pop); padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+    body:has(.wg-panel) { padding-bottom: 50vh; }
+  }
+  @media (max-width: 640px) {
+    .board-bar { margin-top: -16px; }
+    .wg[data-drop="before"]::before { left: -9px; }
+  }
 }

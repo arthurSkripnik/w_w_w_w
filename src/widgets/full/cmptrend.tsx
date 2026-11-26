@@ -27,4 +27,4 @@ function Full() {
     <Trend height={200} />
   </>;
 }
-export const cmptrendW: Widget = { id: "cmptrend", title: "Тренд однотипних", span: 3, link: { label: "Порівняти", href: "#compare" }, C: Compact, Full };
+export const cmptrendW: Widget = { id: "cmptrend", title: "Тренд однотипних", about: "Як змінюються однотипні пробіжки", span: 3, link: { label: "Порівняти", href: "#compare" }, C: Compact, Full };
