@@ -11,4 +11,4 @@ function Vo2() {
     <Spark label="VO2max за записами порогу" pts={v.pts} />
   </>;
 }
-export const vo2maxW: Widget = { id: "vo2max", title: "VO2max", span: 3, link: { label: "Профіль", href: "#profile/est" }, C: Vo2 };
+export const vo2maxW: Widget = { id: "vo2max", title: "VO2max", about: "VO2max за формою і скільки треба для цілі", span: 3, link: { label: "Профіль", href: "#profile/est" }, C: Vo2 };

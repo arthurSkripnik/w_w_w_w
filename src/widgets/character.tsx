@@ -41,4 +41,4 @@ function Full() {
     </div>
   </div>;
 }
-export const characterW: Widget = { id: "character", title: "Персонаж", span: 6, rows: 2, link: { label: "Профіль", href: "#profile" }, C: Compact, Full, fullSpan: 12 };
+export const characterW: Widget = { id: "character", title: "Персонаж", about: "Фігура бігуна, клас, рівень, HP і XP", span: 6, rows: 2, link: { label: "Профіль", href: "#profile" }, C: Compact, Full, fullSpan: 12 };

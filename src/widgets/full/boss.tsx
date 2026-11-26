@@ -22,4 +22,4 @@ function Boss() {
     </section>
   </div>;
 }
-export const bossW: Widget = { id: "boss", title: "Бос і перки", span: 6, Full: Boss, fullSpan: 6 };
+export const bossW: Widget = { id: "boss", title: "Бос і перки", about: "Наступний бос і відкриті перки", span: 6, Full: Boss, fullSpan: 6 };

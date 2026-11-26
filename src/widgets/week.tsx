@@ -10,4 +10,4 @@ function Week() {
     <Days mon={mon} by={D} today={t} heads />
   </div>;
 }
-export const weekW: Widget = { id: "week", title: "Цей тиждень", span: 12, link: { label: "Календар", href: "#calendar" }, C: Week };
+export const weekW: Widget = { id: "week", title: "Цей тиждень", about: "Сім днів тижня, як у календарі", span: 12, link: { label: "Календар", href: "#calendar" }, C: Week };

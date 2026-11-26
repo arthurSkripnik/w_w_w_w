@@ -33,4 +33,4 @@ function HistoryFull() {
     <p class="pf-note">Зберігаються лише підсумки пробіжок від першої з COROS. Оновити історію: Профіль → Дані.</p>
   </>;
 }
-export const historyW: Widget = { id: "history", title: "Історія з COROS", span: 3, link: { label: "Графік", href: "#lab/history" }, C: History, Full: HistoryFull };
+export const historyW: Widget = { id: "history", title: "Історія з COROS", about: "Пороги й прогнози з годинника COROS", span: 3, link: { label: "Графік", href: "#lab/history" }, C: History, Full: HistoryFull };

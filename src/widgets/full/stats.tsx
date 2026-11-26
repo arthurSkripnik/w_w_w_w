@@ -12,4 +12,4 @@ function Stats() {
     <p class="pf-note">За останні 28 днів, від 1 до 99. Помаранчева риска на швидкості: рівень цілі. Клас визначають дві найсильніші з перших чотирьох; дисципліна це риса, а не тіло.</p>
   </div>;
 }
-export const statsW: Widget = { id: "stats", title: "Характеристики", span: 6, Full: Stats, fullSpan: 6 };
+export const statsW: Widget = { id: "stats", title: "Характеристики", about: "Шість характеристик персонажа", span: 6, Full: Stats, fullSpan: 6 };

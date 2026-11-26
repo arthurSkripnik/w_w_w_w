@@ -71,4 +71,4 @@ function Today() {
     <a class="btn" data-v="link" href={`#calendar/${todayDay.value?.date ?? days.value.find(x => x.date > today.value)?.date ?? ""}`}>{todayDay.value?.run ? "Відкрити звіт" : "Відкрити день"}</a>
   </div>;
 }
-export const todayW: Widget = { id: "today", title: "Сьогодні", span: 6, rows: 2, C: Today };
+export const todayW: Widget = { id: "today", title: "Сьогодні", about: "Тренування на сьогодні або його звіт, сон і готовність", span: 6, rows: 2, C: Today };

@@ -28,4 +28,4 @@ function HrzFull() {
     <p class="pf-note">{Z.hrTops ? "Пульсові зони зі Strava." : "Зони від порогового пульсу."} Для плану 80/20 легка робота (Z1–Z2) зазвичай ≈75–80 % часу.</p>
   </>;
 }
-export const hrzW: Widget = { id: "hrz", title: "Час у пульсових зонах", span: 3, link: { label: "Таблиця", href: "#lab/hrz" }, C: Hrz, Full: HrzFull };
+export const hrzW: Widget = { id: "hrz", title: "Час у пульсових зонах", about: "Скільки часу в кожній пульсовій зоні", span: 3, link: { label: "Таблиця", href: "#lab/hrz" }, C: Hrz, Full: HrzFull };

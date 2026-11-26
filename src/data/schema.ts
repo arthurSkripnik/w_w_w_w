@@ -165,7 +165,9 @@ export const Injury = z.object({
 
 // ---- layout/home ---------------------------------------------------------
 export const Layout = z.object({
-  widgets: z.array(z.object({ id: z.string(), size: z.enum(["compact", "full"]), hidden: z.boolean().optional() })),
+  // order = place on the 12-column grid; span = a size the person picked (columns), pinned = stays in its place
+  widgets: z.array(z.object({ id: z.string(), size: z.enum(["compact", "full"]), span: z.union([z.literal(3), z.literal(6), z.literal(12)]).optional(),
+    pinned: z.boolean().optional(), hidden: z.boolean().optional() })),
 });
 
 export const COLLECTIONS = {

@@ -71,4 +71,4 @@ function DistancesFull() {
     <p class="pf-note">Рахується з прогнозу 10 км (поріг × 0,97): VDOT {p.v.toFixed(1)} за формулою Деніелса, з нього час на кожну дистанцію. 400 м і 1 км залежать від швидкості, а не лише від аеробної форми, тому це орієнтир. Півмарафон і марафон розраховані на те, що до них є відповідна підготовка обсягом.</p>
   </>;
 }
-export const distancesW: Widget = { id: "distances", title: "Прогноз на дистанції", span: 3, link: { label: "Графік", href: "#lab/distances" }, C: Distances, Full: DistancesFull };
+export const distancesW: Widget = { id: "distances", title: "Прогноз на дистанції", about: "Прогноз на 5 км, 10 км, півмарафон і марафон", span: 3, link: { label: "Графік", href: "#lab/distances" }, C: Distances, Full: DistancesFull };

@@ -14,4 +14,4 @@ function Forecast() {
     <Spark label="Прогноз 10 км за записами порогу" pts={f.pts.map(p => ({ d: p.d, v: p.t10 }))} up={false} />
   </>;
 }
-export const forecastW: Widget = { id: "forecast", title: "Прогноз 10 км", span: 3, link: { label: "Графік", href: "#lab/forecast" }, C: Forecast };
+export const forecastW: Widget = { id: "forecast", title: "Прогноз 10 км", about: "Час на 10 км за порогом проти цілі", span: 3, link: { label: "Графік", href: "#lab/forecast" }, C: Forecast };

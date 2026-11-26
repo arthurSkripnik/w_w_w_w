@@ -12,4 +12,4 @@ function Form() {
     <Spark label="Форма за 6 тижнів" pts={past.map(x => ({ d: x.d, v: x.r }))} />
   </>;
 }
-export const formW: Widget = { id: "form", title: "Форма", span: 3, link: { label: "Графік", href: "#lab/form" }, C: Form };
+export const formW: Widget = { id: "form", title: "Форма", about: "Співвідношення втоми і фітнесу у відсотках", span: 3, link: { label: "Графік", href: "#lab/form" }, C: Form };

@@ -16,4 +16,4 @@ function Injuries() {
       : <p class="label">За 30 днів без скарг</p>}
   </div>;
 }
-export const injuriesW: Widget = { id: "injuries", title: "Травми", span: 6, link: { label: "Детально", href: "#profile/injuries" }, C: Injuries };
+export const injuriesW: Widget = { id: "injuries", title: "Травми", about: "Стан зараз і смужка травм за 30 днів", span: 6, link: { label: "Детально", href: "#profile/injuries" }, C: Injuries };
