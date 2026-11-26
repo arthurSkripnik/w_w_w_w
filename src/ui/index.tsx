@@ -195,3 +195,15 @@ export function DateTag({ iso, time, today, size = "m" }: { iso: string; time?: 
     <span aria-hidden="true" class="dtag-m">{MON[m]}</span>{time && <span aria-hidden="true" class="dtag-t">{time}</span>}
   </span>;
 }
+
+/** One big number across the width, in brackets (komma): «[ 45 днів ]» with two small notes between. For the
+ *  count to the race on Головна; `unit` is the word after the number, `notes` sit small beside it. */
+export function BigCount({ value, unit, notes = [], label }: { value: number | string; unit: string; notes?: ComponentChildren[]; label: string }) {
+  return <div class="bigc" role="group" aria-label={label}>
+    <span class="bigc-b" aria-hidden="true">[</span>
+    <b class="bigc-n num">{value}</b>
+    <span class="bigc-u">{unit}</span>
+    {notes.length > 0 && <span class="bigc-notes label">{notes.map((n, i) => <span key={i}>[{n}]</span>)}</span>}
+    <span class="bigc-b" aria-hidden="true">]</span>
+  </div>;
+}

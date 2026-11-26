@@ -1,16 +1,16 @@
 import { useMemo, useState } from "preact/hooks";
-import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint, DateTag, DotMatrix, Beads, Dial, Ramp, type DotItem, type BeadCol } from "../ui";
+import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint, DateTag, BigCount, DotMatrix, Beads, Dial, Ramp, type DotItem, type BeadCol } from "../ui";
 import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
 import { DayCell } from "../calendar/DayCell";
 import { JournalForm } from "../calendar/JournalForm";
 import { Week, WeekLine, weekMin } from "../calendar/Week";
-import { dayState, DOW } from "../domain/home";
+import { dayState, DOW, plural } from "../domain/home";
 import { FIXED_T } from "../domain/spec";
 import { Chart } from "../ui/Chart";
 import { getTheme, setTheme, type Theme } from "../ui/theme";
 import type { Pt } from "../ui/chart";
 import { days, form, aerobic, zones, today, dayByDate } from "../store/derived";
-import { runs, dbState } from "../store/data";
+import { runs, dbState, goals } from "../store/data";
 import { FATIGUE } from "../domain/load";
 import { fmtPace, mondayOf, addDays } from "../domain/util";
 import { ZONE_NAME } from "../data/schema";
@@ -90,6 +90,11 @@ function Parts() {
           <Choice look="chips" label="Тип" value={chip} onChange={setChip} options={[{ id: "easy", title: "Легкі", count: 24 }, { id: "fartlek", title: "Фартлек", count: 6 }, { id: "long", title: "Довгі", count: 8 }]} />
           <Choice look="nums" label="Рівень" value={lv} onChange={setLv} options={Array.from({ length: 10 }, (_, i) => ({ id: i + 1, title: String(i + 1), mark: i >= 2 && i <= 5 }))} />
         </div></section>
+      {(() => { const g = Object.values(goals.value).find(x => x.role === "main"); if (!g) return null;
+        const n = Math.round((new Date(g.date + "T00:00:00").getTime() - new Date(t + "T00:00:00").getTime()) / 864e5);
+        return <section><h3 class="label">Великий відлік · BigCount (Головна)</h3>
+          <BigCount value={n} unit={plural(n, "день", "дні", "днів")} label={`${n} ${plural(n, "день", "дні", "днів")} до старту ${g.name}`}
+            notes={[g.name, `${dm(g.date)}.${g.date.slice(2, 4)}`, `ціль ${Math.floor(g.targetSec / 60)}:${String(g.targetSec % 60).padStart(2, "0")}`]} /></section>; })()}
       <section><h3 class="label">Шкала · Choice look="scale" (журнал: самопочуття, ноги)</h3>
         <div class="kit-col">
           <Choice look="scale" label="Самопочуття під час бігу" value={feel} onChange={setFeel} options={FEEL.map(f => ({ id: f, title: f }))} />
