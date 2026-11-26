@@ -147,13 +147,14 @@ export function Kit() {
     const hi = Math.max(180, Math.ceil(Math.max(...F.days.map(x => x.r)) / 20) * 20);
     return { kind: "line" as const, y: { fmt: (v: number) => `${Math.round(v)}%`, domain: [0, hi] as [number, number] }, today: D(t),
       data: past.map(x => ({ x: D(x.d), y: x.r, tip: `${dm(x.d)} · ${Math.round(x.r)}% · 7 днів ${Math.round(x.atl)}, 6 тижнів ${Math.round(x.ctl)}` })),
-      plan: wk, bands: FATIGUE.map((f, i) => ({ lo: f.lo, hi: i ? FATIGUE[i - 1].lo : hi, label: f.name, strong: f.lo === 100 })) };
+      plan: wk, tags: { data: "факт", plan: "план" }, bands: FATIGUE.map((f, i) => ({ lo: f.lo, hi: i ? FATIGUE[i - 1].lo : hi, label: f.name, strong: f.lo === 100 })) };
   }, [F, range, start, t]);
 
   const aerSpec = useMemo(() => A.roll.length < 2 ? null : ({
     kind: "line" as const, y: { fmt: pace, reverse: true }, today: D(t),
     data: A.roll.map(p => ({ x: D(p.d), y: p.v, tip: `${dm(p.d)} · тренд ${pace(p.v)} /км` })),
     dots: A.pts.map(p => ({ x: D(p.d), y: p.norm, soft: p.long || p.hard, tip: `${dm(p.d)} · ${pace(p.pace)} при ${p.hr} → ${pace(p.norm)} /км${p.long ? " · довга" : p.hard ? " · після важкого дня" : ""}` })),
+    tags: { data: "тренд", dots: "легкі", soft: "довгі, втома" },
   }), [A, t]);
 
   const weekSpec = useMemo(() => {
@@ -169,7 +170,7 @@ export function Kit() {
       x: D(d.date), y: d.report!.work.pace as number, key: d.act === "shortint", soft: d.act !== "shortint",
       tip: `${dm(d.date)} · ${d.workout?.name ?? d.act} · ${pace(d.report!.work.pace)} /км${d.report!.work.hr ? ` · пульс ${d.report!.work.hr}` : ""}` }));
     return pts.length ? { kind: "line" as const, data: [], end: false, dots: pts, y: { fmt: pace, reverse: true, domain: [Math.min(Z.z3.fast, ...pts.map(p => p.y)) - 8, Math.max(Z.z3.slow, ...pts.map(p => p.y)) + 8] as [number, number] }, today: D(t),
-      x: [D(start), D(all[all.length - 1].date)] as [Date, Date], bands: [{ lo: Z.z3.fast, hi: Z.z3.slow, label: ZONE_NAME.z3, strong: true }], height: 180 } : null;
+      x: [D(start), D(all[all.length - 1].date)] as [Date, Date], tags: { key: "інтервали", soft: "фартлек" }, bands: [{ lo: Z.z3.fast, hi: Z.z3.slow, label: ZONE_NAME.z3, strong: true }], height: 180 } : null;
   }, [all, Z, t, start]);
 
   if (dbState.value === "loading") return <Empty>Читаю базу…</Empty>;
@@ -211,20 +212,17 @@ export function Kit() {
         </Card>
 
         <Card n="05" title="Втома і форма" span={12} aside={<Pill tone="line">{F ? `на старт ${Math.round(F.end.r)}% · ${F.endZone.name}` : "—"}</Pill>}>
-          {formSpec ? <Chart label="Втома у відсотках від звичного навантаження" spec={formSpec}
-            legend={[{ k: "ink", text: "факт" }, { k: "band", text: "оптимально 100–150%" }]} /> : <Empty>Форма з'явиться з першими пробіжками плану</Empty>}
+          {formSpec ? <Chart label="Втома у відсотках від звичного навантаження" spec={formSpec} /> : <Empty>Форма з'явиться з першими пробіжками плану</Empty>}
           <Details summary="Як це пораховано">
             <p>Навантаження дня: Coros Training Load з опису пробіжки, а без нього хвилини × вага інтенсивності. Втома = середнє за 7 днів до середнього за 6 тижнів (експоненційні), у відсотках. Пунктир: план, згладжений по тижню.</p>
           </Details>
         </Card>
 
         <Card n="06" title="Аеробна база" span={6}>
-          {aerSpec ? <Chart label="Темп легких пробіжок, приведений до пульсу 145 і прохолоди" spec={aerSpec}
-            legend={[{ k: "ink", text: "тренд 14 днів" }, { k: "ink", text: "пробіжки" }, { k: "cmp", text: "порожні: довгі й після важкого дня" }]} /> : <Empty>Потрібно 2 легкі пробіжки</Empty>}
+          {aerSpec ? <Chart label="Темп легких пробіжок, приведений до пульсу 145 і прохолоди" spec={aerSpec} /> : <Empty>Потрібно 2 легкі пробіжки</Empty>}
         </Card>
         <Card n="07" title="Відрізки VO2max" span={6}>
-          {vo2Spec ? <Chart label="Темп відрізків інтервальних тренувань і фартлеків" spec={vo2Spec}
-            legend={[{ k: "acc", text: "інтервали" }, { k: "ink", text: "фартлек, за відчуттям" }, { k: "band", text: "швидка зона" }]} /> : <Empty>Ще немає відрізків</Empty>}
+          {vo2Spec ? <Chart label="Темп відрізків інтервальних тренувань і фартлеків" spec={vo2Spec} /> : <Empty>Ще немає відрізків</Empty>}
         </Card>
 
         <Card n="08" title="Об'єм по тижнях" span={8}>
