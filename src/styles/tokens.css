@@ -20,7 +20,7 @@
   --shadow:none;
   --shadow-pop:0 2px 10px rgba(0,0,0,.10);   /* tooltip */
   --scrim:color-mix(in srgb, #000 18%, transparent);
-  --err:#E3261A;
+  --err:#E3261A; --on-err:#FFFFFF;         /* error fill, text on it */
   --inj1:#E4E4E2; --inj2:#9A9A96; --inj3:#000000;   /* injury level 1–3: grey → black */
   color-scheme:light;
 }
@@ -37,7 +37,7 @@
   --acc:#FF6A1A; --acc-text:#FF7A33; --on-acc:#0B0B0B;
   --focus:#F2F2EF;
   --shadow:none;
-  --err:#FF5A4A;
+  --err:#FF5A4A; --on-err:#0B0B0B;
   --inj1:#2A2A28; --inj2:#6E6E6A; --inj3:#F2F2EF;
   color-scheme:dark;
 }
@@ -52,7 +52,7 @@
   --acc:#FF6A1A; --acc-text:#FF7A33; --on-acc:#0B0B0B;
   --focus:#F2F2EF;
   --shadow:none;
-  --err:#FF5A4A;
+  --err:#FF5A4A; --on-err:#0B0B0B;
   --inj1:#2A2A28; --inj2:#6E6E6A; --inj3:#F2F2EF;
   color-scheme:dark;
 }

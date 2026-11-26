@@ -46,11 +46,11 @@
   .cal-wl { display: grid; align-content: start; gap: 2px; padding: 8px 8px 8px 0; font-family: var(--grot); font-size: 13px; }
   .cal-wl b { font-size: 18px; font-weight: 500; }
   .cal-bar { display: block; height: 3px; background: var(--ink); margin-top: 6px; }
-  .cal-list { display: grid; gap: 4px; }
-  .cal-lh { display: flex; gap: 16px; align-items: baseline; margin: 20px 0 6px; font-family: var(--grot); }
-  .cal-lrow .cell[data-size="M"] { grid-template-columns: 84px minmax(0, 1fr) 120px auto; align-items: center; min-height: 0; width: 100%; }
-  .cal-lrow .shape { width: 120px; }
-  .cal-lrow .cell-b { text-align: right; }
+  .cal-list .tbl td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums lining-nums; }
+  .tbl .wc-tag { display: inline; white-space: nowrap; }
+  .tbl .wc-tag .mk { margin-right: 6px; vertical-align: 0; }
+  @media (max-width: 480px) { .cal-chg { display: none; } }
+  .cal-phase-t { display: block; margin-bottom: 6px; font-variant: all-small-caps; letter-spacing: .06em; font-size: 14px; color: var(--mute); }
 
   /* ---- day card ---- */
   .daycard { min-width: 0; }
@@ -138,8 +138,6 @@
     .cal-wk .cell[data-size="S"] .cell-n { display: none; }
     .cal-wk .cell[data-size="S"] .cell-a { display: inline; }
     .cal-wk .cell .ok, .cal-wk .cell .gym { display: none; }
-    .cal-lrow .cell[data-size="M"] { grid-template-columns: 72px minmax(0, 1fr) auto; }
-    .cal-lrow .shape { display: none; }
     .steps li { grid-template-columns: 1fr; gap: 4px; }
     .zbars li { grid-template-columns: 90px minmax(40px, 1fr) 40px; }
     .zbars .zb-r, .zbars li > span:last-child { display: none; }

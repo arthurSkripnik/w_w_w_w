@@ -1,5 +1,5 @@
 // Basic elements every screen is built from. Look and spacing live in styles/components.css.
-import type { ComponentChildren, ButtonHTMLAttributes, InputHTMLAttributes } from "preact";
+import { Fragment, type ComponentChildren, type ButtonHTMLAttributes, type InputHTMLAttributes } from "preact";
 import { useId, useEffect, useRef, useState } from "preact/hooks";
 import { createPortal } from "preact/compat";
 
@@ -76,8 +76,6 @@ export function KV({ items, size = "m" }: { items: KVItem[]; size?: "l" | "m" | 
   </div>)}</dl>;
 }
 
-/** A difference B − A: the signed text and a bar from the centre; better is accent, worse is grey, never red/green.
- *  better: −1 lower is better, 1 higher is better, 0 neutral; scale: the difference that fills half the bar. */
 /** A labelled 0–100 bar: HP, XP, a stat, readiness. `mark` puts a tick (a goal) on the track, `weak` underlines the row. */
 export function Meter({ label, value, text, mark, tone = "ink", weak, sub }: { label: ComponentChildren; value: number | null; text: string; mark?: number | null; tone?: "ink" | "acc"; weak?: boolean; sub?: ComponentChildren }) {
   const v = value == null ? 0 : Math.max(0, Math.min(100, value));
@@ -91,6 +89,8 @@ export function Meter({ label, value, text, mark, tone = "ink", weak, sub }: { l
   </div>;
 }
 
+/** A difference B − A: the signed text and a bar from the centre; better is accent, worse is grey, never red/green.
+ *  better: −1 lower is better, 1 higher is better, 0 neutral; scale: the difference that fills half the bar. */
 export function Delta({ d, text, better, scale }: { d: number | null; text: string; better: -1 | 0 | 1; scale: number }) {
   if (d === null) return <span class="delta mute">—</span>;
   const good = better !== 0 && d * better > 0, w = scale ? Math.min(50, (Math.abs(d) / scale) * 50) : 0;
@@ -98,16 +98,27 @@ export function Delta({ d, text, better, scale }: { d: number | null; text: stri
     <i class="delta-bar" aria-hidden="true">{better !== 0 && w >= 2 && <i class={good ? "up" : "dn"} style={`${d < 0 ? "right" : "left"}:50%;width:${w.toFixed(0)}%`} />}</i></span>;
 }
 
-/** A table: columns with an optional numeric flag (right-aligned, tabular). */
-/** `wide`: a secondary column, hidden on a phone so the table fits without scrolling. */
+/** A table: columns with an optional numeric flag (right-aligned, tabular). One look for every table (v2 step 16,
+ *  after studiesincounting.com): small-caps head over an ink rule, serif rows on hairlines, the marked row inverted.
+ *  `wide`: a secondary column, hidden on a phone so the table fits without scrolling.
+ *  `group(r, prev)`: a heading row before r (a week, a phase), spanning every column; null for none.
+ *  `hl(r)`: the one row to point at (today), drawn black. `onRow(r)`: the whole row opens r; give the row a button
+ *  or link inside for the keyboard, the row only forwards clicks that miss it. */
 export interface Col<R> { key: string; title: string; num?: boolean; wide?: boolean; cell: (r: R) => ComponentChildren }
-export function Table<R>({ cols, rows, caption, rowKey }: { cols: Col<R>[]; rows: R[]; caption?: string; rowKey: (r: R) => string }) {
+export function Table<R>({ cols, rows, caption, rowKey, group, hl, onRow }: { cols: Col<R>[]; rows: R[]; caption?: string; rowKey: (r: R) => string;
+  group?: (r: R, prev: R | null) => ComponentChildren | null; hl?: (r: R) => boolean; onRow?: (r: R) => void }) {
+  const cls = (c: Col<R>, td?: boolean) => [c.num && "n", c.num && td && "num", c.wide && "wide"].filter(Boolean).join(" ") || undefined;
+  const click = onRow && ((r: R) => (e: MouseEvent) => { if (!(e.target as Element).closest("a,button,input,select,label")) onRow(r); });
   return (
     <div class="tbl-wrap">
-      <table class="tbl">
+      <table class="tbl" data-click={onRow ? "" : undefined}>
         {caption && <caption class="label">{caption}</caption>}
-        <thead><tr>{cols.map(c => <th key={c.key} class={[c.num && "n", c.wide && "wide"].filter(Boolean).join(" ") || undefined} scope="col">{c.title}</th>)}</tr></thead>
-        <tbody>{rows.map(r => <tr key={rowKey(r)}>{cols.map(c => <td key={c.key} class={[c.num && "n num", c.wide && "wide"].filter(Boolean).join(" ") || undefined}>{c.cell(r)}</td>)}</tr>)}</tbody>
+        <thead><tr>{cols.map(c => <th key={c.key} class={cls(c)} scope="col">{c.title}</th>)}</tr></thead>
+        <tbody>{rows.map((r, i) => { const g = group?.(r, i ? rows[i - 1] : null);
+          return <Fragment key={rowKey(r)}>
+            {g != null && g !== false && <tr class="tbl-g"><th colSpan={cols.length} scope="colgroup">{g}</th></tr>}
+            <tr data-hl={hl?.(r) ? "" : undefined} onClick={click?.(r)}>{cols.map(c => <td key={c.key} class={cls(c, true)}>{c.cell(r)}</td>)}</tr>
+          </Fragment>; })}</tbody>
       </table>
     </div>
   );
