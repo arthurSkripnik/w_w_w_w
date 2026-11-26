@@ -9,7 +9,7 @@ import { Chart } from "../ui/Chart";
 import { dbState } from "../store/data";
 import { routeArg, go } from "../app/routes";
 import { cmpGroups, cmpPair, cmpMode, cmpM, pickGroup, pickMode, toggleRun, openFor } from "../store/compare";
-import { rows, val, fmtV, fmtDiff, delta, verdict, gapTxt, lvlTxt, steps, repsOf, trendVal, trendLabel, AVG_DAYS, type Side, type CmpRun, type Row } from "../domain/compare";
+import { rows, val, fmtV, fmtDiff, delta, verdict, gapTxt, lvlTxt, steps, repsOf, trendVal, trendLabel, tempTxt, pairWhy, AVG_DAYS, type Side, type CmpRun, type Row } from "../domain/compare";
 import { typeOf } from "../domain/types";
 import { dm, DOW } from "../domain/home";
 import { fmtPace, daysBetween } from "../domain/util";
@@ -27,13 +27,15 @@ function Picker() {
   const role = (r: CmpRun): "a" | "b" | "in" | "" => (r.d === p.B.d ? "b" : !avg && p.A?.d === r.d ? "a" : avg && p.A?.runs.includes(r) ? "in" : "");
   return <Card title="Що порівнюємо" span={4}>
     <Choice look="chips" label="Тип пробіжок" value={g.k} onChange={pickGroup} options={G.map(x => ({ id: x.k, title: x.name, count: x.runs.length }))} />
-    <Segmented label="З чим порівнювати" value={cmpMode.value} onChange={pickMode}
-      options={[{ id: "run", title: "З пробіжкою" }, { id: "avg", title: "Із середнім за 6 тижнів" }]} />
-    <p class="status cmp-hint">{avg ? "Обери пробіжку: її порівняємо із середнім цього типу за 6 тижнів перед нею." : "Обери дві пробіжки: новішу і ту, з якою її порівнюємо (сіра позначка)."}</p>
+    <div class="cmp-mode"><Segmented label="З чим порівнювати" value={cmpMode.value} onChange={pickMode}
+      options={[{ id: "run", title: "З пробіжкою" }, { id: "avg", title: "Із середнім за 6 тижнів" }]} /></div>
+    <p class="status cmp-hint">{avg ? "Обери пробіжку: її порівняємо із середнім цього типу за 6 тижнів перед нею."
+      : p.auto && p.A?.d && pairWhy(p.A.runs[0], p.B) ? `Підібрано попередню пробіжку: ${pairWhy(p.A.runs[0], p.B)}. Торкнись іншої, щоб змінити пару.`
+      : "Обери дві пробіжки: новішу і ту, з якою її порівнюємо (сіра позначка)."}</p>
     <div class="cmp-rows" role="group" aria-label="Пробіжки цього типу">
       {[...g.runs].reverse().map(r => { const d = by[r.d], rl = role(r), lv = r.lvl !== null && g.k !== "easy" && g.k !== "long";
         return d && <DayCell key={r.d} size="M" day={d} iso={r.d} today={t} pick={rl || undefined} onPick={() => toggleRun(r.d)} head={`${dow(r.d)} ${dm(r.d)}`}
-          facts={<>{r.km.toFixed(1)} км · {r.key.pace ? fmtPace(r.key.pace) : "—"} /км · {r.key.hr ? Math.round(r.key.hr) : "—"} уд{lv && <span class="lvl"> · {lvlTxt(r)}</span>}{r.acc != null && <b class="acc-n"> {r.acc}%</b>}</>} />; })}
+          facts={<>{r.km.toFixed(1)} км · {r.key.pace ? fmtPace(r.key.pace) : "—"} /км · {r.key.hr ? Math.round(r.key.hr) : "—"} уд{r.temp !== null && ` · ${tempTxt(r)}`}{lv && <span class="lvl"> · {lvlTxt(r)}</span>}{r.acc != null && <b class="acc-n"> {r.acc}%</b>}</>} />; })}
     </div>
   </Card>;
 }
@@ -80,10 +82,13 @@ function Verdict({ A, B }: { A: Side | null; B: CmpRun }) {
 function Diff({ A, B }: { A: Side; B: CmpRun }) {
   const g = cmpPair.value!.g;
   const R = rows(g.k).map(r => ({ r, a: val(A, r.get), b: val({ label: "", d: B.d, runs: [B] }, r.get) })).filter(x => x.a !== null || x.b !== null);
-  return <div class="tbl-wrap"><table class="tbl cmp-t">
-    <thead><tr><th scope="col" /><th scope="col" class="n"><i class="sw a" />{A.label}</th><th scope="col" class="n"><i class="sw b" />{dm(B.d)}</th><th scope="col" class="n">Різниця</th></tr></thead>
-    <tbody>{R.map(({ r, a, b }) => <tr key={r.label}><td>{r.label}</td><td class="n num">{a !== null ? fmtV(a, r.fmt) : "—"}</td><td class="n num"><b>{b !== null ? fmtV(b, r.fmt) : "—"}</b></td><td class="n num"><Dl a={a} b={b} r={r} /></td></tr>)}</tbody>
-  </table></div>;
+  const show = (s: Side, v: number | null, r: Row) => (v === null ? "—" : r.fmt === "temp" && s.d ? tempTxt(s.runs[0]) : fmtV(v, r.fmt));
+  const Bs: Side = { label: "", d: B.d, runs: [B] }, norm = [...A.runs, B].some(r => r.tsrc === "norm");
+  return <><div class="tbl-wrap"><table class="tbl cmp-t">
+    <thead><tr><th scope="col"><span class="vh">Показник</span></th><th scope="col" class="n"><i class="sw a" />{A.label}</th><th scope="col" class="n"><i class="sw b" />{dm(B.d)}</th><th scope="col" class="n">Різниця</th></tr></thead>
+    <tbody>{R.map(({ r, a, b }) => <tr key={r.label}><td>{r.label}</td><td class="n num">{show(A, a, r)}</td><td class="n num"><b>{show(Bs, b, r)}</b></td><td class="n num"><Dl a={a} b={b} r={r} /></td></tr>)}</tbody>
+  </table></div>
+  <p class="pf-note">Поправка на погоду: спека й вологість сповільнюють той самий біг; темп з поправкою показує, яким він був би при 15° і сухому повітрі.{norm && " «≈»: погоди зі Strava немає, взято середню температуру Валенсії на цю дату й годину."}</p></>;
 }
 
 function Laps({ A, B }: { A: CmpRun; B: CmpRun }) {

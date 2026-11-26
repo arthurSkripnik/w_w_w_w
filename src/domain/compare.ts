@@ -4,7 +4,7 @@
 import type { Day } from "./days";
 import type { EasyPt } from "./aerobic";
 import { EASY_REF_HR } from "./aerobic";
-import { heatPct, HOT_PCT } from "./weather";
+import { heatPct, HOT_PCT, runTemp } from "./weather";
 import { lapPace, type Lap, type Part } from "./report";
 import { daysBetween, fmtPace } from "./util";
 import { spec, FIXED_T } from "./spec";
@@ -28,6 +28,8 @@ export interface CmpRun {
   lvl: number | null;                 // plan level (null for sessions with one fixed structure)
   planN: number | null;               // planned reps at that level
   sec: number; temp: number | null; rh: number | null;
+  tsrc: "strava" | "watch" | "norm" | null;   // where the temperature comes from (norm = Valencia mean for that date and hour)
+  heat: number | null;                // % slower at the same effort from heat and humidity (weather.ts heatPct)
   key: { pace: number | null; hr: number | null };
   eff: number | null;                 // easy pace at HR 145 and 15° (aerobic base), easy and long only
   acc: number | null; drift: number | null;
@@ -38,13 +40,30 @@ export function cmpRun(x: Day, eff: Record<string, EasyPt>): CmpRun | null {
   const w = r.work, prog = r.tmpl === "progression", e = r.easy ?? r;
   const key = w ? { pace: (prog ? w.to : w.pace) ?? null, hr: (prog ? w.endHr || w.hr : w.hr) ?? null } : { pace: e.pace ?? null, hr: e.hr ?? null };
   const reps = r.reps?.length ? r.reps : null, rp = (reps ?? []).filter(p => p.pace).map(p => p.pace!);
-  const wx = x.run.weather as { rh?: number | null } | null | undefined;
+  const wx = x.run.weather as { t?: number | null; rh?: number | null } | null | undefined, fromWx = typeof wx?.t === "number";
+  const tc = runTemp(x.date, r.temp ?? null, fromWx ? wx?.rh ?? null : null, fromWx, x.run.startHour, x.run.name);
   const lvl = FIXED_T.includes(x.act) ? null : Math.max(1, x.level), planN = spec(x.act, Math.max(1, x.level))?.reps?.n ?? null;
-  return { d: x.date, t: x.act, lvl, planN, km: r.km, sec: r.t, temp: r.temp ?? null, rh: wx?.rh ?? null, key, eff: eff[x.date]?.norm ?? null,
+  return { d: x.date, t: x.act, lvl, planN, km: r.km, sec: r.t, temp: tc.t, rh: tc.rh, tsrc: tc.src, heat: heatPct(tc.t, tc.rh), key, eff: eff[x.date]?.norm ?? null,
     acc: x.acc?.score ?? null, drift: r.drift?.pct ?? null, work: w && w.pace ? w : null, warm: r.warm ?? null,
     reps, spread: rp.length > 1 ? Math.max(...rp) - Math.min(...rp) : null, laps: r.laps };
 }
 export interface GroupRuns extends Group { runs: CmpRun[] }
+/** The run to compare B with by default: the latest earlier run of the same session and level within 8 weeks,
+ *  else the latest of the same session, else the latest of the kind. Among equals, the one with the closest heat wins a tie of a week. */
+export const PAIR_DAYS = 56;
+export function prevOf(g: GroupRuns, B: CmpRun): CmpRun | null {
+  const before = g.runs.filter(r => r.d < B.d); if (!before.length) return null;
+  const near = before.filter(r => daysBetween(r.d, B.d) <= PAIR_DAYS);
+  const same = near.filter(r => r.t === B.t && r.lvl === B.lvl), sameT = near.filter(r => r.t === B.t);
+  const pool = same.length ? same : sameT.length ? sameT : before;
+  const last = pool[pool.length - 1], close = pool.filter(r => daysBetween(r.d, last.d) <= 7 && r.heat !== null && B.heat !== null);
+  return close.length > 1 ? close.reduce((a, r) => (Math.abs(r.heat! - B.heat!) < Math.abs(a.heat! - B.heat!) ? r : a)) : last;
+}
+/** Why the default pair is that pair, in a few words for the list hint. */
+export function pairWhy(A: CmpRun, B: CmpRun): string {
+  if (A.t !== B.t) return "";
+  return A.lvl !== null && A.lvl === B.lvl ? `той самий рівень ${lvlTxt(B)}` : A.lvl === null ? "та сама сесія" : "";
+}
 /** Kinds that have at least one analysed run, runs oldest first. */
 export function groups(days: Day[], easy: EasyPt[]): GroupRuns[] {
   const eff: Record<string, EasyPt> = {}; easy.forEach(p => (eff[p.d] = p));
@@ -85,15 +104,17 @@ export function rows(k: string): Row[] {
     if (k === "long") R.push(row("Дрейф темп/пульс", r => r.drift, "pct", -1, 5));
   } else if (k === "fastfinish") {
     R.push(row("Темп у кінці", r => r.key.pace, "pace", -1, 15), row("Пульс у кінці", r => r.key.hr, "hr", -1, 10),
+      row("Темп у кінці з поправкою на погоду", adjPace, "pace", -1, 15),
       row("Швидка частина", r => r.work?.pace, "pace", -1, 15), row("Пульс швидкої частини", r => r.work?.hr, "hr", -1, 10),
       row("Легка частина", r => r.warm?.pace, "pace", -1, 15));
   } else {
     const test = k === "test";
-    R.push(row(test ? "Темп" : "Темп роботи", r => r.key.pace, "pace", -1, 10), row(test ? "Пульс" : "Пульс роботи", r => r.key.hr, "hr", -1, 10));
+    R.push(row(test ? "Темп" : "Темп роботи", r => r.key.pace, "pace", -1, 10), row("З поправкою на погоду", adjPace, "pace", -1, 10),
+      row(test ? "Пульс" : "Пульс роботи", r => r.key.hr, "hr", -1, 10));
     if (!test) R.push(row("Відрізків", r => r.reps?.length, "n", 0, 0), row("Розкид відрізків", r => r.spread, "sec", -1, 10));
   }
   R.push(row("Дистанція", r => r.km, "km", 0, 0), row("Час руху", r => r.sec, "time", 0, 0), row("Точність", r => r.acc, "acc", 1, 20),
-    row("Температура", r => r.temp, "temp", 0, 0));
+    row("Температура", r => r.temp, "temp", 0, 0), row("Спека сповільнює на", r => r.heat, "pct", 0, 0));
   return R;
 }
 export function fmtV(v: number, f: Fmt): string {
@@ -124,6 +145,14 @@ export function delta(a: number | null, b: number | null, r: Pick<Row, "better" 
   return { d, good: r.better !== 0 && d * r.better > 0, bad: r.better !== 0 && d * r.better < 0, w: r.scale ? Math.min(50, (Math.abs(d) / r.scale) * 50) : 0 };
 }
 
+// ---- weather ----
+/** The key pace as if run at 15° and dry air: heat makes the same effort slower by heat %, so take that share off. */
+export const adjPace = (r: CmpRun) => (r.key.pace && r.heat !== null ? r.key.pace * (1 - r.heat / 100) : null);
+/** Temperature with its source: «≈» when Strava and the watch had none and the Valencia normal stands in. */
+export const tempTxt = (r: CmpRun) => (r.temp === null ? "" : `${r.tsrc === "norm" ? "≈" : ""}${Math.round(r.temp)}°`);
+/** Heat differs enough between the sides to move the pace by a second or more per km. */
+export const HEAT_GAP = 0.5;
+
 // ---- verdict ----
 const hot = (r: CmpRun) => typeof r.temp === "number" && heatPct(r.temp, r.rh) >= HOT_PCT;
 export function verdict(k: string, A: Side, B: CmpRun): { head: string; dp: number; dh: number | null; text: string; what: string } {
@@ -139,9 +168,19 @@ export function verdict(k: string, A: Side, B: CmpRun): { head: string; dp: numb
     : slow && hrDn ? "Повільніше, але легше: схоже на спокійніший день." : slow ? "І темп, і пульс гірші: подивись на втому тижня й погоду."
     : hrDn ? "Той самий темп при нижчому пульсі: це прогрес." : hrUp ? "Той самий темп коштував вищого пульсу." : "Майже однакові пробіжки.";
   const lv = steadyG(k) ? null : levelNote(A, B); if (lv) t += ` ${lv}`;
+  t += weatherNote(A, B, useEff);
   const H = [...(A.d ? A.runs : []), B].filter(hot);
-  if (H.length) t += ` Спека (${H.map(r => `${dm(r.d)} ${Math.round(r.temp!)}°`).join(", ")}) підвищує пульс на 5–10 уд/хв.`;
+  if (H.length && !useEff) t += ` Спека (${H.map(r => `${dm(r.d)} ${tempTxt(r)}`).join(", ")}) підвищує пульс на 5–10 уд/хв.`;
   return { head: `${what} ${pt}${ht}.`, dp, dh, text: t, what };
+}
+/** What the weather changes: the pace difference once both sides are brought to 15° (easy runs: already in the number). */
+export function weatherNote(A: Side, B: CmpRun, effUsed: boolean): string {
+  const ha = val(A, r => r.heat), hb = B.heat; if (ha === null || hb === null || Math.abs(hb - ha) < HEAT_GAP) return "";
+  const ta = val(A, r => r.temp), wx = `${A.d ? tempTxt(A.runs[0]) : ta !== null ? `≈${Math.round(ta)}°` : ""} і ${tempTxt(B)}`;
+  if (effUsed) return ` Погода різна (${wx}), але цей темп уже приведено до 15°.`;
+  const pa = val(A, adjPace), pb = adjPace(B); if (pa === null || pb === null) return "";
+  const d = pb - pa, pt = Math.abs(d) < 2 ? "темп той самий" : `на ${Math.round(Math.abs(d))} с/км ${d < 0 ? "швидше" : "повільніше"}`;
+  return ` З поправкою на погоду (${wx}) ${pt}.`;
 }
 /** When the sides were planned at different levels: which, and the planned reps if those differ too. */
 export function levelNote(A: Side, B: CmpRun): string | null {
