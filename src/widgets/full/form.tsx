@@ -28,6 +28,8 @@ export function FormFull() {
       legend={[{ k: "ink", text: "Факт, пунктиром план до старту" }, { k: "band", text: "Оптимально 100–150 %" }]}
       spec={{ kind: "line", height: 260, data: past, plan: fut, y: { fmt: v => `${Math.round(v)} %`, domain: [0, hi] }, bands, today: D(today.value), x: [D(from), D(S.race)] }} />
     <p class="status">{S.arch ? `Звичне навантаження до плану пораховане з історії Strava, тому відсоток точний від першого дня плану.` : "Без історії звичне навантаження до плану взяте з перших двох тижнів плану. Завантаж історію в Профілі → Дані, щоб відсоток був точніший."}</p>
-    <p class="pf-note">Навантаження дня = «Training Load» COROS з опису пробіжки, а якщо його немає, хвилини × вага інтенсивності. Втома = навантаження 7 днів у % від звичного за 6 тижнів, шкала COROS EvoLab.</p>
   </>;
 }
+
+/** «?» in the card head: where the numbers come from. */
+export const FormHow = () => <>Навантаження дня = «Training Load» COROS з опису пробіжки, а якщо його немає, хвилини × вага інтенсивності. Втома = навантаження 7 днів у % від звичного за 6 тижнів, шкала COROS EvoLab.</>;

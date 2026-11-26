@@ -1,6 +1,6 @@
 // «Прогноз 10 км», full size: watch forecast, goal and gap; the chart of threshold entries, workout equivalents,
 // the Strava forecast and the model to race day; how it is counted.
-import { Stat, Pill, Details, StatusLine } from "../../ui";
+import { Stat, Pill, StatusLine } from "../../ui";
 import { Chart } from "../../ui/Chart";
 import { fc } from "../../store/home";
 import { goal, today, threshold, zones } from "../../store/derived";
@@ -55,11 +55,12 @@ export function ForecastFull() {
       ? `Середній еквівалент показових тренувань ${mmss(avg)}, годинник ${mmss(f.t10)}.${Math.abs(avg - f.t10) >= 20 ? ` Різниця ${Math.round(Math.abs(avg - f.t10))} с: перевір поріг на годиннику.` : ""}`
       : "Ще немає показових тренувань (поріг, VO2max, 5 км) зі Strava."}</StatusLine>
     {pj && <p class="status">Модель на старт: <b>{mmss(end(pj.mid))}</b>, діапазон {mmss(end(pj.hi))}–{mmss(end(pj.lo))}, виконано {Math.round(pj.scale * 100)} % плану.</p>}
-    <Details summary="Як це пораховано">
-      <p><b>Поріг з годинника</b> × 0,97 = темп 10 км. Лише він змінює зони і план. Еквіваленти з тренувань: темп робочих відрізків × коефіцієнт (поріг 0,97, відрізки VO2max 1,04, 5 км 1,037). Фартлек біжиться за відчуттям: на графіку порожнім кружком, у середнє не йде.</p>
-      <p><b>За фактом зі Strava:</b> середнє показових тренувань за 6 тижнів (5 км, гонка і старти вдвічі) плюс темп на пороговому пульсі × 0,97, коли за 4 тижні є {SF_THR_MIN}+ таких кіл.</p>
-      <p><b>Модель «форма мінус втома»</b> (Banister): кожне тренування дає форму, що згасає за ≈6 тижнів, і втому, що минає за ≈тиждень. Навантаження дня: хвилини плану × вага інтенсивності, у минулому навантаження COROS. Розмір приросту взято з досліджень: {GAIN.lo} / {GAIN.mid} / {GAIN.hi} % за 10 тижнів повного плану, масштабовано на виконану частку.</p>
-      <p class="label">Banister et al. 1975; Busso et al. 1991, 2003; Bosquet et al. 2007; Muñoz, Seiler et al. 2014.</p>
-    </Details>
   </>;
 }
+/** «?» in the card head: how the forecast and the model are counted, with sources. */
+export const ForecastHow = () => <>
+  <span class="hint-p"><b>Поріг з годинника</b> × 0,97 = темп 10 км. Лише він змінює зони і план. Еквіваленти з тренувань: темп робочих відрізків × коефіцієнт (поріг 0,97, відрізки VO2max 1,04, 5 км 1,037). Фартлек біжиться за відчуттям: на графіку порожнім кружком, у середнє не йде.</span>
+  <span class="hint-p"><b>За фактом зі Strava:</b> середнє показових тренувань за 6 тижнів (5 км, гонка і старти вдвічі) плюс темп на пороговому пульсі × 0,97, коли за 4 тижні є {SF_THR_MIN}+ таких кіл.</span>
+  <span class="hint-p"><b>Модель «форма мінус втома»</b> (Banister): кожне тренування дає форму, що згасає за ≈6 тижнів, і втому, що минає за ≈тиждень. Навантаження дня: хвилини плану × вага інтенсивності, у минулому навантаження COROS. Розмір приросту взято з досліджень: {[GAIN.lo, GAIN.mid, GAIN.hi].map(v => String(v).replace(".", ",")).join(" / ")} % за 10 тижнів повного плану, масштабовано на виконану частку.</span>
+  <span class="hint-p label">Banister et al. 1975; Busso et al. 1991, 2003; Bosquet et al. 2007; Muñoz, Seiler et al. 2014.</span>
+</>;

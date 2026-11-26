@@ -5,7 +5,7 @@
 import { Component, type ComponentChildren } from "preact";
 import { useState, useRef } from "preact/hooks";
 import { computed } from "@preact/signals";
-import { Empty, Button, Choice } from "../ui";
+import { Empty, Button, Choice, Hint } from "../ui";
 import { layouts } from "../store/data";
 import { setLayout } from "../store/actions";
 import { WIDGETS, DEFAULTS, BOARDS, type BoardId } from "./index";
@@ -91,6 +91,7 @@ function Slot({ w, it, n, i, b, ed }: { w: Widget; it: Item; n: number; i: numbe
           onPointerDown={e => !it.pinned && ed.start(e as PointerEvent, w.id, false)} onKeyDown={key}>⠿</button>}
         <span class="card-n num">{String(n).padStart(2, "0")}</span>
         <h2 class="card-title" id={`wt-${w.id}`}>{w.title}</h2>
+        {size === "full" && w.how && <Hint label={`Як рахується «${w.title}»`}><w.how /></Hint>}
         {link && <a class="card-aside wg-link" href={link.href}>{link.label}</a>}
         {ed && <button type="button" class="wg-pin card-aside" aria-pressed={!!it.pinned} title={it.pinned ? "Відкріпити" : "Прикріпити на цьому місці"}
           aria-label={`${it.pinned ? "Відкріпити" : "Прикріпити"} «${w.title}»`} onClick={() => save(b, togglePin(shownOf(b), w.id))}>📌</button>}

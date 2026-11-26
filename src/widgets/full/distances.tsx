@@ -68,7 +68,7 @@ function DistancesFull() {
       { key: "p", title: "Темп, /км", num: true, cell: r => fmtPace(r.t / (r.m / 1000)) },
       { key: "b", title: "Найкраще в Strava", num: true, cell: r => { const b = p.best.find(x => Math.abs(x.m - r.m) < 1); return b ? `${fmtT(b.t)} (${dm(b.d)}.${b.d.slice(2, 4)})` : "—"; } },
     ]} />
-    <p class="pf-note">Рахується з прогнозу 10 км (поріг × 0,97): VDOT {p.v.toFixed(1)} за формулою Деніелса, з нього час на кожну дистанцію. 400 м і 1 км залежать від швидкості, а не лише від аеробної форми, тому це орієнтир. Півмарафон і марафон розраховані на те, що до них є відповідна підготовка обсягом.</p>
   </>;
 }
-export const distancesW: Widget = { id: "distances", title: "Прогноз на дистанції", about: "Прогноз на 5 км, 10 км, півмарафон і марафон", span: 3, link: { label: "Графік", href: "#lab/distances" }, C: Distances, Full: DistancesFull };
+export const DistancesHow = () => { const p = pred.value; return <>Рахується з прогнозу 10 км (поріг × 0,97): {p ? `VDOT ${p.v.toFixed(1)}` : "VDOT"} за формулою Деніелса, з нього час на кожну дистанцію. 400 м і 1 км залежать від швидкості, а не лише від аеробної форми, тому це орієнтир. Півмарафон і марафон розраховані на те, що до них є відповідна підготовка обсягом.</>; };
+export const distancesW: Widget = { id: "distances", title: "Прогноз на дистанції", about: "Прогноз на 5 км, 10 км, півмарафон і марафон", span: 3, link: { label: "Графік", href: "#lab/distances" }, C: Distances, Full: DistancesFull, how: DistancesHow };

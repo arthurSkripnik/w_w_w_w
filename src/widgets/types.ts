@@ -1,6 +1,6 @@
 // A widget: one file in src/widgets/, listed in index.ts. Any widget can stand on any screen that has a board
 // (Головна, Лабораторія); the screen's layout (layout/<screen>) says which, in what order and at which size.
-// The board draws the card frame (number, title, link, menu) and hides a widget whose component returns null or throws.
+// The board draws the card frame (number, title, «?», link, menu) and hides a widget whose component returns null or throws.
 import type { FunctionComponent } from "preact";
 import type { Size } from "./layout";
 export type { Size };
@@ -14,4 +14,5 @@ export interface Widget {
   C?: FunctionComponent;                     // compact: a number tile
   Full?: FunctionComponent;                  // full: the big chart, table and "how it is counted"
   fullSpan?: 6 | 12;
+  how?: FunctionComponent;                   // full: «?» in the card head, where the numbers come from and how to read them
 }
