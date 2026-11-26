@@ -101,13 +101,28 @@
   .delta-bar .up { background: var(--acc); }
   .delta-bar .dn { background: var(--cmp); }
 
+  /* Table (step 16, after studiesincounting.com): small caps over an ink rule, serif rows on hairlines, marked row inverted. */
   .tbl-wrap { overflow-x: auto; }
-  .tbl { width: 100%; border-collapse: collapse; font-family: var(--grot); font-size: 14px; }
+  .tbl { width: 100%; border-collapse: collapse; font: 15px/1.35 var(--serif); color: var(--ink); }
   .tbl caption { text-align: left; padding-bottom: 8px; }
-  .tbl th { text-align: left; font-weight: 400; color: var(--mute); font-size: 12px; padding: 0 12px 8px 0; border-bottom: 1px solid var(--line); }
-  .tbl td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--hair); vertical-align: baseline; }
+  .tbl th { text-align: left; font: 500 14px var(--serif); font-variant: all-small-caps; letter-spacing: .06em; color: var(--ink); padding: 0 16px 8px 0; border-bottom: 1px solid var(--ink); white-space: nowrap; }
+  .tbl td { padding: 8px 16px 8px 0; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+  .tbl td.num { font-family: var(--serif); font-variant-numeric: tabular-nums lining-nums; }
   .tbl .n { text-align: right; }
-  @media (max-width: 480px) { .tbl .wide { display: none; } .tbl th, .tbl td { padding-right: 8px; } }
+  .tbl :is(th, td):first-child { padding-left: 4px; }
+  .tbl :is(th, td):last-child { padding-right: 4px; }
+  .tbl tr[data-hl] > td { background: var(--ink); color: var(--on-ink); border-bottom-color: var(--ink); }
+  .tbl tr[data-hl] .label, .tbl tr[data-hl] .mute { color: inherit; }
+  .tbl tr[data-hl] .mk { box-shadow: inset 0 0 0 1px var(--on-ink); }
+  .tbl tr[data-hl] .mk[data-cat="z2"] { background: var(--on-ink); }
+  .tbl .tbl-g > th { padding: 28px 4px 8px; font: 500 15px var(--serif); font-variant: normal; letter-spacing: 0; border-bottom: 1px solid var(--ink); white-space: normal; }
+  .tbl[data-click] tbody tr:not(.tbl-g) { cursor: pointer; }
+  .tbl[data-click] tbody tr:not(.tbl-g):not([data-hl]):hover > td { background: var(--chip); }
+  .tbl-a { all: unset; cursor: pointer; text-align: left; min-height: 24px; }
+  .tbl-a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .tbl-a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .tbl tr[data-hl] .tbl-a:focus-visible { outline-color: var(--on-ink); }
+  @media (max-width: 480px) { .tbl .wide { display: none; } .tbl th, .tbl td { padding-right: 10px; } .tbl { font-size: 14px; } }
 
   .field { display: grid; gap: 6px; }
   .field input { font-size: 17px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); min-height: 44px; }
