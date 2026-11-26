@@ -1,5 +1,6 @@
 import { useMemo, useState } from "preact/hooks";
-import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint, DateTag, BigCount, DotMatrix, Beads, Dial, Ramp, type DotItem, type BeadCol } from "../ui";
+import { planDots, weekBeads } from "../store/dots";
+import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint, DateTag, BigCount, DotMatrix, Beads, Dial, Ramp } from "../ui";
 import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
 import { DayCell } from "../calendar/DayCell";
 import { JournalForm } from "../calendar/JournalForm";
@@ -17,9 +18,7 @@ import { ZONE_NAME } from "../data/schema";
 import { StoreCheck } from "./StoreCheck";
 import { DataCheck } from "./DataCheck";
 import type { Day } from "../domain/days";
-import { typeOf } from "../domain/types";
 import { FEEL, LEGS } from "../domain/journal";
-import { dur } from "../domain/spec";
 
 // Step 4 sample page: every basic element and chart on real data, for checking the look before screens are built.
 const D = (iso: string) => new Date(iso + "T00:00:00");
@@ -29,23 +28,11 @@ const accTone = (s: number): "ink" | "line" | "err" => (s >= 90 ? "ink" : s >= 5
 
 
 // Step 17: the plan as dots (a row per week), weekly km as beads, form as a dial.
+const beads8 = weekBeads(8);   // the same builders as Головна (store/dots.ts)
 function DotsDemo() {
-  const all = days.value, t = today.value, by = dayByDate.value, Z = zones.value, F = form.value, R = runs.value;
-  if (!all.length) return null;
-  const maxMin = Math.max(...all.map(d => dur(d.type, Math.max(1, d.level)) ?? 0), 1);
-  const mons = [...new Set(all.map(d => mondayOf(d.date)))].sort();
-  const item = (iso: string): DotItem => { const d = by[iso], today_ = iso === t;
-    if (!d) return { state: "rest", label: `${dm(iso)}: відпочинок`, today: today_ };
-    const st = dayState(d), m = dur(d.type, Math.max(1, d.level)) ?? 0, hard = ["z3", "race"].includes(typeOf(d.type).cat);
-    const name = d.workout?.name ?? typeOf(d.type).name;
-    return { state: st === "done" ? "done" : st === "miss" ? "miss" : "plan", hard, v: m / maxMin, today: today_,
-      label: `${dm(iso)}: ${name}, ${st === "done" ? "виконано" : st === "miss" ? "пропущено" : `план ≈${m} хв`}` }; };
-  const rows = mons.map(m => Array.from({ length: 7 }, (_, i) => item(addDays(m, i))));
-  const easy = Z ? (Z.z1.fast + Z.z1.slow) / 2 / 60 : null;
-  const i0 = Math.max(0, mons.findIndex(m => m === mondayOf(t)) - 5), sel = mons.slice(i0, i0 + 8);
-  const cols: BeadCol[] = sel.map(m => { const w = all.filter(d => d.date >= m && d.date <= addDays(m, 6));
-    const done = Object.values(R).filter(r => r.date >= m && r.date <= addDays(m, 6) && r.date <= t).reduce((a, r) => a + r.km, 0);
-    return { label: dm(m).slice(0, 5), done, plan: easy ? weekMin(w) / easy : undefined, key: w.some(d => d.type === "race"), now: m === mondayOf(t) }; });
+  const P = planDots.value, cols = beads8.value, F = form.value;
+  if (!P) return null;
+  const { rows, mons } = P;
   const r = F?.now ? Math.round(F.now.r) : null;
   return <>
     <section><h3 class="label">Сірі тони 01–05 (токени --g1…--g5; line, hair, chip, mute вказують на них)</h3><Ramp /></section>
