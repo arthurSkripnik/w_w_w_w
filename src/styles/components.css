@@ -85,6 +85,13 @@
   .dtag[data-size="l"] > :not(.vh) { min-height: 40px; }
   .dtag[data-size="l"] .dtag-d, .dtag[data-size="l"] .dtag-m { padding: 0 14px; }
 
+  /* BigCount (step 19, after komma): the number spans the row, brackets at the edges, notes small in between. */
+  .bigc { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; font: 500 clamp(56px, 12vw, 160px)/.9 var(--grot); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .bigc-b { font-weight: 300; }
+  .bigc-n { font-weight: 500; }
+  .bigc-u { font: 400 clamp(20px, 3.2vw, 40px)/1 var(--serif); font-style: italic; letter-spacing: 0; margin-right: auto; }
+  .bigc-notes { display: grid; gap: 2px; font-size: 12px; line-height: 1.3; letter-spacing: 0; align-self: center; }
+
   .kv { margin: 0; display: grid; font-family: var(--grot); }
   .kv dd { margin: 0; }
   .kv b { font-weight: 500; }
