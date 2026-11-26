@@ -4,7 +4,7 @@
 import { useEffect, useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
 import type { Day } from "../domain/days";
-import { Pill, Button, Segmented, StatusLine, Field, KV, Choice, Details, Hint } from "../ui";
+import { Pill, Button, Segmented, StatusLine, Field, KV, Choice, Details, Hint, DateTag } from "../ui";
 import { options, warnings, REPLACE_CATS, type Cat } from "../domain/replace";
 import { WorkoutCard } from "./WorkoutCard";
 import { JournalForm } from "./JournalForm";
@@ -259,7 +259,7 @@ export function DayCard({ day }: { day: Day }) {
 
   return <article class="daycard" data-phase={ph} aria-label={`${dm(day.date)}: ${name}, ${tag.tag}`}>
     <header class="dc-head">
-      <span class="dc-when"><span class="label num">Тиждень {String(day.plan.week).padStart(2, "0")}/{total} · {dow(day.date)}, {dm(day.date)}</span><Pill tone={tag.tone}>{tag.tag}</Pill></span>
+      <span class="dc-when"><DateTag size="l" iso={day.date} today={day.date === t} /><span class="label num">Тиждень {String(day.plan.week).padStart(2, "0")}/{total}</span><Pill tone={tag.tone}>{tag.tag}</Pill></span>
       <span class="dc-nav">
         <Button variant="ghost" aria-label={nav(prev, "Попереднє")} disabled={!prev} title="Попередній день (←)" onClick={() => prev && go("calendar", prev.date, true)}>←</Button>
         <Button variant="ghost" aria-label={nav(next, "Наступне")} disabled={!next} title="Наступний день (→)" onClick={() => next && go("calendar", next.date, true)}>→</Button>

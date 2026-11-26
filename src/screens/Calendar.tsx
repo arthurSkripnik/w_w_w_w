@@ -1,6 +1,6 @@
 // Календар: the plan by weeks (grid) or day by day (list); a day opens in a window over the plan. #calendar/<date> opens a day.
 import { useEffect, useState } from "preact/hooks";
-import { Segmented, Empty, Modal, Table, type Col } from "../ui";
+import { Segmented, Empty, Modal, Table, DateTag, type Col } from "../ui";
 import { TypeTag } from "../calendar/WorkoutCard";
 import { WeekLine, weekMin } from "../calendar/Week";
 import { DayCard } from "../calendar/DayCard";
@@ -38,12 +38,11 @@ export function Calendar() {
   const maxMin = Math.max(...nums.map(n => mins(weeks[n])));
   const open = sel ? by[sel] : undefined;
   let phase = "";
-  const dow = (iso: string) => DOW[(new Date(iso + "T00:00:00").getDay() + 6) % 7];
   const weekHead = (n: number) => { const w = weeks[n], m = mins(w), km = z1mid ? Math.round(m / z1mid) : null;
     return <><b>Тиждень {String(n).padStart(2, "0")}</b> <span class="label">· {w.length} {plural(w.length, "тренування", "тренування", "тренувань")} · {fmtHM(m)}{km ? ` · ≈${km} км` : ""}</span></>; };
   const phaseOf = (d: Day) => PH_NAME[d.plan.phase] ?? d.plan.phase;
   const cols: Col<Day>[] = [
-    { key: "d", title: "Дата", cell: d => `${dow(d.date)} ${dm(d.date)}` },
+    { key: "d", title: "Дата", cell: d => <DateTag iso={d.date} today={d.date === t} /> },
     { key: "w", title: "Тренування", cell: d => { const st = dayState(d), name = d.workout?.name ?? typeOf(d.type).name;
       return <button type="button" class="tbl-a" data-date={d.date} aria-haspopup="dialog" aria-label={`${d.date === t ? "Сьогодні, " : ""}${dm(d.date)}: ${name}${st === "done" ? ", виконано" : st === "miss" ? ", пропущено" : ""}`}
         onClick={() => go("calendar", d.date === sel ? null : d.date, true)}>{name}{d.gym && <span class="label"> +С</span>}{d.plan.changes.length > 0 && <span class="label cal-chg"> · змінено</span>}</button>; } },
