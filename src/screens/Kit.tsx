@@ -1,5 +1,5 @@
 import { useMemo, useState } from "preact/hooks";
-import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint, DotMatrix, Beads, Dial, Ramp, type DotItem, type BeadCol } from "../ui";
+import { Grid, Card, Stat, Pill, Button, Segmented, Table, Field, Details, StatusLine, Empty, Choice, KV, Delta, Meter, Modal, Hint, DateTag, DotMatrix, Beads, Dial, Ramp, type DotItem, type BeadCol } from "../ui";
 import { WorkoutCard, TypeTag } from "../calendar/WorkoutCard";
 import { DayCell } from "../calendar/DayCell";
 import { JournalForm } from "../calendar/JournalForm";
@@ -18,6 +18,7 @@ import { StoreCheck } from "./StoreCheck";
 import { DataCheck } from "./DataCheck";
 import type { Day } from "../domain/days";
 import { typeOf } from "../domain/types";
+import { FEEL, LEGS } from "../domain/journal";
 import { dur } from "../domain/spec";
 
 // Step 4 sample page: every basic element and chart on real data, for checking the look before screens are built.
@@ -60,6 +61,7 @@ function DotsDemo() {
 
 function Parts() {
   const all = days.value, t = today.value, by = dayByDate.value;
+  const [feel, setFeel] = useState<string>("нормально"), [legs, setLegs] = useState<string>("трохи важкі");
   const [lv, setLv] = useState(4), [chip, setChip] = useState("fartlek"), [seg, setSeg] = useState<"run" | "avg">("run"), [win, setWin] = useState(false);
   if (!all.length) return null;
   const done = [...all].reverse().find(d => d.date < t && dayState(d) === "done"), miss = [...all].reverse().find(d => dayState(d) === "miss"), plan = all.find(d => d.date > t && !FIXED_T.includes(d.type));
@@ -88,6 +90,14 @@ function Parts() {
           <Choice look="chips" label="Тип" value={chip} onChange={setChip} options={[{ id: "easy", title: "Легкі", count: 24 }, { id: "fartlek", title: "Фартлек", count: 6 }, { id: "long", title: "Довгі", count: 8 }]} />
           <Choice look="nums" label="Рівень" value={lv} onChange={setLv} options={Array.from({ length: 10 }, (_, i) => ({ id: i + 1, title: String(i + 1), mark: i >= 2 && i <= 5 }))} />
         </div></section>
+      <section><h3 class="label">Шкала · Choice look="scale" (журнал: самопочуття, ноги)</h3>
+        <div class="kit-col">
+          <Choice look="scale" label="Самопочуття під час бігу" value={feel} onChange={setFeel} options={FEEL.map(f => ({ id: f, title: f }))} />
+          <Choice look="scale" label="Ноги" value={legs} onChange={setLegs} options={LEGS.map(f => ({ id: f, title: f }))} />
+        </div></section>
+      <section><h3 class="label">Дата · DateTag (шапка вікна дня, Головна; сьогодні залите)</h3>
+        <div class="kit-col"><div class="btn-row"><DateTag iso={t} today time="07:30" /><DateTag iso={addDays(t, 1)} /><DateTag iso="2027-01-10" time="09:00" /></div>
+          <DateTag iso={t} today size="l" /></div></section>
       <section><h3 class="label">Назва і значення · l, m, s, rows, text</h3>
         <div class="kit-col">
           <KV size="l" items={[{ k: "Тривалість", v: "52 хв", sub: "З розминкою і заминкою" }, { k: "Темп", v: "4:05–4:15", sub: "пороговий" }]} />
